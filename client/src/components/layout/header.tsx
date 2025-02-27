@@ -38,8 +38,8 @@ export default function Header() {
             <img
               src={
                 isScrolled
-                  ? "/img/corporativa/svg/facebook-b.svg"
-                  : "/img/corporativa/svg/facebook.svg"
+                  ? "/img/corporativa/svg/facebook.svg"
+                  : "/img/corporativa/svg/facebook-b.svg"
               }
               alt="Facebook"
               className="h-6 w-6"
@@ -53,8 +53,8 @@ export default function Header() {
             <img
               src={
                 isScrolled
-                  ? "/img/corporativa/svg/instagram-b.svg"
-                  : "/img/corporativa/svg/instagram.svg"
+                  ? "/img/corporativa/svg/instagram.svg"
+                  : "/img/corporativa/svg/instagram-b.svg"
               }
               alt="Instagram"
               className="h-6 w-6"

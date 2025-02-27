@@ -13,40 +13,42 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-      {/* Hero Video Section - Full Width */}
-      <figure className="hero-banner hero-banner-heading-valign-middle hero-banner-heading-sm">
-        <div className="hero-banner-image">
-          <div className="hero-banner-image-placeholder" uk-parallax="scale: 1.2">
-            <video 
-              className="absolute inset-0 w-full h-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster="https://asadorlamorenica.com/img/miniatura.jpg"
-            >
-              <source src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov" type="video/mp4" />
-              Tu navegador no soporta vídeos HTML5
-            </video>
-          </div>
-        </div>
-        <figcaption>
-          <div className="hero-banner-body">
-            <div className="container">
-              <h1>Los mejores pollos a la brasa</h1>
-              <ul className="hero-banner-btns d-lg-none">
-                <li>
-                  <Link href="/order">
-                    <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
-                      Hacer Pedido
-                    </Button>
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </figcaption>
-      </figure>
+      {/* Hero Video Section - Full Width - Estilo Àbac */}
+      <div className="relative w-full h-screen overflow-hidden">
+        {/* Video de fondo */}
+        <video
+          className="absolute top-0 left-0 w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="https://asadorlamorenica.com/img/miniatura.jpg"
+        >
+          <source src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov" type="video/mp4" />
+          Tu navegador no soporta vídeos HTML5
+        </video>
+
+        {/* Capa oscura */}
+        <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
+
+        {/* Contenido centrado */}
+        <motion.div
+          className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
+          <h1 className="text-5xl md:text-7xl font-bold">Los mejores pollos a la brasa</h1>
+          <p className="mt-4 text-lg md:text-2xl max-w-2xl">
+            Tradición y sabor inigualable en cada bocado.
+          </p>
+          <Link href="/order">
+            <Button variant="outline" size="lg" className="mt-6 border-white text-white hover:bg-white/10">
+              Hacer Pedido
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
 
       {/* Sobre Nosotros */}
       <motion.section 
@@ -65,24 +67,19 @@ export default function Home() {
             />
           </figure>
           <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 className="text-6xl font-bold">Conocenos</h2>
+            <h2 className="text-6xl font-bold">Conócenos</h2>
             <div className="prose prose-lg mx-auto">
               <p className="text-xl leading-relaxed">
                 Llevamos más de 20 años en Villena y comarca, orgullosos de ser un referente 
                 en la zona gracias a nuestro horno de leña para asar pollos, lo que les 
                 confiere un sabor inigualable y una textura distinta.
               </p>
-              <p className="text-xl leading-relaxed">
-                En Asador La Morenica encontrarás una gran variedad de platos españoles y 
-                de nuestra propia cultura armenia, que fusionamos para ofrecerte una 
-                experiencia gastronómica única.
-              </p>
             </div>
           </div>
         </div>
       </motion.section>
 
-      {/* Features Grid */}
+      {/* Grid de Características */}
       <section className="bg-gray-900 text-white py-24">
         <div className="container">
           <div className="grid md:grid-cols-3 gap-12">
@@ -97,7 +94,7 @@ export default function Home() {
               <h3 className="text-3xl">Cocina Tradicional</h3>
               <p className="text-lg text-gray-300">
                 Especialistas en pollos asados a la leña con recetas tradicionales 
-                y sabor único. Fusionamos la cocina española y armenia.
+                y sabor único.
               </p>
             </motion.div>
 
@@ -153,17 +150,14 @@ export default function Home() {
             <p className="text-xl leading-relaxed">
               Nos importa que te sientas como en casa, por eso te recibiremos con una 
               sonrisa y un trato cercano y amable. Nos encanta compartir nuestra pasión 
-              por la buena comida y la hospitalidad con todos nuestros clientes, y 
-              estamos seguros de que en cada visita te sentirás parte de la familia.
-            </p>
-            <p className="text-2xl font-semibold text-orange-600">
-              ¡Te esperamos para que descubras todo lo que nuestra cocina tiene para ofrecerte!
+              por la buena comida y la hospitalidad con todos nuestros clientes.
             </p>
           </div>
         </div>
       </motion.section>
     </div>
   );
+
 }
 
 function getDayName(day: number): string {

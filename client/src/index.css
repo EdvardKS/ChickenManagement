@@ -19,6 +19,37 @@
   }
 }
 
+@layer components {
+  .hero-banner {
+    @apply relative w-full h-screen overflow-hidden -mt-[80px];
+  }
+
+  .hero-banner-image {
+    @apply absolute inset-0 w-full h-full;
+  }
+
+  .hero-banner-image-placeholder {
+    @apply relative w-full h-full;
+  }
+
+  .hero-banner figcaption {
+    @apply absolute inset-0 flex items-center justify-center bg-black/50;
+  }
+
+  .hero-banner-body {
+    @apply w-full text-center text-white;
+  }
+
+  .hero-banner h1 {
+    @apply text-7xl font-bold mb-8;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .hero-banner-btns {
+    @apply flex justify-center gap-4 mt-12;
+  }
+}
+
 @layer utilities {
   .scroll-reveal {
     opacity: 0;
@@ -29,9 +60,5 @@
   .scroll-reveal.visible {
     opacity: 1;
     transform: translateY(0);
-  }
-
-  .text-shadow {
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   }
 }

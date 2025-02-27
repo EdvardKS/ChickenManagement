@@ -14,46 +14,39 @@ export default function Home() {
   return (
     <div className="space-y-8">
       {/* Hero Video Section - Full Width */}
-      <section className="relative h-screen w-screen -mt-[80px]">
-        <video
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="https://asadorlamorenica.com/img/miniatura.jpg"
-        >
-          <source src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov" type="video/mp4" />
-          Tu navegador no soporta vídeos HTML5
-        </video>
-        <div className="absolute inset-0 bg-black/50">
-          <div className="container h-full flex items-center justify-center">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center"
+      <figure className="hero-banner hero-banner-heading-valign-middle hero-banner-heading-sm">
+        <div className="hero-banner-image">
+          <div className="hero-banner-image-placeholder" uk-parallax="scale: 1.2">
+            <video 
+              className="absolute inset-0 w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster="https://asadorlamorenica.com/img/miniatura.jpg"
             >
-              <h1 className="text-7xl font-bold text-white mb-4">
-                Asador la Morenica
-              </h1>
-              <p className="text-2xl font-light text-white mb-8">En horno de leña</p>
-              <p className="text-xl text-white max-w-2xl mx-auto mb-12">
-                Los mejores pollos a la brasa en Villena y alrededores. Disfruta de nuestra 
-                cocina en Villena, Biar, Almansa, Caudete y más.
-              </p>
-              <div className="flex justify-center gap-4">
-                <Link href="/order">
-                  <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
-                    Hacer Pedido
-                  </Button>
-                </Link>
-                <div className="hidden"></div>
-              </div>
-            </motion.div>
+              <source src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov" type="video/mp4" />
+              Tu navegador no soporta vídeos HTML5
+            </video>
           </div>
         </div>
-      </section>
+        <figcaption>
+          <div className="hero-banner-body">
+            <div className="container">
+              <h1>Los mejores pollos a la brasa</h1>
+              <ul className="hero-banner-btns d-lg-none">
+                <li>
+                  <Link href="/order">
+                    <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
+                      Hacer Pedido
+                    </Button>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </figcaption>
+      </figure>
 
       {/* Sobre Nosotros */}
       <motion.section 

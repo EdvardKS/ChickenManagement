@@ -27,7 +27,7 @@ document.head.appendChild(metaDescription);
 
 function Router() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f8efe5]">
       <Header />
       <main className="container">
         <Switch>

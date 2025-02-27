@@ -50,7 +50,7 @@
   }
 
   .hero-banner-btns {
-    @apply flex justify-center gap-4;
+    @apply flex flex-col sm:flex-row justify-center gap-4;
   }
 
   /* Navegación */

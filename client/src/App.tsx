@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import FloatingContact from "@/components/floating-contact";
 
 import Home from "@/pages/home";
 import Products from "@/pages/products";
@@ -16,6 +17,13 @@ import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
 import AdminStock from "@/pages/admin/stock";
 import NotFound from "@/pages/not-found";
+
+// Update document metadata for SEO
+document.title = "Asador La Morenica | Pollos Asados a la Leña en Villena";
+const metaDescription = document.createElement('meta');
+metaDescription.name = 'description';
+metaDescription.content = 'Los mejores pollos asados a la leña en Villena y comarca. Tradición y sabor único desde hace más de 20 años. Fusión de cocina española y armenia.';
+document.head.appendChild(metaDescription);
 
 function Router() {
   return (
@@ -36,6 +44,7 @@ function Router() {
         </Switch>
       </main>
       <Footer />
+      <FloatingContact />
     </div>
   );
 }

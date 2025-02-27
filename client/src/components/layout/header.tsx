@@ -14,7 +14,14 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link href="/">
-            <a className="text-2xl font-bold">Asador La Morenica</a>
+            <a className="flex items-center gap-2">
+              <img 
+                src="/img/corporativa/logo-negro-web.png" 
+                alt="Asador La Morenica" 
+                className="h-12"
+              />
+              <span className="text-2xl font-bold">Asador La Morenica</span>
+            </a>
           </Link>
 
           <NavigationMenu>

@@ -1,4 +1,5 @@
 import { Phone, Mail, MapPin } from "lucide-react";
+import { SiFacebook, SiInstagram } from "react-icons/si";
 
 export default function Footer() {
   return (
@@ -33,10 +34,22 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-4">Síguenos</h3>
             <div className="flex gap-4">
-              <a href="https://facebook.com" className="hover:text-gray-400">
+              <a 
+                href="https://es-es.facebook.com/people/Asador-la-morenica/100064982920008/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-gray-400 flex items-center gap-2"
+              >
+                <SiFacebook className="h-5 w-5" />
                 Facebook
               </a>
-              <a href="https://instagram.com" className="hover:text-gray-400">
+              <a 
+                href="https://www.instagram.com/asadolamorenica/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-gray-400 flex items-center gap-2"
+              >
+                <SiInstagram className="h-5 w-5" />
                 Instagram
               </a>
             </div>

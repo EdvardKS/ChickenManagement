@@ -10,7 +10,7 @@ import {
 
 export default function Header() {
   return (
-    <header className="border-b">
+    <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="col-4 col-lg-5">
@@ -66,7 +66,7 @@ export default function Header() {
             </NavigationMenu>
 
             <Link href="/order">
-              <Button className="ml-4">Hacer Pedido</Button>
+              <Button className="ml-4" style={{ backgroundColor: '#8B4513' }}>Hacer Pedido</Button>
             </Link>
           </div>
         </div>

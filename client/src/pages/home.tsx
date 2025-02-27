@@ -27,26 +27,28 @@ export default function Home() {
           Tu navegador no soporta vídeos HTML5
         </video>
         <div className="absolute inset-0 bg-black/50">
-          <div className="container h-full flex items-center justify-center text-center">
+          <div className="container h-full flex items-center justify-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="max-w-3xl text-white space-y-8"
+              className="text-center"
             >
-              <h1 className="text-7xl font-bold text-shadow">
+              <h1 className="text-7xl font-bold text-white mb-4">
                 Asador la Morenica
-                <span className="block text-4xl mt-4">En horno de leña</span>
               </h1>
-              <p className="text-2xl font-light max-w-2xl mx-auto">
-                Los mejores pollos a la brasa en Villena y alrededores. Disfruta de nuestra cocina en Villena, Biar, Almansa, Caudete y más.
+              <p className="text-2xl font-light text-white mb-8">En horno de leña</p>
+              <p className="text-xl text-white max-w-2xl mx-auto mb-12">
+                Los mejores pollos a la brasa en Villena y alrededores. Disfruta de nuestra 
+                cocina en Villena, Biar, Almansa, Caudete y más.
               </p>
-              <div className="flex gap-6 justify-center mt-8">
+              <div className="flex justify-center gap-4">
                 <Link href="/order">
-                  <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-lg px-12">
+                  <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
                     Hacer Pedido
                   </Button>
                 </Link>
+                <div className="hidden"></div>
               </div>
             </motion.div>
           </div>
@@ -62,6 +64,13 @@ export default function Home() {
         className="py-24"
       >
         <div className="container">
+          <figure className="mb-16">
+            <img 
+              src="/img/corporativa/about-image.jpg"
+              alt="Nuestro asador"
+              className="w-full max-w-4xl mx-auto rounded-lg shadow-xl"
+            />
+          </figure>
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <h2 className="text-6xl font-bold">Conocenos</h2>
             <div className="prose prose-lg mx-auto">

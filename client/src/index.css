@@ -12,6 +12,9 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 
   h1, h2, h3 {
@@ -21,44 +24,64 @@
 
 @layer components {
   .hero-banner {
-    @apply relative w-full h-screen overflow-hidden -mt-[80px];
+    @apply relative w-screen h-screen m-0 p-0 overflow-hidden;
   }
 
   .hero-banner-image {
     @apply absolute inset-0 w-full h-full;
   }
 
-  .hero-banner-image-placeholder {
-    @apply relative w-full h-full;
+  .hero-banner video {
+    @apply absolute top-0 left-0 w-full h-full object-cover;
   }
 
   .hero-banner figcaption {
-    @apply absolute inset-0 flex items-center justify-center bg-black/50;
+    @apply absolute inset-0 flex items-center justify-center;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
   }
 
   .hero-banner-body {
-    @apply w-full text-center text-white;
+    @apply w-full text-center text-white px-4;
   }
 
   .hero-banner h1 {
-    @apply text-7xl font-bold mb-8;
+    @apply text-6xl md:text-7xl font-bold mb-6;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   }
 
+  .hero-banner p {
+    @apply text-xl md:text-2xl mb-8 max-w-2xl mx-auto;
+  }
+
   .hero-banner-btns {
-    @apply flex justify-center gap-4 mt-12;
+    @apply flex justify-center gap-4;
+  }
+
+  /* Navegación */
+  .nav-transparent {
+    @apply fixed top-0 left-0 right-0 z-50 transition-all duration-300;
+  }
+
+  .nav-links {
+    @apply flex gap-8 text-white;
+  }
+
+  .nav-link {
+    @apply relative py-2 text-lg transition-colors duration-200;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
   }
 }
 
 @layer utilities {
-  .scroll-reveal {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.6s ease-out;
-  }
-
-  .scroll-reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   }
 }

@@ -51,7 +51,7 @@ export default function Header() {
               <NavigationMenuList className="gap-8">
                 <NavigationMenuItem>
                   <Link href="/products">
-                    <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${
+                    <NavigationMenuLink className={`nav-link ${
                       isScrolled ? 'text-gray-800' : 'text-white'
                     }`}>
                       Productos
@@ -60,7 +60,7 @@ export default function Header() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <Link href="/about">
-                    <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${
+                    <NavigationMenuLink className={`nav-link ${
                       isScrolled ? 'text-gray-800' : 'text-white'
                     }`}>
                       Nosotros
@@ -69,7 +69,7 @@ export default function Header() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <Link href="/contact">
-                    <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${
+                    <NavigationMenuLink className={`nav-link ${
                       isScrolled ? 'text-gray-800' : 'text-white'
                     }`}>
                       Contacto
@@ -78,7 +78,7 @@ export default function Header() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <Link href="/admin">
-                    <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${
+                    <NavigationMenuLink className={`nav-link ${
                       isScrolled ? 'text-gray-800' : 'text-white'
                     }`}>
                       Admin

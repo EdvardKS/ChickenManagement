@@ -14,10 +14,10 @@ export default function Home() {
   return (
     <>
       <HeroBanner />
-      <div className="space-y-8">
-        {/* Horno de Leña Tradicional */}
+
+      {/* Horno de Leña Tradicional */}
       <section className="py-24 bg-[#1A0F0F] text-white">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <motion.div 
             className="grid md:grid-cols-2 gap-12 items-center"
             initial={{ opacity: 0, y: 20 }}
@@ -65,7 +65,7 @@ export default function Home() {
 
       {/* Especialidades */}
       <section className="py-24 bg-[#2C2C2C] text-white">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <motion.div 
             className="max-w-4xl mx-auto text-center space-y-8"
             initial={{ opacity: 0, y: 20 }}
@@ -100,7 +100,7 @@ export default function Home() {
 
       {/* Fusión Culinaria */}
       <section className="py-24">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <motion.div 
             className="text-center max-w-4xl mx-auto mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -175,7 +175,7 @@ export default function Home() {
 
       {/* Salón de Eventos */}
       <section className="py-24 bg-[#F9F5F0]">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <motion.div 
             className="grid md:grid-cols-2 gap-12 items-center"
             initial={{ opacity: 0, y: 20 }}
@@ -222,7 +222,7 @@ export default function Home() {
 
       {/* Testimonios */}
       <section className="py-24">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <motion.div 
             className="text-center max-w-4xl mx-auto mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -258,7 +258,7 @@ export default function Home() {
 
       {/* Servicios Especiales */}
       <section className="py-24 bg-[#2C2C2C] text-white">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <motion.div 
             className="text-center max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -299,7 +299,7 @@ export default function Home() {
 
       {/* Sobre Nosotros */}
       <section className="py-24">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <motion.div 
             className="max-w-4xl mx-auto text-center space-y-8"
             initial={{ opacity: 0, y: 20 }}
@@ -325,7 +325,7 @@ export default function Home() {
 
       {/* Información */}
       <section className="py-24 bg-[#F5F5F5]">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-12">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -379,7 +379,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-      </div>
     </>
   );
 }

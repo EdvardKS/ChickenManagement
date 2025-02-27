@@ -21,12 +21,12 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-50 transition-colors ${
+      className={`fixed top-0 left-0 w-full z-50 transition-colors duration-300 ${
         isScrolled ? "bg-white shadow-md" : "bg-transparent"
       }`}
     >
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
-        {/* Redes sociales a la izquierda */}
+        {/* Social media icons on the left */}
         <div className="flex items-center space-x-4">
           <a
             href="https://www.facebook.com/people/Asador-la-morenica/100064982920008/"
@@ -60,8 +60,8 @@ export default function Header() {
           </a>
         </div>
 
-        {/* Logo centrado con pt-2 */}
-        <div className="text-center flex-1">
+        {/* Centered logo with increased size */}
+        <div className="flex-1 text-center">
           <Link href="/">
             <a>
               <img
@@ -77,10 +77,10 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Menú + Botón de pedido a la derecha */}
-        <div className="flex items-center space-x-4">
+        {/* Navigation menu and order button on the right */}
+        <div className="flex items-center space-x-6">
           <NavigationMenu className="hidden md:flex">
-            <NavigationMenuList className="flex space-x-4">
+            <NavigationMenuList className="flex space-x-6">
               <NavigationMenuItem>
                 <Link href="/products">
                   <NavigationMenuLink
@@ -130,9 +130,9 @@ export default function Header() {
 
           <Link href="/order">
             <Button
-              className={`${
+              className={`ml-4 ${
                 isScrolled
-                  ? "bg-[#8B4513] border-none text-white"
+                  ? "bg-[#8B4513] text-white border-none"
                   : "bg-transparent border-2 border-white text-white"
               }`}
             >

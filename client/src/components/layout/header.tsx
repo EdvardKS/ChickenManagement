@@ -38,9 +38,9 @@ export default function Header() {
             <Link href="/">
               <a className="block">
                 <img 
-                  src="/img/corporativa/logo-negro-web.png" 
+                  src={isScrolled ? "/img/corporativa/slogan-negro.png" : "/img/corporativa/slogan-blanco.png"}
                   alt="Asador La Morenica" 
-                  className="h-16 mx-auto"
+                  className="h-20 mx-auto transition-opacity duration-300"
                 />
               </a>
             </Link>

@@ -1,0 +1,44 @@
+Estructura general y diseño responsivo
+
+Crea una estructura HTML limpia con un header (barra de navegación), una sección hero a pantalla completa, y las secciones adicionales que se vean en el video.
+Asegúrate de que todo sea totalmente responsivo (mobile, tablet y desktop).
+Barra de navegación (header)
+
+Implementa un header fijo en la parte superior (sticky) con un fondo semitransparente o sólido, según el estilo del video.
+Incluye el logotipo o nombre del negocio a la izquierda.
+Añade enlaces de navegación centrados o alineados a la derecha, replicando el orden y estilo exacto del video.
+Sitúa el botón “Hacer Pedido” en la parte derecha de la barra de navegación, con un color destacado que llame la atención (ej. un color contrastante que se vea en el video).
+Sección Hero
+
+Usa la imagen del asador/pollos como fondo a pantalla completa (height: 100vh), asegurándote de aplicar un overlay oscuro o un degradado para dar contraste al texto.
+Centra vertical y horizontalmente el texto principal y el subtítulo.
+Título: “Los mejores pollos a la brasa” con una fuente grande y gruesa (revisa la tipografía del video, p. ej. font-family y font-weight similares).
+Subtítulo: “Tradición y sabor inigualable en cada bocado”, con un tamaño ligeramente menor que el título, manteniendo la misma tipografía o una complementaria.
+Añade un botón CTA debajo del subtítulo que diga “Haz tu pedido” (o similar) con el mismo color que el botón “Hacer Pedido” de la barra de navegación, para mantener consistencia.
+Elimina o sustituye el rectángulo blanco que aparece actualmente por el botón CTA.
+Tipografía y colores
+
+Ajusta la paleta de colores para que coincida con el video de referencia (probablemente tonos oscuros, naranjas o rojos que combinen con la temática de asador).
+Asegúrate de que la tipografía sea consistente en toda la web: título, subtítulo, texto de párrafo, enlaces y botones.
+Utiliza contrastes adecuados: texto claro sobre fondo oscuro o viceversa, tal como se aprecie en el video.
+Secciones adicionales (si el video las muestra)
+
+Replica exactamente la secuencia de secciones: por ejemplo, una sección de “Menú” con tarjetas de productos, una sección de “Testimonios”, una sección de “Contacto”, etc., con la misma disposición que se ve en el video.
+Añade imágenes o iconos, transiciones o efectos de scroll tal como se muestre en el ejemplo.
+Botón flotante de WhatsApp
+
+Mantén el botón de WhatsApp en la esquina inferior derecha, pero ajusta su estilo (tamaño, color, posible sombra) para que no interfiera con el contenido principal.
+Verifica que no se solape con otros elementos, especialmente en versiones móviles.
+Animaciones y transiciones
+
+Si el video incluye animaciones (por ejemplo, fade-in al hacer scroll, hover effects en los botones o el menú), intégralas con el mismo timing y estilo.
+Asegúrate de que las animaciones sean suaves y no distraigan del contenido principal.
+Optimización de la imagen principal
+
+Asegúrate de usar una versión optimizada de la imagen del asador para que cargue rápido sin perder calidad visual.
+Si se requiere un efecto de paralaje (parallax) como en el video, aplícalo a la imagen de fondo.
+Pruebas y ajustes finales
+
+Comprueba que los textos sean legibles y el diseño se vea bien en dispositivos móviles y pantallas grandes.
+Revisa que el overlay del hero no oscurezca demasiado ni deje muy clara la imagen de fondo. Ajusta la opacidad para que el texto destaque lo suficiente.
+Asegúrate de que el botón “Hacer Pedido” en el header y el CTA en el hero tengan la misma estética para una identidad coherente.

@@ -72,7 +72,7 @@ export default function HeroBanner() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((current) => (current + 1) % heroTexts.length);
-    }, 3500);
+    }, 4500);
 
     return () => clearInterval(interval);
   }, []);

@@ -27,21 +27,17 @@
     @apply relative w-screen h-screen m-0 p-0 overflow-hidden;
   }
 
-  .hero-banner-image {
-    @apply absolute inset-0 w-full h-full;
-  }
-
   .hero-banner video {
-    @apply absolute top-0 left-0 w-full h-full object-cover;
+    @apply absolute top-0 left-0 w-full h-full object-cover z-0;
   }
 
   .hero-banner figcaption {
-    @apply absolute inset-0 flex items-center justify-center;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+    @apply absolute inset-0 flex items-center justify-center z-10;
+    background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
   }
 
   .hero-banner-body {
-    @apply w-full text-center text-white px-4;
+    @apply container mx-auto text-center text-white px-4;
   }
 
   .hero-banner h1 {
@@ -58,25 +54,47 @@
   }
 
   /* Navegación */
-  .nav-transparent {
+  .nav-header {
     @apply fixed top-0 left-0 right-0 z-50 transition-all duration-300;
   }
 
-  .nav-links {
-    @apply flex gap-8 text-white;
+  .nav-header.scrolled {
+    @apply bg-white shadow-md;
+  }
+
+  .nav-container {
+    @apply container mx-auto px-4 py-4;
   }
 
   .nav-link {
-    @apply relative py-2 text-lg transition-colors duration-200;
+    @apply relative py-2 text-lg font-light transition-colors duration-200;
   }
 
   .nav-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300;
+    @apply absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300;
   }
 
   .nav-link:hover::after {
     @apply w-full;
+  }
+
+  /* Links blancos sobre fondo transparente */
+  .nav-header:not(.scrolled) .nav-link {
+    @apply text-white;
+  }
+
+  .nav-header:not(.scrolled) .nav-link::after {
+    @apply bg-white;
+  }
+
+  /* Links negros sobre fondo blanco */
+  .nav-header.scrolled .nav-link {
+    @apply text-gray-800;
+  }
+
+  .nav-header.scrolled .nav-link::after {
+    @apply bg-[#8B4513];
   }
 }
 

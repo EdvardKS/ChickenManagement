@@ -1,0 +1,61 @@
+Elimina el contenedor que limita el ancho/alto del banner
+
+Asegúrate de que el banner (o el componente donde está el video/fondo) tenga width: 100vw y height: 100vh.
+Quita o sobreescribe cualquier clase o estilo que aplique max-width, margin o padding excesivos.
+Si hay un contenedor padre que limita el tamaño, deshazte de él o aplica estilos que permitan que el banner se extienda al 100% del viewport.
+Video o imagen de fondo a pantalla completa
+
+Si utilizas un <video>, ponlo con position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;.
+Si usas una imagen de fondo, aplica background: url("ruta_de_imagen") center/cover no-repeat; y asegúrate de que el elemento ocupe el 100% del viewport.
+Texto centrado y contrastado en el banner
+
+Dentro del banner, centra el texto con display: flex; align-items: center; justify-content: center; height: 100vh; para que quede perfectamente en medio.
+Aplica un overlay o un degradado si el video o la imagen dificulta la legibilidad del texto (por ejemplo, un ::before con background: rgba(0, 0, 0, 0.4);).
+Ajusta color, tamaño y tipografía del título y subtítulo para que destaquen sobre el fondo.
+Navegación minimalista con cambio de color en el logo
+
+Haz que el header o la nav sea transparente cuando esté sobre el banner.
+Por ejemplo, .nav { background: transparent; position: fixed; width: 100%; z-index: 999; }
+Pon el logo en blanco cuando el fondo de la nav sea transparente (sobre el banner oscuro).
+Al hacer scroll (o cuando el nav cambie a fondo blanco), cambia el logo a negro. Puedes usar una clase activa en JavaScript o CSS para ello, por ejemplo:
+css
+Copiar
+.nav.scrolled {
+  background: #fff;
+}
+.nav.scrolled .logo {
+  /* Logo en negro */
+  filter: invert(0);
+}
+(o simplemente intercambiar la imagen del logo en blanco por la versión en negro).
+Evita botones grandes en el menú. Utiliza enlaces de texto elegantes, con tipografía limpia, sin recuadros ni fondos llamativos.
+Ejemplo de estilos de enlaces:
+css
+Copiar
+.nav a {
+  color: #fff; /* cuando está transparente */
+  text-decoration: none;
+  margin: 0 1rem;
+  transition: color 0.3s;
+}
+.nav.scrolled a {
+  color: #000; /* cuando cambia a fondo blanco */
+}
+.nav a:hover {
+  color: #f90; /* color de acento en hover */
+}
+Verifica la coherencia en todos los dispositivos
+
+Asegúrate de que tanto el banner como la navegación respondan bien en móvil, tablet y escritorio.
+Si usas un menú “hamburguesa” en móvil, que sea igualmente minimalista.
+Pruebas finales
+
+Comprueba que, al cargar la página, la nav está transparente y el logo es blanco sobre el video/fondo.
+Al hacer scroll, la nav adquiere un fondo blanco y el logo cambia a negro.
+El banner realmente ocupa todo el alto y ancho del viewport, sin barras de scroll horizontales ni recortes.
+El texto del banner se ve perfectamente centrado y con buena legibilidad.
+Objetivo:
+
+Dejar el banner a pantalla completa (100% ancho y alto del viewport), sin contenedor que lo limite.
+Lograr una navegación minimalista con el logo en blanco sobre fondo transparente y que cambie a negro al hacer scroll y volverse fondo blanco, tal como en el ejemplo del restaurante del video.
+Asegurar contraste y legibilidad en todos los elementos, tanto en el hero como en la navegación.

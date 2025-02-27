@@ -1,0 +1,38 @@
+CORREGIR EL BANNER Y LA NAVEGACIÓN
+
+Estructura del banner (hero) a pantalla completa
+
+Asegúrate de que el banner principal (hero) ocupe todo el viewport tanto en ancho como en alto.
+En CSS, aplica: width: 100vw; height: 100vh; margin: 0; padding: 0;
+Elimina o sobreescribe cualquier contenedor (o componente padre) que esté limitando el ancho y alto del hero. Esto implica:
+Quitar propiedades como max-width, margin o padding innecesarias en los padres del banner.
+Revisar que no haya restricciones en la hoja de estilos que impidan que el hero se expanda a pantalla completa.
+Si estás usando un video de fondo, sitúalo como background-video o dentro de un video con position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; para que se ajuste completamente al contenedor sin márgenes.
+Contraste y visualización del contenido dentro del hero
+
+Asegúrate de que los textos (título, subtítulo, botón o CTA) tengan suficiente contraste con el fondo (video o imagen).
+Si el fondo es muy claro o muy oscuro, añade un overlay (por ejemplo, un degradado o capa semitransparente) para que la tipografía sea completamente legible.
+Verifica que los elementos del hero estén centrados vertical y horizontalmente (por ejemplo, usando display: flex; align-items: center; justify-content: center; height: 100vh;).
+Navegación y contraste del logotipo
+
+La barra de navegación debe ir encima del hero con fondo transparente al inicio, para que se vea elegante sobre el video/fondo.
+Usa el logo en color blanco mientras la navegación esté sobre el fondo oscuro/transparente del hero.
+Al hacer scroll (o si la barra de navegación pasa a tener fondo blanco), cambia el logo a color negro automáticamente.
+Esto se puede lograr con JavaScript o con la clase que se activa al hacer scroll.
+La transición de logo blanco a negro debe ser suave, manteniendo el estilo minimalista que se ve en el ejemplo del video.
+Menú de navegación sin “botones” grandes
+
+Sustituye los botones actuales por enlaces de texto más elegantes y discretos, siguiendo el estilo del restaurante de referencia.
+Usa tipografía y espaciados limpios (por ejemplo, padding: 0 15px;) y evita bordes, fondos de color, o rectángulos llamativos en cada enlace.
+Mantén un subrayado o un color de texto que destaque al pasar el ratón (hover), con una transición sutil.
+Asegúrate de que el menú sea completamente responsivo (si es necesario, implementa un menú tipo “hamburguesa” en móviles, replicando el estilo del video).
+Verificación final de estilos
+
+Comprueba que el hero efectivamente llene todo el viewport en distintos dispositivos (móvil, tablet, escritorio).
+Revisa que el logo cambie correctamente de color al cambiar el fondo de la navegación (por ejemplo, al hacer scroll y fijar el nav con un color blanco).
+Ajusta el tamaño del texto y la posición del menú para que coincida con la estética limpia y elegante del restaurante que se muestra en el video de ejemplo.
+Asegúrate de que el video (o imagen) de fondo no esté dentro de un contenedor que limite su tamaño; debe ser completamente ancho y alto para la experiencia inmersiva que buscas.
+Objetivo:
+
+Dejar el banner principal sin ningún contenedor que lo recorte, a pantalla completa, con el video de fondo ocupando el 100% del ancho y alto del viewport.
+Hacer que la navegación sea minimalista, sin botones gruesos, con un logo blanco sobre fondo oscuro/transparente y que cambie a negro al tener un fondo blanco, replicando exactamente el estilo del restaurante en el video de referencia.

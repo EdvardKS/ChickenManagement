@@ -1,5 +1,3 @@
-import { Phone, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 export default function FloatingContact() {
@@ -24,12 +22,11 @@ export default function FloatingContact() {
         whileHover="hover"
         transition={{ type: "spring", stiffness: 300 }}
       >
-        <Button 
-          size="lg" 
-          className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-xl transition-shadow"
-        >
-          <MessageCircle className="h-7 w-7" />
-        </Button>
+        <img 
+          src="/img/corporativa/svg/whatsapp.svg" 
+          alt="Contactar por WhatsApp"
+          className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow bg-white p-2"
+        />
       </motion.a>
 
       <motion.a 
@@ -39,12 +36,11 @@ export default function FloatingContact() {
         whileHover="hover"
         transition={{ type: "spring", stiffness: 300 }}
       >
-        <Button 
-          size="lg" 
-          className="w-14 h-14 rounded-full bg-orange-600 hover:bg-orange-700 shadow-lg hover:shadow-xl transition-shadow"
-        >
-          <Phone className="h-7 w-7" />
-        </Button>
+        <img 
+          src="/img/corporativa/svg/telephone.svg" 
+          alt="Llamar por teléfono"
+          className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow bg-white p-2"
+        />
       </motion.a>
     </motion.div>
   );

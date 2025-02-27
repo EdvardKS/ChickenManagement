@@ -14,7 +14,7 @@ export default function FloatingContact() {
       transition={{ duration: 0.5 }}
     >
       <motion.a 
-        href="https://wa.me/34654027015" 
+        href="https://wa.me/34654027015?text=Hola!%20Me%20gustar%C3%ADa%20encargar..." 
         target="_blank" 
         rel="noopener noreferrer"
         variants={buttonVariants}
@@ -25,7 +25,7 @@ export default function FloatingContact() {
         <img 
           src="/img/corporativa/svg/whatsapp.svg" 
           alt="Contactar por WhatsApp"
-          className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow bg-white p-2"
+          className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow bg-[#25D366] p-3"
         />
       </motion.a>
 
@@ -39,7 +39,7 @@ export default function FloatingContact() {
         <img 
           src="/img/corporativa/svg/telephone.svg" 
           alt="Llamar por teléfono"
-          className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow bg-white p-2"
+          className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow bg-[#8B4513] p-3"
         />
       </motion.a>
     </motion.div>

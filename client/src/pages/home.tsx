@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Clock, ChefHat, MapPin, Phone, Users, Utensils, Calendar, Star, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import type { BusinessHours } from "@shared/schema";
+import HeroBanner from "@/components/hero-banner/HeroBanner";
 
 export default function Home() {
   const { data: businessHours } = useQuery<BusinessHours[]>({ 
@@ -11,37 +12,10 @@ export default function Home() {
   });
 
   return (
-    <div className="space-y-8">
-      {/* Hero Banner - Mantenemos el existente */}
-      <figure className="hero-banner">
-        <div className="hero-banner-image">
-          <video
-            className="absolute inset-0 w-full h-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster="https://asadorlamorenica.com/img/miniatura.jpg"
-          >
-            <source src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov" type="video/mp4" />
-          </video>
-        </div>
-        <figcaption>
-          <div className="hero-banner-body">
-            <h1>Los mejores pollos a la brasa</h1>
-            <p className="text-2xl mb-8">Tradición y sabor inigualable en cada bocado</p>
-            <div className="hero-banner-btns">
-              <Link href="/order">
-                <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
-                  Hacer Pedido
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </figcaption>
-      </figure>
-
-      {/* Horno de Leña Tradicional */}
+    <>
+      <HeroBanner />
+      <div className="space-y-8">
+        {/* Horno de Leña Tradicional */}
       <section className="py-24 bg-[#1A0F0F] text-white">
         <div className="container">
           <motion.div 
@@ -405,7 +379,8 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }
 

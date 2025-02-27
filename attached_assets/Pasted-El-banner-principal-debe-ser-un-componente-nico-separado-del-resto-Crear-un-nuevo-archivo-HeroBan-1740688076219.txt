@@ -1,0 +1,310 @@
+El banner principal debe ser un componente único, separado del resto. Crear un nuevo archivo HeroBanner.tsx y hace falta definir su estilo para ocupar todo el ancho y alto de la pantalla (100vw, 100vh). Luego, en el archivo home.tsx, se debe eliminar el código del banner y reemplazarlo por el import del nuevo componente. Asegúrate de actualizar también App.tsx para que el HeroBanner esté fuera del contenedor principal. También puede ser necesario ajustar la navegación en Header si está relacionado con estos cambios.
+
+Crea un nuevo archivo HeroBanner.tsx en /components/hero-banner.tsx con el siguiente código para asegurar que ocupe toda la pantalla (100vw, 100vh):
+
+tsx
+Copiar
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+export default function HeroBanner() {
+  return (
+    <section className="relative w-screen h-screen overflow-hidden">
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="https://asadorlamorenica.com/img/miniatura.jpg"
+      >
+        <source src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov" type="video/mp4" />
+      </video>
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full bg-black bg-opacity-40">
+         <h1 className="text-white text-6xl font-bold">Los mejores pollos a la brasa</h1>
+         <p className="text-white text-2xl mt-4 mb-8">Tradición y sabor inigualable en cada bocado</p>
+         <Link href="/order">
+           <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
+             Hacer Pedido
+           </Button>
+         </Link>
+      </div>
+    </section>
+  );
+}
+Luego, en Home.tsx, importa HeroBanner y colócalo fuera del contenedor space-y-8, antes de la sección principal:
+
+tsx
+Copiar
+export default function Home() {
+  return (
+    <>
+      <HeroBanner />
+      <div className="space-y-8">
+         ... resto de secciones
+      </div>
+    </>
+  );
+}
+Recuerda que este banner debe estar fuera del contenedor y ocupar toda la pantalla sin restricciones.
+
+--- INSTRUCCIONES ---
+
+Crea un nuevo componente en /components/hero-banner/HeroBanner.tsx con el siguiente código:
+
+tsx
+Copiar
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+export default function HeroBanner() {
+  return (
+    <section className="relative w-screen h-screen overflow-hidden">
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="https://asadorlamorenica.com/img/miniatura.jpg"
+      >
+        <source src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-black opacity-40"></div>
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full text-center px-4">
+        <h1 className="text-white text-5xl md:text-6xl font-bold">Los mejores pollos a la brasa</h1>
+        <p className="text-white text-2xl md:text-3xl mt-4 mb-8">Tradición y sabor inigualable en cada bocado</p>
+        <Link href="/order">
+          <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
+            Hacer Pedido
+          </Button>
+        </Link>
+      </div>
+    </section>
+  );
+}
+Actualiza el archivo Home.tsx para eliminar el código del banner existente e importar el nuevo componente HeroBanner:
+
+tsx
+Copiar
+import HeroBanner from "@/components/hero-banner/HeroBanner";
+export default function Home() {
+return (
+<>
+<HeroBanner />
+<div className="space-y-8">
+{/* Resto de la página */}
+</div>
+</>
+);
+}
+
+Copiar
+Asegúrate de que, en App.tsx, el HeroBanner se renderice antes de las demás secciones, fuera del contenedor.
+
+Actualiza el Header para que tenga estilo transparente y se ubique sobre el banner. Agrega las siguientes clases CSS:
+
+css
+Copiar
+/* Asegúrate que el header esté absolut
+tsx
+Copiar
+// /components/hero-banner/HeroBanner.tsx
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+
+export default function HeroBanner() {
+  return (
+    <section className="relative w-screen h-screen overflow-hidden">
+      {/* Video de fondo */}
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="https://asadorlamorenica.com/img/miniatura.jpg"
+      >
+        <source
+          src="https://asadorlamorenica.com/img/corporativa/sliders/pollos_slider_home.mov"
+          type="video/mp4"
+        />
+      </video>
+      {/* Overlay para mejorar el contraste */}
+      <div className="absolute inset-0 bg-black opacity-40"></div>
+      {/* Contenido centrado */}
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full text-center px-4">
+        <h1 className="text-white text-5xl md:text-6xl font-bold">
+          Los mejores pollos a la brasa
+        </h1>
+        <p className="text-white text-2xl md:text-3xl mt-4 mb-8">
+          Tradición y sabor inigualable en cada bocado
+        </p>
+        <Link href="/order">
+          <Button
+            variant="outline"
+            size="lg"
+            className="border-white text-white hover:bg-white/10"
+          >
+            Hacer Pedido
+          </Button>
+        </Link>
+      </div>
+    </section>
+  );
+}
+tsx
+Copiar
+// /pages/home.tsx
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import {
+  Clock,
+  ChefHat,
+  MapPin,
+  Phone,
+  Users,
+  Utensils,
+  Calendar,
+  Star,
+  Trophy,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import type { BusinessHours } from "@shared/schema";
+import HeroBanner from "@/components/hero-banner/HeroBanner";
+
+export default function Home() {
+  const { data: businessHours } = useQuery<BusinessHours[]>({
+    queryKey: ["/api/business-hours"],
+  });
+
+  return (
+    <>
+      {/* Componente único y separado para el banner principal */}
+      <HeroBanner />
+
+      {/* Resto de la página sin incluir el banner en el mismo contenedor */}
+      <div className="space-y-8">
+        {/* Sección: Horno de Leña Tradicional */}
+        <section className="py-24 bg-[#1A0F0F] text-white">
+          <div className="container">
+            <motion.div
+              className="grid md:grid-cols-2 gap-12 items-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="space-y-6">
+                <h2 className="text-5xl font-dancing mb-6">
+                  Tradición del Horno de Leña
+                </h2>
+                <p className="text-xl leading-relaxed text-gray-300">
+                  Nuestro horno de leña, el corazón de nuestra cocina, imparte
+                  ese sabor inconfundible que solo la cocción tradicional puede
+                  lograr. La madera cuidadosamente seleccionada y el control
+                  preciso de la temperatura nos permiten conseguir ese punto
+                  exacto de cocción que caracteriza a nuestros pollos asados.
+                </p>
+                <div className="grid grid-cols-3 gap-4 mt-8">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-[#D4AF37]">20+</div>
+                    <div className="text-sm text-gray-400">
+                      Años de Experiencia
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-[#D4AF37]">100%</div>
+                    <div className="text-sm text-gray-400">Leña Natural</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-[#D4AF37]">5⭐</div>
+                    <div className="text-sm text-gray-400">Valoración</div>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <img
+                  src="/img/horno-lena.jpg"
+                  alt="Nuestro horno de leña tradicional"
+                  className="rounded-lg shadow-2xl"
+                />
+                <div className="absolute -bottom-6 -right-6 bg-[#D4AF37] p-4 rounded-lg shadow-xl">
+                  <Trophy className="h-12 w-12 text-white" />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Resto de secciones existentes en la página */}
+        {/* ... */}
+      </div>
+    </>
+  );
+}
+
+function getDayName(day: number): string {
+  const days = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+  ];
+  return days[day];
+}
+tsx
+Copiar
+// /components/layout/Header.tsx
+import { useEffect, useState } from "react";
+import { Link } from "wouter";
+// Asumiendo que tienes dos componentes de logo: LogoWhite y LogoBlack
+import { LogoWhite, LogoBlack } from "@/components/Logo";
+
+export default function Header() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <header
+      className={`fixed top-0 left-0 w-full z-50 transition-colors ${
+        scrolled ? "bg-white" : "bg-transparent"
+      }`}
+    >
+      <nav className="container mx-auto flex items-center justify-between py-4">
+        <Link href="/">
+          {scrolled ? <LogoBlack /> : <LogoWhite />}
+        </Link>
+        <div className="flex space-x-4">
+          <Link
+            href="/"
+            className={`transition-colors ${scrolled ? "text-black" : "text-white"}`}
+          >
+            Inicio
+          </Link>
+          <Link
+            href="/products"
+            className={`transition-colors ${scrolled ? "text-black" : "text-white"}`}
+          >
+            Productos
+          </Link>
+          <Link
+            href="/order"
+            className={`transition-colors ${scrolled ? "text-black" : "text-white"}`}
+          >
+            Hacer Pedido
+          </Link>
+        </div>
+      </nav>
+    </header>
+  );
+}

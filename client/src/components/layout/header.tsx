@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -60,8 +62,8 @@ export default function Header() {
           </a>
         </div>
 
-        {/* Centered logo with increased size */}
-        <div className="flex-1 text-center">
+        {/* Centered logo */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
           <Link href="/">
             <a>
               <img
@@ -71,62 +73,44 @@ export default function Header() {
                     : "/img/corporativa/logo-blanco.png"
                 }
                 alt="Asador La Morenica"
-                className="h-20 mx-auto transition-opacity duration-300 pt-2"
+                className="h-20 transition-opacity duration-300 pt-2"
               />
             </a>
           </Link>
         </div>
 
         {/* Navigation menu and order button on the right */}
-        <div className="flex items-center space-x-6">
-          <NavigationMenu className="hidden md:flex">
-            <NavigationMenuList className="flex space-x-6">
-              <NavigationMenuItem>
+        <div className="flex items-center space-x-4">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={isScrolled ? "text-black" : "text-white"}
+              >
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col space-y-4 mt-8">
                 <Link href="/products">
-                  <NavigationMenuLink
-                    className={`nav-link ${
-                      isScrolled ? "text-black" : "text-white"
-                    }`}
-                  >
-                    Productos
-                  </NavigationMenuLink>
+                  <a className="text-lg">Productos</a>
                 </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
                 <Link href="/about">
-                  <NavigationMenuLink
-                    className={`nav-link ${
-                      isScrolled ? "text-black" : "text-white"
-                    }`}
-                  >
-                    Nosotros
-                  </NavigationMenuLink>
+                  <a className="text-lg">Nosotros</a>
                 </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
                 <Link href="/contact">
-                  <NavigationMenuLink
-                    className={`nav-link ${
-                      isScrolled ? "text-black" : "text-white"
-                    }`}
-                  >
-                    Contacto
-                  </NavigationMenuLink>
+                  <a className="text-lg">Contacto</a>
                 </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
                 <Link href="/admin">
-                  <NavigationMenuLink
-                    className={`nav-link ${
-                      isScrolled ? "text-black" : "text-white"
-                    }`}
-                  >
-                    Admin
-                  </NavigationMenuLink>
+                  <a className="text-lg">Admin</a>
                 </Link>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
+              </div>
+            </SheetContent>
+          </Sheet>
 
           <Link href="/order">
             <Button

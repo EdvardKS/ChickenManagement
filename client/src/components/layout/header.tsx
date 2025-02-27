@@ -108,21 +108,22 @@ export default function Header() {
                 <Link href="/admin">
                   <a className="text-lg">Admin</a>
                 </Link>
+                <Link href="/order">
+                  <Button
+                    className={`${
+                      isScrolled
+                        ? "bg-transparent border-2 border-white text-white"
+                        : "bg-[#8B4513] text-white border-none"
+                    }`}
+                  >
+                    Hacer Pedido
+                  </Button>
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
 
-          <Link href="/order">
-            <Button
-              className={`ml-4 ${
-                isScrolled
-                  ? "bg-[#8B4513] text-white border-none"
-                  : "bg-transparent border-2 border-white text-white"
-              }`}
-            >
-              Hacer Pedido
-            </Button>
-          </Link>
+
         </div>
       </div>
     </header>

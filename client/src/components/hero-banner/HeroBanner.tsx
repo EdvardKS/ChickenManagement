@@ -29,7 +29,7 @@ export default function HeroBanner() {
           <Button
             variant="outline"
             size="lg"
-            className="border-white text-white hover:bg-white/10"
+            className="bg-[#8B4513] text-white border-none"
           >
             Hacer Pedido
           </Button>

@@ -50,6 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stock Management Routes
   app.get("/api/stock", async (_req, res) => {
     try {
+      console.log('Getting current stock and orders');
       const stock = await storage.getCurrentStock();
       const orders = await storage.getOrders();
 
@@ -57,6 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      console.log('Calculating reserved stock for today:', today);
       // Calcular el stock reservado basado solo en los pedidos pendientes de hoy
       const reservedStock = orders
         .filter(order => {
@@ -69,6 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
 
       const currentStock = parseFloat((stock?.currentStock || 0).toString());
+      console.log('Current stock:', currentStock, 'Reserved stock:', reservedStock);
 
       const response = {
         ...stock,
@@ -76,6 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         unreservedStock: currentStock - reservedStock,
       };
 
+      console.log('Stock response:', response);
       res.json(response);
     } catch (error) {
       console.error('Error getting stock:', error);
@@ -86,12 +90,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/stock/add", async (req, res) => {
     try {
       const { quantity } = req.body;
+      console.log('Adding stock quantity:', quantity);
+
       const currentStock = await storage.getCurrentStock();
-      const updatedStock = {
-        ...currentStock,
-        currentStock: parseFloat((currentStock?.currentStock || 0).toString()) + parseFloat(quantity),
+      console.log('Current stock before update:', currentStock);
+
+      const newStock = currentStock || {
+        date: new Date(),
+        initialStock: "0",
+        currentStock: "0",
+        reservedStock: "0",
+        unreservedStock: "0"
       };
+
+      const updatedStock = {
+        ...newStock,
+        initialStock: currentStock ? newStock.initialStock : quantity.toString(),
+        currentStock: (parseFloat((newStock.currentStock || "0")) + parseFloat(quantity)).toString(),
+      };
+
+      console.log('Updating stock with:', updatedStock);
       const result = await storage.updateStock(updatedStock);
+      console.log('Stock update result:', result);
+
+      // Registrar en el historial
+      await storage.createStockHistory({
+        stockId: result.id,
+        action: 'add',
+        quantity: quantity.toString(),
+        previousStock: newStock.currentStock,
+        newStock: result.currentStock,
+        createdBy: 'system'
+      });
+
       res.json(result);
     } catch (error) {
       console.error('Error adding stock:', error);

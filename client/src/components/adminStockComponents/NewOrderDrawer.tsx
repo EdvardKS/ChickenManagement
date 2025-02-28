@@ -32,7 +32,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
   const [formData, setFormData] = useState({
     customerName: "",
     customerPhone: "",
-    quantity: "",
+    quantity: "0",
     pickupDate: today.toISOString().split('T')[0],
     pickupTime: "13:30",
     details: "",
@@ -62,7 +62,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
       setFormData({
         customerName: "",
         customerPhone: "",
-        quantity: "",
+        quantity: "0",
         pickupDate: today.toISOString().split('T')[0],
         pickupTime: "13:30",
         details: "",
@@ -82,7 +82,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.customerName || !formData.quantity || !formData.pickupDate || !formData.pickupTime) {
+    if (!formData.customerName || !formData.pickupDate || !formData.pickupTime) {
       toast({
         title: "Error",
         description: "Por favor, completa todos los campos requeridos",
@@ -91,8 +91,11 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
       return;
     }
 
-    createOrder.mutate(formData);
+    const quantity = formData.quantity ? parseFloat(formData.quantity) : 0;
+
+    createOrder.mutate({ ...formData, quantity });
   };
+
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -131,6 +134,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
                 <SelectValue placeholder="Selecciona la cantidad" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="0">0 pollos</SelectItem> {/* Opción de 0 por defecto */}
                 {Array.from({ length: 20 }, (_, i) => {
                   const value = (i + 1) / 2;
                   return (
@@ -141,6 +145,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
                 })}
               </SelectContent>
             </Select>
+
           </div>
 
           <div>

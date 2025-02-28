@@ -4,6 +4,7 @@ import {
   type Order, type InsertOrder,
   type Stock, type InsertStock,
   type BusinessHours, type InsertBusinessHours,
+  type StockHistory, type InsertStockHistory,
   categories, products, orders, stock, stockHistory, orderLogs, businessHours
 } from "@shared/schema";
 import { db } from "./db";
@@ -34,6 +35,9 @@ export interface IStorage {
   // Stock
   getCurrentStock(): Promise<Stock | undefined>;
   updateStock(stock: Partial<Stock>): Promise<Stock>;
+
+  // Stock History
+  createStockHistory(history: InsertStockHistory): Promise<StockHistory>;
 
   // Business Hours
   getBusinessHours(): Promise<BusinessHours[]>;
@@ -200,6 +204,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateStock(stockData: Partial<Stock>): Promise<Stock> {
+    console.log('Updating stock with data:', stockData);
     const currentStock = await this.getCurrentStock();
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -207,16 +212,21 @@ export class DatabaseStorage implements IStorage {
     let updatedStock: Stock;
 
     if (!currentStock) {
+      console.log('No current stock found, creating new stock');
       const [newStock] = await db
         .insert(stock)
         .values({
-          ...stockData,
           date: now,
+          initialStock: stockData.initialStock || "0",
+          currentStock: stockData.currentStock || "0",
+          reservedStock: stockData.reservedStock || "0",
+          unreservedStock: stockData.unreservedStock || "0",
           lastUpdated: new Date()
         })
         .returning();
       updatedStock = newStock;
     } else {
+      console.log('Updating existing stock:', currentStock.id);
       const [updated] = await db
         .update(stock)
         .set({
@@ -228,6 +238,7 @@ export class DatabaseStorage implements IStorage {
       updatedStock = updated;
     }
 
+    console.log('Stock update result:', updatedStock);
     // Registrar en el historial
     await db.insert(stockHistory).values({
       stockId: updatedStock.id,
@@ -239,6 +250,16 @@ export class DatabaseStorage implements IStorage {
     });
 
     return updatedStock;
+  }
+
+  async createStockHistory(history: InsertStockHistory): Promise<StockHistory> {
+    console.log('Creating stock history:', history);
+    const [newHistory] = await db
+      .insert(stockHistory)
+      .values(history)
+      .returning();
+    console.log('Created stock history:', newHistory);
+    return newHistory;
   }
 
   // Business Hours

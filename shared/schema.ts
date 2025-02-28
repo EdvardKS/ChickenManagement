@@ -91,7 +91,7 @@ export const insertOrderSchema = createInsertSchema(orders)
   })
   .extend({
     pickupTime: z.string().transform((val) => new Date(val)),
-    quantity: z.number().min(0.5).step(0.5), // Solo permitir incrementos de 0.5
+    quantity: z.number().min(0).step(0.5), // Solo permitir incrementos de 0.5
   });
 
 export const insertStockSchema = createInsertSchema(stock)

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -25,7 +25,7 @@ export const orders = pgTable("orders", {
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone"),  // Remove .notNull() to allow null
   customerEmail: text("customer_email"),
-  quantity: integer("quantity").notNull(),
+  quantity: decimal("quantity").notNull(),
   items: text("items").array(),
   totalAmount: integer("total_amount").notNull(),
   status: text("status").default("pending"),
@@ -36,10 +36,10 @@ export const orders = pgTable("orders", {
 export const stock = pgTable("stock", {
   id: serial("id").primaryKey(),
   date: timestamp("date").notNull(),
-  initialStock: integer("initial_stock").notNull(),
-  currentStock: integer("current_stock").notNull(),
-  unreservedStock: integer("unreserved_stock").notNull(),
-  reservedStock: integer("reserved_stock").notNull(),
+  initialStock: decimal("initial_stock").notNull(),
+  currentStock: decimal("current_stock").notNull(),
+  unreservedStock: decimal("unreserved_stock").notNull(),
+  reservedStock: decimal("reserved_stock").notNull(),
 });
 
 export const businessHours = pgTable("business_hours", {

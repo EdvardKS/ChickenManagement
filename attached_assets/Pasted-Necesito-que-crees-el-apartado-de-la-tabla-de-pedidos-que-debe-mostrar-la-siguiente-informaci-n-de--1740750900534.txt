@@ -1,0 +1,64 @@
+Necesito que crees el apartado de la tabla de pedidos, que debe mostrar la siguiente información de cada encargo:
+
+Nombre del cliente
+Cantidad de pollos (Encargo)
+Detalles (Si hay información adicional, se debe mostrar, de lo contrario, dejar vacío)
+Hora de recogida
+Botón de acción (🔘) que abrirá un Drawer con más información y botones de acción
+🎯 Detalles importantes del botón de acción
+El botón de acción abrirá un Drawer en el que se mostrarán todos los detalles del pedido y los botones de acción correspondientes.
+Si el pedido requiere confirmación por WhatsApp, el botón debe mostrar una señal de notificación visual (como un ícono rojo con una alerta 🔴 o una burbuja de notificación).
+Si el pedido tiene un número de teléfono, dentro del Drawer debe aparecer un botón que genere un enlace dinámico a WhatsApp Web o la app de WhatsApp en móvil con un mensaje personalizado.
+📲 Enlace personalizado para WhatsApp
+Si el pedido tiene un número de teléfono, se debe generar un enlace con el siguiente mensaje predefinido:
+
+plaintext
+Copiar
+Editar
+Hola *{nombre_cliente}*, soy de [NOMBRE_NEGOCIO].  
+Tu pedido de *{cantidad_pollos}* pollo(s) está registrado para recogida el *{fecha_recogida}* a las *{hora_recogida}*.  
+Si necesitas modificar algo, avísanos.  
+¡Gracias por tu compra! 🐔
+Ejemplo de enlace dinámico en WhatsApp:
+
+plaintext
+Copiar
+Editar
+https://wa.me/34{telefono_cliente}?text=Hola%20*Juan%20Pérez*,%20soy%20de%20Pollos%20El%20Buen%20Sabor.%0ATu%20pedido%20de%20*3%20pollos*%20está%20registrado%20para%20recogida%20el%20*10%20de%20marzo*%20a%20las%20*13:30*.%0ASi%20necesitas%20modificar%20algo,%20avísanos.%0A¡Gracias%20por%20tu%20compra!%20🐔
+Importante:
+
+El número de teléfono debe llevar el prefijo del país (34 para España o el que corresponda).
+El texto debe codificarse en URL encoding (%20 para espacios, %0A para saltos de línea).
+El mensaje puede personalizarse con el nombre del negocio.
+✅ Acciones dentro del Drawer de cada pedido
+Confirmar pedido (✔️) →
+Resta la cantidad de pollos del pedido en "pollos actuales" en el stock.
+El pedido desaparece de la tabla (ya que ha sido procesado).
+Eliminar pedido (❌) →
+El pedido se elimina de la tabla.
+No se hacen modificaciones en el stock.
+Marcar como error (⚠️) →
+Se registra como error en la base de datos (para futuras estadísticas).
+No se hace ningún ajuste en stock.
+El pedido se elimina de la tabla.
+📊 Actualización del Stock en tiempo real
+Cuando se confirma un pedido, se debe restar la cantidad de pollos del stock en "pollos actuales".
+Si se elimina o se marca como error, el stock no debe cambiar.
+La tabla debe actualizarse automáticamente tras cada acción, asegurando que los cambios se reflejen sin necesidad de recargar la página.
+🔗 Requerimientos Técnicos
+Implementar en React con TypeScript.
+Usar TanStack React Query para manejar las actualizaciones sin recargar la página.
+Diseñar la tabla con Tailwind CSS o el sistema de estilos ya implementado.
+Implementar el Drawer con shadcn/ui o el componente de Drawer ya existente.
+Crear las rutas necesarias en la API para manejar las acciones:
+PATCH /api/orders/:id/confirm → Para confirmar un pedido y actualizar el stock.
+DELETE /api/orders/:id → Para eliminar un pedido sin afectar el stock.
+PATCH /api/orders/:id/error → Para marcar un pedido como error y registrar la acción.
+🔥 Resumen de Funcionalidad
+✅ Tabla con los datos esenciales del pedido.
+✅ Botón de acción que abre un Drawer con los detalles.
+✅ Notificación visual en el botón si el pedido necesita confirmación de WhatsApp.
+✅ Confirmar un pedido resta del stock y lo elimina de la tabla.
+✅ Eliminar o marcar como error solo lo elimina de la tabla sin tocar el stock.
+✅ Stock actualizado en tiempo real.
+✅ Botón de WhatsApp con enlace dinámico y mensaje personalizado.

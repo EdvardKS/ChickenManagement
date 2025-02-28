@@ -114,13 +114,13 @@ export default function OrdersOverview() {
     .slice(0, 5);
 
   return (
-    <div className="grid gap-4 grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 font-poppins">
       <Card>
         <CardHeader>
           <CardTitle>Estado de Pedidos</CardTitle>
           <CardDescription>Distribución actual de los pedidos por estado</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -147,7 +147,7 @@ export default function OrdersOverview() {
           <CardTitle>Tendencia de Pedidos</CardTitle>
           <CardDescription>Número de pedidos por día</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={orderTrendData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -164,7 +164,7 @@ export default function OrdersOverview() {
           <CardTitle>Distribución de Cantidades</CardTitle>
           <CardDescription>Número de pedidos por cantidad de pollos</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={quantityData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -181,12 +181,12 @@ export default function OrdersOverview() {
           <CardTitle>Top Clientes</CardTitle>
           <CardDescription>Clientes con más pedidos</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={topCustomers} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
-              <YAxis type="category" dataKey="cliente" />
+              <YAxis type="category" dataKey="cliente" width={100} />
               <Tooltip />
               <Bar dataKey="pedidos" fill="#ffc658" />
             </BarChart>
@@ -199,7 +199,7 @@ export default function OrdersOverview() {
 
 function OrdersOverviewSkeleton() {
   return (
-    <div className="grid gap-4 grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 font-poppins">
       {[1, 2, 3, 4].map((i) => (
         <Card key={i}>
           <CardHeader>

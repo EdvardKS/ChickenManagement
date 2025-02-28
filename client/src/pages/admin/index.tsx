@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ShoppingBag, ChartBar } from "lucide-react";
 import { Link } from "wouter";
 import type { Order } from "@shared/schema";
+import { Package } from "lucide-react";
 
 export default function AdminHome() {
   const { data: orders } = useQuery<Order[]>({ 

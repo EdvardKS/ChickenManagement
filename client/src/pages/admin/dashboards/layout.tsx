@@ -1,5 +1,4 @@
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, useLocation } from "wouter";
 
 const dashboardGroups = [
@@ -50,7 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const currentPath = location.split("/").pop();
 
   return (
-    <div className="space-y-6 p-10 pb-16">
+    <div className="space-y-6 p-4 md:p-6 lg:p-10 pb-16 font-poppins">
       <div className="space-y-0.5">
         <h2 className="text-2xl font-bold tracking-tight">Dashboards</h2>
         <p className="text-muted-foreground">
@@ -58,8 +57,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </p>
       </div>
       <Separator />
-      <div className="flex">
-        <div className="w-1/4 pr-6">
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/4">
           <nav className="space-y-6">
             {dashboardGroups.map((group) => (
               <div key={group.name} className="space-y-2">

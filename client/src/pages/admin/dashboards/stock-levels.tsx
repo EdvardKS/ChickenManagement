@@ -90,13 +90,13 @@ export default function StockLevels() {
   const daysUntilEmpty = parseFloat(currentStock.unreservedStock) / averageUsage;
 
   return (
-    <div className="grid gap-4 grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 font-poppins">
       <Card>
         <CardHeader>
           <CardTitle>Distribución de Stock</CardTitle>
           <CardDescription>Stock actual reservado vs. disponible</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -108,7 +108,7 @@ export default function StockLevels() {
                 outerRadius={80}
                 label
               >
-                {stockDistribution.map((_: any, index: number) => (
+                {stockDistribution.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index]} />
                 ))}
               </Pie>
@@ -124,7 +124,7 @@ export default function StockLevels() {
           <CardTitle>Historial de Stock</CardTitle>
           <CardDescription>Cambios en el nivel de stock a lo largo del tiempo</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={stockTimeline}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -143,7 +143,7 @@ export default function StockLevels() {
           <CardTitle>Uso de Stock</CardTitle>
           <CardDescription>Tendencia de consumo diario</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={usageData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -161,7 +161,7 @@ export default function StockLevels() {
           <CardTitle>Análisis de Reposición</CardTitle>
           <CardDescription>Estimación de necesidad de reposición</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px] flex flex-col justify-center items-center text-center">
+        <CardContent className="h-[300px] min-h-[300px] flex flex-col justify-center items-center text-center">
           <div className="text-4xl font-bold mb-4">
             {daysUntilEmpty.toFixed(1)} días
           </div>
@@ -182,7 +182,7 @@ export default function StockLevels() {
 
 function StockLevelsSkeleton() {
   return (
-    <div className="grid gap-4 grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 font-poppins">
       {[1, 2, 3, 4].map((i) => (
         <Card key={i}>
           <CardHeader>

@@ -9,6 +9,44 @@ import { format } from "date-fns";
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
+  // Ruta de inicialización
+  app.post("/api/admin/initialize", async (_req, res) => {
+    try {
+      // Verificar si ya existen horarios
+      const existingHours = await storage.getBusinessHours();
+
+      if (existingHours.length === 0) {
+        // Crear horarios por defecto para cada día de la semana
+        for (let i = 0; i < 7; i++) {
+          await storage.createBusinessHours({
+            dayOfWeek: i,
+            openTime: "10:00",
+            closeTime: "22:00",
+            isOpen: i < 5, // Cerrado sábado y domingo por defecto
+            autoUpdate: true
+          });
+        }
+      }
+
+      // Crear stock inicial si no existe
+      const currentStock = await storage.getCurrentStock();
+      if (!currentStock) {
+        await storage.updateStock({
+          date: new Date(),
+          initialStock: 0,
+          currentStock: 0,
+          reservedStock: 0,
+          unreservedStock: 0
+        });
+      }
+
+      res.json({ message: "Sistema inicializado correctamente" });
+    } catch (error) {
+      console.error("Error initializing system:", error);
+      res.status(500).json({ error: "Error al inicializar el sistema" });
+    }
+  });
+
   // Stock Management Routes
   app.get("/api/stock", async (_req, res) => {
     try {

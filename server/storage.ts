@@ -37,6 +37,7 @@ export interface IStorage {
 
   // Business Hours
   getBusinessHours(): Promise<BusinessHours[]>;
+  createBusinessHours(hours: InsertBusinessHours): Promise<BusinessHours>;
   updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours>;
 }
 
@@ -243,6 +244,14 @@ export class DatabaseStorage implements IStorage {
   // Business Hours
   async getBusinessHours(): Promise<BusinessHours[]> {
     return await db.select().from(businessHours);
+  }
+
+  async createBusinessHours(hours: InsertBusinessHours): Promise<BusinessHours> {
+    const [newHours] = await db
+      .insert(businessHours)
+      .values(hours)
+      .returning();
+    return newHours;
   }
 
   async updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours> {

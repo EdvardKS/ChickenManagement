@@ -19,6 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Stock } from "@shared/schema";
+import { Button } from "@/components/ui/button";
 
 interface NewOrderDrawerProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
         customerName: data.customerName,
         customerPhone: data.customerPhone || null,
         quantity: parseFloat(data.quantity),
-        pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}`),
+        pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}`).toISOString(),
         details: data.details,
         totalAmount: 0, // Required field, set to 0 for now
         is_manual_entry: true,

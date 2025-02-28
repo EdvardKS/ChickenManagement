@@ -27,20 +27,57 @@ document.head.appendChild(metaDescription);
 
 function Router() {
   return (
-    <div className="min-h-screen bg-[#f8efe5]">
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="container">
+      <main className="flex-grow">
+        {/* HeroBanner se mantiene con ancho completo */}
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/products" component={Products} />
-          <Route path="/order" component={Order} />
-          <Route path="/about" component={About} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/admin" component={AdminHome} />
-          <Route path="/admin/products" component={AdminProducts} />
-          <Route path="/admin/orders" component={AdminOrders} />
-          <Route path="/admin/stock" component={AdminStock} />
-          <Route component={NotFound} />
+          <Route path="/products">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <Products />
+            </div>
+          </Route>
+          <Route path="/order">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <Order />
+            </div>
+          </Route>
+          <Route path="/about">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <About />
+            </div>
+          </Route>
+          <Route path="/contact">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <Contact />
+            </div>
+          </Route>
+          <Route path="/admin">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <AdminHome />
+            </div>
+          </Route>
+          <Route path="/admin/products">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <AdminProducts />
+            </div>
+          </Route>
+          <Route path="/admin/orders">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <AdminOrders />
+            </div>
+          </Route>
+          <Route path="/admin/stock">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <AdminStock />
+            </div>
+          </Route>
+          <Route>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <NotFound />
+            </div>
+          </Route>
         </Switch>
       </main>
       <Footer />

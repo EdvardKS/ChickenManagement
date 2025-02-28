@@ -1,14 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, addDays, setHours, setMinutes } from "date-fns";
 import { es } from "date-fns/locale";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import { 
+  Table, TableBody, TableCell, TableHead, 
+  TableHeader, TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,22 +12,8 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
+  DrawerTrigger,
 } from "@/components/ui/drawer";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,23 +26,20 @@ import {
 } from "@/components/ui/select";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageSquare } from "lucide-react"; 
-import type { Order, InsertOrder, Stock } from "@shared/schema";
-import { insertOrderSchema } from "@shared/schema";
+import type { Order, Stock } from "@shared/schema";
 
 function getDefaultPickupTime() {
   const now = new Date();
   const currentHour = now.getHours();
+
   if (currentHour >= 15) {
-    return { date: format(now, 'yyyy-MM-dd'), time: "13:00" };
+    return setMinutes(setHours(addDays(now, 1), 13), 0);
   } else if (currentHour === 13) {
-    return { date: format(now, 'yyyy-MM-dd'), time: "14:30" };
+    return setMinutes(setHours(now, 14), 30);
   } else if (currentHour === 14) {
-    return { date: format(now, 'yyyy-MM-dd'), time: "15:00" };
+    return setMinutes(setHours(now, 15), 0);
   } else {
-    return { date: format(now, 'yyyy-MM-dd'), time: "13:30" };
+    return setMinutes(setHours(now, 13), 30);
   }
 }
 
@@ -68,419 +47,43 @@ export default function AdminOrders() {
   const { toast } = useToast();
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
   const [isStockDrawerOpen, setIsStockDrawerOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [showOrderDialog, setShowOrderDialog] = useState(false);
 
-  const { data: orders, isLoading: ordersLoading } = useQuery<Order[]>({
-    queryKey: ["/api/orders"],
-    select: (data) => data.filter((order) => !order.delivered && !order.cancelled),
-  });
-  const { data: stock } = useQuery<Stock>({ queryKey: ["/api/stock"] });
+  const { data: orders } = useQuery<Order[]>({ queryKey: ['/api/orders'] });
+  const { data: stock } = useQuery<Stock>({ queryKey: ['/api/stock'] });
 
-  const form = useForm<InsertOrder>({
-    resolver: zodResolver(insertOrderSchema),
-    defaultValues: {
-      customerName: "",
-      customerPhone: "",
-      quantity: 1,
-      pickupDate: getDefaultPickupTime().date,
-      pickupTime: getDefaultPickupTime().time,
-      details: "",
-      isHoliday: false,
-      holidayName: "",
-      createdFromPanel: true,
-    },
-  });
-
-  const createOrder = useMutation({
-    mutationFn: async (data: InsertOrder) => {
-      const res = await apiRequest("POST", "/api/orders", data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stock"] });
-      setIsNewOrderOpen(false);
-      form.reset();
+  const handleStartDay = () => {
+    if (window.confirm("¿Estás seguro de que deseas iniciar un nuevo día? Esta acción no se puede deshacer.")) {
       toast({
-        title: "Pedido creado",
-        description: "El pedido se ha creado correctamente",
+        title: "Día iniciado",
+        description: "El nuevo día ha sido registrado correctamente."
       });
-    },
-  });
-
-  const updateOrder = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<Order> }) => {
-      const res = await apiRequest("PATCH", `/api/orders/${id}`, data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stock"] });
-      setShowOrderDialog(false);
-      setSelectedOrder(null);
-    },
-  });
-
-  const handleOrderAction = (action: "deliver" | "cancel" | "error") => {
-    if (!selectedOrder) return;
-
-    const updates: Partial<Order> = {
-      delivered: action === "deliver",
-      cancelled: action === "cancel" || action === "error",
-    };
-
-    updateOrder.mutate({ id: selectedOrder.id, data: updates });
-
-    toast({
-      title:
-        action === "deliver"
-          ? "Pedido entregado"
-          : action === "cancel"
-          ? "Pedido cancelado"
-          : "Pedido marcado como error",
-      description: "El estado del pedido se ha actualizado correctamente",
-    });
-  };
-
-  const handleWhatsApp = (phone: string) => {
-    const message = encodeURIComponent(
-      `¡Hola! Tu pedido está confirmado.\n` +
-        `Cantidad: ${selectedOrder?.quantity} pollos\n` +
-        `Fecha de recogida: ${format(
-          new Date(selectedOrder?.pickupDate || new Date()),
-          "dd/MM/yyyy",
-          { locale: es }
-        )}\n` +
-        `Hora: ${selectedOrder?.pickupTime}\n` +
-        (selectedOrder?.details ? `Notas: ${selectedOrder.details}\n` : "")
-    );
-    window.open(
-      `https://wa.me/${phone.replace(/\D/g, "")}?text=${message}`,
-      "_blank"
-    );
+      // Aquí puedes agregar la lógica para registrar el inicio del día en el backend
+    }
   };
 
   return (
-    <div className="space-y-8 p-4">
+    <div className="space-y-8">
+      {/* Botones alineados: Stock a la izquierda, Nuevo Encargo a la derecha */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gestión de Pedidos</h1>
-        <Button
-          onClick={() => setIsNewOrderOpen(true)}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white"
+        <Button 
+          onClick={() => setIsStockDrawerOpen(true)}
+          variant="outline"
+          className="btn-outline-brown flex items-center gap-2"
+        >
+          <img src="/img/corporativa/logo-negro.png" alt="Stock" className="h-6" />
+          Stock
+        </Button>
+
+        <Button 
+          onClick={() => setIsNewOrderOpen(true)} 
+          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg"
         >
           Nuevo Encargo
         </Button>
       </div>
 
-      {/* Tabla de pedidos */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Cantidad</TableHead>
-              <TableHead>Fecha Recogida</TableHead>
-              <TableHead>Hora</TableHead>
-              <TableHead>Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders?.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>{order.customerName}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {order.customerPhone}
-                    {order.customerPhone && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleWhatsApp(order.customerPhone || "")}
-                      >
-                        <MessageSquare className="h-4 w-4 text-green-500" />
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{order.quantity}</TableCell>
-                <TableCell>
-                  {format(new Date(order.pickupDate), "dd/MM/yyyy", {
-                    locale: es,
-                  })}
-                </TableCell>
-                <TableCell>{order.pickupTime}</TableCell>
-                <TableCell className="space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      setShowOrderDialog(true);
-                    }}
-                  >
-                    Ver Detalles
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Drawer para Nuevo Encargo */}
-      <Drawer open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
-        <DrawerContent className="h-screen flex flex-col max-w-2xl mx-auto">
-          <DrawerHeader>
-            <DrawerTitle>Nuevo Encargo</DrawerTitle>
-          </DrawerHeader>
-          <div className="p-4 space-y-4 flex-grow overflow-auto">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit((data) => createOrder.mutate(data))}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="customerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del Cliente</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="customerPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teléfono (opcional)</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cantidad de Pollos</FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(parseFloat(value))}
-                        value={field.value?.toString()}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona la cantidad" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 20 }, (_, i) => {
-                            const value = (i + 1) / 2;
-                            return (
-                              <SelectItem key={value} value={value.toString()}>
-                                {value === 1 ? "1 pollo" : `${value} pollos`}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="pickupDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha de Recogida</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="date" 
-                            {...field} 
-                            value={field.value || ""} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="pickupTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hora de Recogida</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="time" 
-                            {...field}
-                            value={field.value || ""} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="details"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Detalles del pedido (opcional)</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="isHoliday"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormControl>
-                        <input
-                          type="checkbox"
-                          checked={field.value || false}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel>Es día festivo</FormLabel>
-                    </FormItem>
-                  )}
-                />
-
-                {form.watch("isHoliday") && (
-                  <FormField
-                    control={form.control}
-                    name="holidayName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre del festivo</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                <Button
-                  type="submit"
-                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
-                  disabled={createOrder.isPending}
-                >
-                  {createOrder.isPending ? "Creando..." : "Crear Encargo"}
-                </Button>
-              </form>
-            </Form>
-          </div>
-        </DrawerContent>
-      </Drawer>
-
-      {/* Diálogo de Detalles del Pedido */}
-      <Dialog open={showOrderDialog} onOpenChange={setShowOrderDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Detalles del Pedido</DialogTitle>
-          </DialogHeader>
-          {selectedOrder && (
-            <>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Cliente</Label>
-                  <div className="col-span-3">{selectedOrder.customerName}</div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Cantidad</Label>
-                  <div className="col-span-3">
-                    {selectedOrder.quantity} pollos
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Recogida</Label>
-                  <div className="col-span-3">
-                    {format(
-                      new Date(selectedOrder.pickupDate),
-                      "dd/MM/yyyy",
-                      { locale: es }
-                    )}{" "}
-                    a las {selectedOrder.pickupTime}
-                  </div>
-                </div>
-                {selectedOrder.details && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Detalles</Label>
-                    <div className="col-span-3">{selectedOrder.details}</div>
-                  </div>
-                )}
-                {selectedOrder.isHoliday && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Festivo</Label>
-                    <div className="col-span-3">{selectedOrder.holidayName}</div>
-                  </div>
-                )}
-              </div>
-              <DialogFooter className="flex justify-between">
-                <div className="space-x-2">
-                  <Button
-                    variant="default"
-                    onClick={() => handleOrderAction("deliver")}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    Marcar Entregado
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleOrderAction("cancel")}
-                  >
-                    Cancelar Pedido
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleOrderAction("error")}
-                  >
-                    Marcar Error
-                  </Button>
-                </div>
-                {selectedOrder.customerPhone && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleWhatsApp(selectedOrder.customerPhone || "")}
-                    className="flex items-center gap-2"
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                    Enviar WhatsApp
-                  </Button>
-                )}
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
       {/* Drawer para gestión de Stock */}
-      <Drawer
-        open={isStockDrawerOpen}
-        onOpenChange={setIsStockDrawerOpen}
-        side="right"
-      >
+      <Drawer open={isStockDrawerOpen} onOpenChange={setIsStockDrawerOpen} side="right">
         <DrawerContent className="h-screen w-[74%] flex flex-col">
           <DrawerHeader>
             <DrawerTitle>Stock Actual 🐔</DrawerTitle>
@@ -526,9 +129,9 @@ export default function AdminOrders() {
           </div>
 
           <div className="p-4">
-            <Button
-              variant="destructive"
-              className="w-full text-sm py-2"
+            <Button 
+              variant="destructive" 
+              className="w-full text-sm py-2" 
               onClick={handleStartDay}
             >
               Iniciar Día
@@ -536,20 +139,85 @@ export default function AdminOrders() {
           </div>
         </DrawerContent>
       </Drawer>
+
+      {/* Drawer para Nuevo Encargo */}
+      <Drawer open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen} side="right">
+        <DrawerContent className="h-screen w-[74%] flex flex-col">
+          <DrawerHeader>
+            <DrawerTitle>Nuevo Encargo</DrawerTitle>
+          </DrawerHeader>
+          <div className="p-4 space-y-4 flex-grow overflow-auto">
+            <Label>Nombre del Cliente</Label>
+            <Input type="text" placeholder="Ej. Juan Pérez" />
+
+            <Label>Cantidad de Pollos</Label>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona la cantidad" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 20 }, (_, i) => {
+                  const value = (i + 1) / 2;
+                  return (
+                    <SelectItem key={value} value={value.toString()}>
+                      {value === 1 ? "1 pollo" : `${value} pollos`}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
+            <Label>Fecha de Recogida</Label>
+            <Input type="date" />
+
+            <Label>Hora de Recogida</Label>
+            <Input type="time" />
+
+            <Label>Detalles del pedido</Label>
+            <Textarea placeholder="¿Algo más?..." />
+
+            <Button className="bg-yellow-600 hover:bg-yellow-700 text-white w-full">
+              Crear Encargo
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      
+      {/* Tabla de pedidos */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Pedidos Pendientes</h2>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders?.map(order => (
+                  <TableRow key={order.id}>
+                    <TableCell>{order.customerName}</TableCell>
+                    <TableCell>{order.customerPhone}</TableCell>
+                    <TableCell>{order.items?.join(", ") || "Sin items"}</TableCell>
+                    <TableCell>{(order.totalAmount / 100).toFixed(2)}€</TableCell>
+                    <TableCell>{order.status}</TableCell>
+                    <TableCell className="space-x-2">
+                      <Button>Completar</Button>
+                      <Button variant="destructive">Eliminar</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
     </div>
+    
   );
 }
-
-const handleStartDay = () => {
-  if (
-    window.confirm(
-      "¿Estás seguro de que deseas iniciar un nuevo día? Esta acción no se puede deshacer."
-    )
-  ) {
-    toast({
-      title: "Día iniciado",
-      description: "El nuevo día ha sido registrado correctamente.",
-    });
-    // Aquí puedes agregar la lógica para registrar el inicio del día en el backend
-  }
-};

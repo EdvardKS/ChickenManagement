@@ -270,21 +270,21 @@ export function OrderDrawer({
                 </Button>
 
                 {order.customerPhone && (
-                  <a 
-                    href={`https://wa.me/34${order.customerPhone}?text=${encodeURIComponent(
-                      `Hola *${order.customerName}*, soy de [NOMBRE_NEGOCIO].\n` +
-                      `Tu pedido de *${order.quantity}* pollo(s) está registrado para recogida el *${format(new Date(order.pickupTime), "d 'de' MMMM", { locale: es })}* a las *${format(new Date(order.pickupTime), "HH:mm")}*.\n` +
-                      `Si necesitas modificar algo, avísanos.\n` +
-                      `¡Gracias por tu compra! 🐔`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full"
+                  <Button
+                    onClick={() => {
+                      const message = encodeURIComponent(
+                        `Hola *${order.customerName}*, soy de [NOMBRE_NEGOCIO].\n` +
+                        `Tu pedido de *${order.quantity}* pollo(s) está registrado para recogida el *${format(new Date(order.pickupTime), "d 'de' MMMM", { locale: es })}* a las *${format(new Date(order.pickupTime), "HH:mm")}*.\n` +
+                        `Si necesitas modificar algo, avísanos.\n` +
+                        `¡Gracias por tu compra! 🐔`
+                      );
+                      window.open(`https://wa.me/34${order.customerPhone}?text=${message}`, '_blank');
+                    }}
+                    className="w-full text-lg"
+                    variant="outline"
                   >
-                    <Button className="w-full text-lg" variant="outline">
-                      💬 Enviar WhatsApp
-                    </Button>
-                  </a>
+                    💬 Enviar WhatsApp
+                  </Button>
                 )}
 
                 <Button 

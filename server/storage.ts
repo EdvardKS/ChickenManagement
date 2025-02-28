@@ -302,7 +302,12 @@ export class DatabaseStorage implements IStorage {
     const settingsData = await db
       .select()
       .from(settings)
-      .where(sql`${settings.key} = ANY(${keys})`);
+      .where(
+        eq(settings.key, keys[0]) // Start with first key
+      )
+      .where(
+        keys.slice(1).map(key => eq(settings.key, key)) // Add OR conditions for remaining keys
+      );
 
     return settingsData.reduce((acc, setting) => {
       acc[setting.key] = setting.value;

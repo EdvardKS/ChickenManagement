@@ -5,6 +5,10 @@ import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema } from "@shared/schema";
 import { scrapeGoogleBusinessHours } from "./scraper";
 import { format } from "date-fns";
+import nodemailer from "nodemailer";
+import PDFDocument from "pdfkit";
+import fs from "fs-extra";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -64,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(order => {
           const orderDate = new Date(order.pickupTime);
           orderDate.setHours(0, 0, 0, 0);
-          return orderDate.getTime() === today.getTime() && 
+          return orderDate.getTime() === today.getTime() &&
                  order.status === "pending" &&
                  !order.deleted;
         })
@@ -458,6 +462,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating business hours:', error);
       res.status(500).json({ error: 'Error al actualizar el horario' });
+    }
+  });
+
+  // Generate and send invoice
+  app.post("/api/orders/:id/invoice", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const order = await storage.getOrder(id);
+      const { customerEmail, customerPhone, customerDNI, customerAddress, totalAmount } = req.body;
+
+      if (!order) {
+        return res.status(404).json({ error: 'Pedido no encontrado' });
+      }
+
+      // Get SMTP settings
+      const smtpSettings = await storage.getSettingsByKeys([
+        'smtp_host',
+        'smtp_port',
+        'smtp_user',
+        'smtp_pass',
+        'smtp_from'
+      ]);
+
+      // Create PDF
+      const doc = new PDFDocument();
+      const invoiceNumber = order.id.toString().padStart(6, '0');
+      const pdfPath = path.join(process.cwd(), 'uploads', `factura-${invoiceNumber}.pdf`);
+      await fs.ensureDir(path.dirname(pdfPath));
+
+      // Pipe PDF to file
+      doc.pipe(fs.createWriteStream(pdfPath));
+
+      // Add logo
+      doc.image(path.join(process.cwd(), 'client', 'public', 'img', 'corporativa', 'slogan-negro.png'), 50, 45, { width: 200 });
+
+      // Add invoice details
+      doc.fontSize(20).text(`Factura #${invoiceNumber}`, 50, 150);
+      doc.fontSize(12).text(`Fecha: ${format(new Date(), "dd/MM/yyyy")}`, 50, 180);
+
+      // Add customer details
+      doc.fontSize(14).text('Datos del Cliente:', 50, 220);
+      doc.fontSize(12)
+        .text(`Nombre: ${order.customerName}`, 50, 250)
+        .text(`DNI/NIF: ${customerDNI}`, 50, 270)
+        .text(`Dirección: ${customerAddress}`, 50, 290)
+        .text(`Teléfono: ${customerPhone}`, 50, 310)
+        .text(`Email: ${customerEmail}`, 50, 330);
+
+      // Add order details
+      doc.fontSize(14).text('Detalles del Pedido:', 50, 370);
+      doc.fontSize(12)
+        .text(`Cantidad: ${order.quantity} pollos`, 50, 400)
+        .text(`Fecha de recogida: ${format(new Date(order.pickupTime), "dd/MM/yyyy HH:mm")}`, 50, 420)
+        .text(`Detalles: ${order.details || '-'}`, 50, 440);
+
+      // Add total
+      doc.fontSize(14).text(`Total (IVA incluido): ${totalAmount.toFixed(2)}€`, 50, 480);
+
+      // Finalize PDF
+      doc.end();
+
+      // Update order with invoice details
+      await storage.updateOrder(id, {
+        customerEmail,
+        customerPhone,
+        customerDNI,
+        customerAddress,
+        totalAmount,
+        invoicePDF: pdfPath,
+        invoiceNumber
+      });
+
+      // Send email if SMTP is configured
+      if (smtpSettings.smtp_host && customerEmail) {
+        const transporter = nodemailer.createTransport({
+          host: smtpSettings.smtp_host,
+          port: parseInt(smtpSettings.smtp_port),
+          secure: true,
+          auth: {
+            user: smtpSettings.smtp_user,
+            pass: smtpSettings.smtp_pass
+          }
+        });
+
+        await transporter.sendMail({
+          from: smtpSettings.smtp_from,
+          to: customerEmail,
+          subject: `Factura #${invoiceNumber}`,
+          text: `Adjunto encontrarás la factura de tu pedido.`,
+          attachments: [{
+            filename: `factura-${invoiceNumber}.pdf`,
+            path: pdfPath
+          }]
+        });
+      }
+
+      // Send PDF to client
+      res.sendFile(pdfPath);
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      res.status(500).json({ error: 'Error al generar la factura' });
+    }
+  });
+
+  // Get SMTP settings
+  app.get("/api/settings/smtp", async (_req, res) => {
+    try {
+      const settings = await storage.getSettingsByKeys([
+        'smtp_host',
+        'smtp_port',
+        'smtp_user',
+        'smtp_pass',
+        'smtp_from'
+      ]);
+      res.json(settings);
+    } catch (error) {
+      console.error('Error getting SMTP settings:', error);
+      res.status(500).json({ error: 'Error al obtener la configuración SMTP' });
+    }
+  });
+
+  // Update SMTP settings
+  app.post("/api/settings/smtp", async (req, res) => {
+    try {
+      const { smtp_host, smtp_port, smtp_user, smtp_pass, smtp_from } = req.body;
+
+      await Promise.all([
+        storage.updateSetting('smtp_host', smtp_host),
+        storage.updateSetting('smtp_port', smtp_port),
+        storage.updateSetting('smtp_user', smtp_user),
+        storage.updateSetting('smtp_pass', smtp_pass),
+        storage.updateSetting('smtp_from', smtp_from)
+      ]);
+
+      res.json({ message: 'Configuración SMTP actualizada' });
+    } catch (error) {
+      console.error('Error updating SMTP settings:', error);
+      res.status(500).json({ error: 'Error al actualizar la configuración SMTP' });
     }
   });
 

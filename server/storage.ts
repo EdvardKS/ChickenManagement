@@ -5,10 +5,10 @@ import {
   type Stock, type InsertStock,
   type BusinessHours, type InsertBusinessHours,
   type StockHistory, type InsertStockHistory,
-  categories, products, orders, stock, stockHistory, orderLogs, businessHours
+  categories, products, orders, stock, stockHistory, orderLogs, businessHours, settings
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, isNull } from "drizzle-orm";
+import { eq, desc, and, isNull, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
@@ -43,6 +43,11 @@ export interface IStorage {
   getBusinessHours(): Promise<BusinessHours[]>;
   createBusinessHours(hours: InsertBusinessHours): Promise<BusinessHours>;
   updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours>;
+
+  // Settings
+  getSetting(key: string): Promise<string | null>;
+  getSettingsByKeys(keys: string[]): Promise<Record<string, string>>;
+  updateSetting(key: string, value: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -282,6 +287,40 @@ export class DatabaseStorage implements IStorage {
       .where(eq(businessHours.id, id))
       .returning();
     return updated;
+  }
+
+  // Settings
+  async getSetting(key: string): Promise<string | null> {
+    const [setting] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key));
+    return setting?.value || null;
+  }
+
+  async getSettingsByKeys(keys: string[]): Promise<Record<string, string>> {
+    const settingsData = await db
+      .select()
+      .from(settings)
+      .where(sql`${settings.key} = ANY(${keys})`);
+
+    return settingsData.reduce((acc, setting) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {} as Record<string, string>);
+  }
+
+  async updateSetting(key: string, value: string): Promise<void> {
+    const existing = await this.getSetting(key);
+
+    if (existing === null) {
+      await db.insert(settings).values({ key, value });
+    } else {
+      await db
+        .update(settings)
+        .set({ value, updatedAt: new Date() })
+        .where(eq(settings.key, key));
+    }
   }
 }
 

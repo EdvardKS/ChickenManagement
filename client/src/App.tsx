@@ -16,6 +16,7 @@ import AdminHome from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
 import AdminStock from "@/pages/admin/stock";
+import AdminDatabase from "@/pages/admin/database"; // Agregamos la nueva página
 import NotFound from "@/pages/not-found";
 
 // Update document metadata for SEO
@@ -30,7 +31,6 @@ function Router() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        {/* HeroBanner se mantiene con ancho completo */}
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/products">
@@ -71,6 +71,11 @@ function Router() {
           <Route path="/admin/stock">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <AdminStock />
+            </div>
+          </Route>
+          <Route path="/admin/database">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <AdminDatabase />
             </div>
           </Route>
           <Route>

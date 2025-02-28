@@ -62,7 +62,7 @@ export default function AdminOrders() {
             <TableRow key={order.id}>
               <TableCell>{order.customerName}</TableCell>
               <TableCell>{order.customerPhone}</TableCell>
-              <TableCell>{order.items.join(", ")}</TableCell>
+              <TableCell>{order.items?.join(", ") || "Sin items"}</TableCell>
               <TableCell>{(order.totalAmount / 100).toFixed(2)}€</TableCell>
               <TableCell>{order.status}</TableCell>
               <TableCell className="space-x-2">

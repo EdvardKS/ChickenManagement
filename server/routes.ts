@@ -4,9 +4,77 @@ import { storage } from "./storage";
 import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema } from "@shared/schema";
 import { scrapeGoogleBusinessHours } from "./scraper";
+import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // Admin routes for database management
+  app.post("/api/admin/run-migrations", async (_req, res) => {
+    try {
+      // Execute migrations
+      await db.push();
+      res.json({ message: "Migraciones ejecutadas correctamente" });
+    } catch (error) {
+      console.error("Error al ejecutar las migraciones:", error);
+      res.status(500).json({ message: "Error al ejecutar las migraciones" });
+    }
+  });
+
+  app.post("/api/admin/run-seeders", async (_req, res) => {
+    try {
+      // Insert seed data
+      const categories = [
+        {
+          name: "Pollos Asados",
+          description: "Nuestros famosos pollos asados a la leña",
+          imageUrl: "/img/categories/pollos.jpg"
+        },
+        {
+          name: "Guarniciones",
+          description: "Acompañamientos perfectos para tu pollo",
+          imageUrl: "/img/categories/guarniciones.jpg"
+        }
+      ];
+
+      const products = [
+        {
+          name: "Pollo Asado Entero",
+          description: "Pollo entero asado a la leña con nuestro toque especial",
+          price: 1500,
+          imageUrl: "/img/products/pollo-entero.jpg",
+          categoryId: 1
+        },
+        {
+          name: "Medio Pollo",
+          description: "Medio pollo asado a la leña",
+          price: 800,
+          imageUrl: "/img/products/medio-pollo.jpg",
+          categoryId: 1
+        },
+        {
+          name: "Patatas Asadas",
+          description: "Patatas asadas con especias",
+          price: 400,
+          imageUrl: "/img/products/patatas.jpg",
+          categoryId: 2
+        }
+      ];
+
+      for (const category of categories) {
+        await storage.createCategory(category);
+      }
+
+      for (const product of products) {
+        await storage.createProduct(product);
+      }
+
+      res.json({ message: "Datos de prueba insertados correctamente" });
+    } catch (error) {
+      console.error("Error al ejecutar los seeders:", error);
+      res.status(500).json({ message: "Error al ejecutar los seeders" });
+    }
+  });
 
   // Categories
   app.get("/api/categories", async (_req, res) => {

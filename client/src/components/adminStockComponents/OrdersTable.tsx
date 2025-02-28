@@ -22,10 +22,20 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const completeOrder = useMutation({
     mutationFn: async (id: number) => {
       try {
+        console.log('Confirming order:', id);
         const res = await apiRequest("PATCH", `/api/orders/${id}/confirm`);
+        console.log('Response status:', res.status);
         if (!res.ok) throw new Error('Error al confirmar el pedido');
-        return res.json();
+        const text = await res.text(); // Get response as text first
+        console.log('Response text:', text);
+        try {
+          return text ? JSON.parse(text) : {}; // Parse if there's content
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          return {}; // Return empty object if parsing fails
+        }
       } catch (error) {
+        console.error('Complete order error:', error);
         throw new Error('No se pudo completar el pedido');
       }
     },
@@ -76,9 +86,13 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const markAsError = useMutation({
     mutationFn: async (id: number) => {
       try {
+        console.log('Marking order as error:', id);
         const res = await apiRequest("PATCH", `/api/orders/${id}/error`);
+        console.log('Error marking response:', res.status);
         if (!res.ok) throw new Error('Error al marcar el pedido como error');
+        return res.json();
       } catch (error) {
+        console.error('Mark as error error:', error);
         throw new Error('No se pudo marcar el pedido como error');
       }
     },
@@ -104,8 +118,9 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     setIsDrawerOpen(true);
   };
 
-  // Agrupar pedidos por fecha
-  const ordersByDate = orders?.reduce((acc, order) => {
+  // Agrupar pedidos por fecha y filtrar los marcados como error
+  const ordersByDate = orders?.filter(order => !order.deleted)
+    .reduce((acc, order) => {
     const date = format(new Date(order.pickupTime), 'yyyy-MM-dd');
     if (!acc[date]) {
       acc[date] = [];

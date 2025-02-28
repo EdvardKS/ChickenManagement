@@ -25,13 +25,11 @@ export default function AdminDrawer() {
         <nav className="flex flex-col gap-2 mt-8">
           {menuItems.map((item) => (
             <Link key={item.href} href={item.href}>
-              <a
-                className={`block px-4 py-2 rounded-lg text-sm transition-colors ${
-                  location === item.href
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-              >
+              <a className={`block px-3 py-2 rounded-lg text-sm ${
+                location.startsWith(item.href)
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+              }`}>
                 {item.label}
               </a>
             </Link>

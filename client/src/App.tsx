@@ -60,26 +60,27 @@ function Router() {
               <Contact />
             </div>
           </Route>
-          {/* Admin routes */}
-          <Route path="/admin*">
-            <AdminLayout>
-              <Switch>
-                <Route path="/admin" component={AdminHome} />
-                <Route path="/admin/products" component={AdminProducts} />
-                <Route path="/admin/orders" component={AdminOrders} />
-                <Route path="/admin/database" component={AdminDatabase} />
-                <Route path="/admin/settings" component={AdminSettings} />
-                <Route path="/admin/dashboards/:dashboard*">
-                  <DashboardLayout>
-                    <Switch>
-                      <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
-                      <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
-                      {/* More dashboard routes will be added here */}
-                    </Switch>
-                  </DashboardLayout>
-                </Route>
-              </Switch>
-            </AdminLayout>
+          <Route path="/admin">
+            {({ params }) => (
+              <AdminLayout>
+                <Switch>
+                  <Route path="/admin" component={AdminHome} />
+                  <Route path="/admin/products" component={AdminProducts} />
+                  <Route path="/admin/orders" component={AdminOrders} />
+                  <Route path="/admin/database" component={AdminDatabase} />
+                  <Route path="/admin/settings" component={AdminSettings} />
+                  <Route path="/admin/dashboards">
+                    <DashboardLayout>
+                      <Switch>
+                        <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
+                        <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
+                      </Switch>
+                    </DashboardLayout>
+                  </Route>
+                  <Route component={NotFound} />
+                </Switch>
+              </AdminLayout>
+            )}
           </Route>
           <Route component={NotFound} />
         </Switch>

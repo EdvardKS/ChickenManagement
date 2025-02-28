@@ -45,7 +45,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
         customerName: data.customerName,
         customerPhone: data.customerPhone || null,
         quantity: parseFloat(data.quantity),
-        pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}:00`),
+        pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}`),
         details: data.details,
         totalAmount: 0, // Required field, set to 0 for now
         is_manual_entry: true,

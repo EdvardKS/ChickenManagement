@@ -22,24 +22,31 @@ export const products = pgTable("products", {
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  customerName: text("customer_name").notNull(),
-  customerPhone: text("customer_phone"),  // Allow null
-  customerEmail: text("customer_email"),
+  creationDate: timestamp("creation_date").notNull().defaultNow(),
+  pickupDate: timestamp("pickup_date").notNull(),
+  pickupTime: text("pickup_time").notNull(),
+  delivered: boolean("delivered").default(false),
+  cancelled: boolean("cancelled").default(false),
+  createdFromPanel: boolean("created_from_panel").default(true),
   quantity: decimal("quantity", { precision: 3, scale: 1 }).notNull(),
-  items: text("items").array(),
-  totalAmount: integer("total_amount").notNull(),
-  status: text("status").default("pending"),
-  pickupTime: timestamp("pickup_time").notNull(),
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone"),
+  details: text("details"),
+  isHoliday: boolean("is_holiday").default(false),
+  holidayName: text("holiday_name"),
   deleted: boolean("deleted").default(false),
 });
 
 export const stock = pgTable("stock", {
   id: serial("id").primaryKey(),
   date: timestamp("date").notNull(),
-  initialStock: decimal("initial_stock", { precision: 5, scale: 1 }).notNull(),
+  actionType: text("action_type").notNull(), // "setup", "direct_sale", "delivered", "cancelled", "reset", "error"
+  quantity: decimal("quantity", { precision: 5, scale: 1 }).notNull(),
+  description: text("description"),
+  totalMounted: decimal("total_mounted", { precision: 5, scale: 1 }).notNull(),
   currentStock: decimal("current_stock", { precision: 5, scale: 1 }).notNull(),
-  unreservedStock: decimal("unreserved_stock", { precision: 5, scale: 1 }).notNull(),
   reservedStock: decimal("reserved_stock", { precision: 5, scale: 1 }).notNull(),
+  unreservedStock: decimal("unreserved_stock", { precision: 5, scale: 1 }).notNull(),
 });
 
 export const businessHours = pgTable("business_hours", {
@@ -55,13 +62,19 @@ export const businessHours = pgTable("business_hours", {
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, deleted: true });
 export const insertProductSchema = createInsertSchema(products).omit({ id: true, deleted: true });
 export const insertOrderSchema = createInsertSchema(orders)
-  .omit({ id: true, deleted: true, status: true })
+  .omit({ id: true, deleted: true, creationDate: true })
   .extend({
-    pickupTime: z.string().transform((val) => new Date(val)),
+    pickupDate: z.string().transform((val) => new Date(val)),
     quantity: z.number().min(0.5).step(0.5), // Solo permitir incrementos de 0.5
   });
 
-export const insertStockSchema = createInsertSchema(stock).omit({ id: true });
+export const insertStockSchema = createInsertSchema(stock)
+  .omit({ id: true })
+  .extend({
+    date: z.string().transform((val) => new Date(val)),
+    quantity: z.number().step(0.5),
+  });
+
 export const insertBusinessHoursSchema = createInsertSchema(businessHours).omit({ id: true });
 
 // Types

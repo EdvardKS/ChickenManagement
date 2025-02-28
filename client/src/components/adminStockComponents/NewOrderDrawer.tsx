@@ -28,24 +28,21 @@ interface NewOrderDrawerProps {
 
 export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
   const { toast } = useToast();
+  const today = new Date();
   const [formData, setFormData] = useState({
     customerName: "",
     customerPhone: "",
     quantity: "",
-    pickupDate: "",
-    pickupTime: "",
+    pickupDate: today.toISOString().split('T')[0],
+    pickupTime: "13:30",
     details: "",
-  });
-
-  const { data: stock } = useQuery<Stock>({ 
-    queryKey: ['/api/stock'] 
   });
 
   const createOrder = useMutation({
     mutationFn: async (data: any) => {
       const res = await apiRequest("POST", "/api/orders", {
         customerName: data.customerName,
-        customerPhone: data.customerPhone,
+        customerPhone: data.customerPhone || null,
         quantity: parseFloat(data.quantity),
         pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}`),
         details: data.details,
@@ -64,8 +61,8 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
         customerName: "",
         customerPhone: "",
         quantity: "",
-        pickupDate: "",
-        pickupTime: "",
+        pickupDate: today.toISOString().split('T')[0],
+        pickupTime: "13:30",
         details: "",
       });
       onOpenChange(false);
@@ -81,21 +78,11 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const quantity = parseFloat(formData.quantity);
 
     if (!formData.customerName || !formData.quantity || !formData.pickupDate || !formData.pickupTime) {
       toast({
         title: "Error",
         description: "Por favor, completa todos los campos requeridos",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (quantity > (stock?.unreservedStock || 0)) {
-      toast({
-        title: "Error",
-        description: "No hay suficiente stock disponible",
         variant: "destructive",
       });
       return;
@@ -122,7 +109,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
           </div>
 
           <div>
-            <Label>Teléfono</Label>
+            <Label>Teléfono (opcional)</Label>
             <Input 
               type="tel" 
               placeholder="Ej. 666555444"

@@ -16,9 +16,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Calcular el stock reservado basado en los pedidos pendientes
     const reservedStock = orders
       .filter(order => order.status === "pending")
-      .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
+      .reduce((total, order) => total + Number(order.quantity), 0);
 
-    const currentStock = parseFloat((stock?.currentStock || 0).toString());
+    const currentStock = Number(stock?.currentStock || 0);
 
     const response = {
       ...stock,
@@ -34,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const currentStock = await storage.getCurrentStock();
     const updatedStock = {
       ...currentStock,
-      currentStock: parseFloat((currentStock?.currentStock || 0).toString()) + parseFloat(quantity),
+      currentStock: Number(currentStock?.currentStock || 0) + Number(quantity),
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);
@@ -45,18 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const currentStock = await storage.getCurrentStock();
     const updatedStock = {
       ...currentStock,
-      currentStock: parseFloat((currentStock?.currentStock || 0).toString()) - parseFloat(quantity),
-    };
-    const result = await storage.updateStock(updatedStock);
-    res.json(result);
-  });
-
-  app.post("/api/stock/sell", async (req, res) => {
-    const { quantity } = req.body;
-    const currentStock = await storage.getCurrentStock();
-    const updatedStock = {
-      ...currentStock,
-      currentStock: parseFloat((currentStock?.currentStock || 0).toString()) - parseFloat(quantity),
+      currentStock: Number(currentStock?.currentStock || 0) - Number(quantity),
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);
@@ -66,83 +55,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const today = new Date();
     const newStock = {
       date: today,
-      initialStock: 0,
-      currentStock: 0,
-      unreservedStock: 0,
-      reservedStock: 0,
+      initialStock: "0",
+      currentStock: "0",
+      unreservedStock: "0",
+      reservedStock: "0",
     };
     const result = await storage.updateStock(newStock);
     res.json(result);
   });
 
-  // Admin routes for database management
-  app.post("/api/admin/run-migrations", async (_req, res) => {
-    try {
-      // Execute migrations
-      await db.push();
-      res.json({ message: "Migraciones ejecutadas correctamente" });
-    } catch (error) {
-      console.error("Error al ejecutar las migraciones:", error);
-      res.status(500).json({ message: "Error al ejecutar las migraciones" });
-    }
-  });
-
-  app.post("/api/admin/run-seeders", async (_req, res) => {
-    try {
-      // Insert seed data
-      const categories = [
-        {
-          name: "Pollos Asados",
-          description: "Nuestros famosos pollos asados a la leña",
-          imageUrl: "/img/categories/pollos.jpg"
-        },
-        {
-          name: "Guarniciones",
-          description: "Acompañamientos perfectos para tu pollo",
-          imageUrl: "/img/categories/guarniciones.jpg"
-        }
-      ];
-
-      const products = [
-        {
-          name: "Pollo Asado Entero",
-          description: "Pollo entero asado a la leña con nuestro toque especial",
-          price: 1500,
-          imageUrl: "/img/products/pollo-entero.jpg",
-          categoryId: 1
-        },
-        {
-          name: "Medio Pollo",
-          description: "Medio pollo asado a la leña",
-          price: 800,
-          imageUrl: "/img/products/medio-pollo.jpg",
-          categoryId: 1
-        },
-        {
-          name: "Patatas Asadas",
-          description: "Patatas asadas con especias",
-          price: 400,
-          imageUrl: "/img/products/patatas.jpg",
-          categoryId: 2
-        }
-      ];
-
-      for (const category of categories) {
-        await storage.createCategory(category);
-      }
-
-      for (const product of products) {
-        await storage.createProduct(product);
-      }
-
-      res.json({ message: "Datos de prueba insertados correctamente" });
-    } catch (error) {
-      console.error("Error al ejecutar los seeders:", error);
-      res.status(500).json({ message: "Error al ejecutar los seeders" });
-    }
-  });
-
-  // Categories
+  // Categories Routes
   app.get("/api/categories", async (_req, res) => {
     const categories = await storage.getCategories();
     res.json(categories);
@@ -167,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
 
-  // Products
+  // Products Routes
   app.get("/api/products", async (req, res) => {
     const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
     const products = await storage.getProducts(categoryId);
@@ -193,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
 
-  // Orders
+  // Orders Routes
   app.get("/api/orders", async (_req, res) => {
     const orders = await storage.getOrders();
     res.json(orders);
@@ -205,20 +127,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(created);
   });
 
+  // Actualización de estado de pedidos
   app.patch("/api/orders/:id", async (req, res) => {
     const id = parseInt(req.params.id);
-    const order = insertOrderSchema.partial().parse(req.body);
-    const updated = await storage.updateOrder(id, order);
+    const { status } = req.body;
+    const order = await storage.getOrder(id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+
+    // Obtener el stock actual
+    const currentStock = await storage.getCurrentStock();
+    const stockQuantity = Number(currentStock?.currentStock || 0);
+    const orderQuantity = Number(order.quantity);
+
+    // Actualizar stock según el estado
+    switch (status) {
+      case "delivered":
+        // Restar cantidad del stock actual
+        await storage.updateStock({
+          ...currentStock,
+          currentStock: String(stockQuantity - orderQuantity)
+        });
+        break;
+      case "error":
+        // Si estaba pendiente, reintegrar al stock disponible
+        if (order.status === "pending") {
+          await storage.updateStock({
+            ...currentStock,
+            currentStock: String(stockQuantity + orderQuantity)
+          });
+        }
+        break;
+      case "cancelled":
+        // No ajustar stock, solo marcar como cancelado
+        break;
+    }
+
+    // Registrar en el log de stock si es necesario
+    if (status === "delivered" || status === "error") {
+      const stockLog = {
+        date: new Date(),
+        operation: status === "delivered" ? "order_delivered" : "order_error",
+        quantity: orderQuantity,
+        previousStock: stockQuantity,
+        newStock: status === "delivered" ? stockQuantity - orderQuantity : stockQuantity + orderQuantity,
+        orderId: order.id,
+        notes: `Pedido ${id} marcado como ${status}`
+      };
+      await storage.createStockLog(stockLog);
+    }
+
+    // Actualizar el estado del pedido
+    const updated = await storage.updateOrder(id, { ...order, status });
     res.json(updated);
   });
 
   app.delete("/api/orders/:id", async (req, res) => {
     const id = parseInt(req.params.id);
+    const order = await storage.getOrder(id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+
+    // Si el pedido estaba pendiente, reintegrar al stock
+    if (order.status === "pending") {
+      const currentStock = await storage.getCurrentStock();
+      const stockQuantity = Number(currentStock?.currentStock || 0);
+      const orderQuantity = Number(order.quantity);
+
+      await storage.updateStock({
+        ...currentStock,
+        currentStock: String(stockQuantity + orderQuantity)
+      });
+
+      // Registrar en el log de stock
+      const stockLog = {
+        date: new Date(),
+        operation: "order_cancelled",
+        quantity: orderQuantity,
+        previousStock: stockQuantity,
+        newStock: stockQuantity + orderQuantity,
+        orderId: order.id,
+        notes: `Pedido ${id} eliminado`
+      };
+      await storage.createStockLog(stockLog);
+    }
+
     await storage.deleteOrder(id);
     res.status(204).end();
   });
 
-  // Business Hours
+  // Business Hours Routes
   app.get("/api/business-hours", async (_req, res) => {
     const hours = await storage.getBusinessHours();
     res.json(hours);

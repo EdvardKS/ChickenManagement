@@ -3,6 +3,7 @@ import {
   type Product, type InsertProduct,
   type Order, type InsertOrder,
   type Stock, type InsertStock,
+  type StockLog, type InsertStockLog,
   type BusinessHours, type InsertBusinessHours
 } from "@shared/schema";
 
@@ -31,7 +32,10 @@ export interface IStorage {
   // Stock
   getCurrentStock(): Promise<Stock | undefined>;
   updateStock(stock: Partial<Stock>): Promise<Stock>;
-  
+
+  // Stock Logs
+  createStockLog(log: InsertStockLog): Promise<StockLog>;
+
   // Business Hours
   getBusinessHours(): Promise<BusinessHours[]>;
   updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours>;
@@ -42,6 +46,7 @@ export class MemStorage implements IStorage {
   private products: Map<number, Product>;
   private orders: Map<number, Order>;
   private stockRecords: Map<string, Stock>;
+  private stockLogs: Map<number, StockLog>;
   private businessHours: Map<number, BusinessHours>;
   private currentId: { [key: string]: number };
 
@@ -50,12 +55,14 @@ export class MemStorage implements IStorage {
     this.products = new Map();
     this.orders = new Map();
     this.stockRecords = new Map();
+    this.stockLogs = new Map();
     this.businessHours = new Map();
     this.currentId = {
       categories: 1,
       products: 1,
       orders: 1,
       stock: 1,
+      stockLogs: 1,
       businessHours: 1
     };
   }
@@ -71,7 +78,13 @@ export class MemStorage implements IStorage {
 
   async createCategory(category: InsertCategory): Promise<Category> {
     const id = this.currentId.categories++;
-    const newCategory = { ...category, id, deleted: false };
+    const newCategory = { 
+      ...category, 
+      id, 
+      deleted: false,
+      description: category.description || null,
+      imageUrl: category.imageUrl || null
+    };
     this.categories.set(id, newCategory);
     return newCategory;
   }
@@ -103,7 +116,14 @@ export class MemStorage implements IStorage {
 
   async createProduct(product: InsertProduct): Promise<Product> {
     const id = this.currentId.products++;
-    const newProduct = { ...product, id, deleted: false };
+    const newProduct = { 
+      ...product, 
+      id, 
+      deleted: false,
+      description: product.description || null,
+      imageUrl: product.imageUrl || null,
+      categoryId: product.categoryId || null
+    };
     this.products.set(id, newProduct);
     return newProduct;
   }
@@ -134,7 +154,16 @@ export class MemStorage implements IStorage {
 
   async createOrder(order: InsertOrder): Promise<Order> {
     const id = this.currentId.orders++;
-    const newOrder = { ...order, id, deleted: false, status: "pending" };
+    const newOrder = { 
+      ...order, 
+      id, 
+      deleted: false, 
+      status: "pending",
+      customerPhone: order.customerPhone || null,
+      customerEmail: order.customerEmail || null,
+      items: order.items || null,
+      quantity: order.quantity.toString()
+    };
     this.orders.set(id, newOrder);
     return newOrder;
   }
@@ -163,9 +192,26 @@ export class MemStorage implements IStorage {
   async updateStock(stock: Partial<Stock>): Promise<Stock> {
     const today = new Date().toISOString().split('T')[0];
     const current = this.stockRecords.get(today);
-    const updated = { ...current, ...stock };
+
+    const updated: Stock = {
+      id: current?.id || this.currentId.stock++,
+      date: stock.date || current?.date || new Date(),
+      initialStock: stock.initialStock || current?.initialStock || "0",
+      currentStock: stock.currentStock || current?.currentStock || "0",
+      unreservedStock: stock.unreservedStock || current?.unreservedStock || "0",
+      reservedStock: stock.reservedStock || current?.reservedStock || "0"
+    };
+
     this.stockRecords.set(today, updated);
     return updated;
+  }
+
+  // Stock Logs
+  async createStockLog(log: InsertStockLog): Promise<StockLog> {
+    const id = this.currentId.stockLogs++;
+    const newLog = { ...log, id };
+    this.stockLogs.set(id, newLog);
+    return newLog;
   }
 
   // Business Hours

@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import FloatingContact from "@/components/floating-contact";
-import AdminLayout from "@/components/layout/AdminLayout";
 
 import Home from "@/pages/home";
 import Products from "@/pages/products";
@@ -35,10 +34,9 @@ function Router() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {!isAdminRoute && <Header />}
-      <main className={`flex-grow ${!isAdminRoute ? '' : 'bg-gray-50'}`}>
+      <Header />
+      <main className={`flex-grow ${isAdminRoute ? 'bg-gray-50' : ''}`}>
         <Switch>
-          {/* Rutas públicas */}
           <Route path="/" component={Home} />
           <Route path="/products">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -60,29 +58,37 @@ function Router() {
               <Contact />
             </div>
           </Route>
-
           {/* Rutas de administración */}
-          <Route path="/admin*">
-            <AdminLayout>
-              <Switch>
-                <Route path="/admin" component={AdminHome} />
-                <Route path="/admin/products" component={AdminProducts} />
-                <Route path="/admin/orders" component={AdminOrders} />
-                <Route path="/admin/database" component={AdminDatabase} />
-                <Route path="/admin/dashboards/:dashboard*">
-                  <DashboardLayout>
-                    <Switch>
-                      <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
-                      <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
-                      {/* Más rutas de dashboards se añadirán aquí */}
-                    </Switch>
-                  </DashboardLayout>
-                </Route>
-                <Route component={NotFound} />
-              </Switch>
-            </AdminLayout>
+          <Route path="/admin">
+            <div className="px-6 py-8">
+              <AdminHome />
+            </div>
           </Route>
-
+          <Route path="/admin/products">
+            <div className="px-6 py-8">
+              <AdminProducts />
+            </div>
+          </Route>
+          <Route path="/admin/orders">
+            <div className="px-6 py-8">
+              <AdminOrders />
+            </div>
+          </Route>
+          <Route path="/admin/database">
+            <div className="px-6 py-8">
+              <AdminDatabase />
+            </div>
+          </Route>
+          {/* Rutas de dashboards */}
+          <Route path="/admin/dashboards/:dashboard*">
+            <DashboardLayout>
+              <Switch>
+                <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
+                <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
+                {/* Más rutas de dashboards se añadirán aquí */}
+              </Switch>
+            </DashboardLayout>
+          </Route>
           <Route>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <NotFound />
@@ -96,7 +102,6 @@ function Router() {
           <FloatingContact />
         </>
       )}
-      <Toaster />
     </div>
   );
 }
@@ -105,6 +110,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router />
+      <Toaster />
     </QueryClientProvider>
   );
 }

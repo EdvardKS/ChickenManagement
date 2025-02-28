@@ -26,7 +26,7 @@ export default function AdminDrawer() {
           {menuItems.map((item) => (
             <Link key={item.href} href={item.href}>
               <a
-                className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                className={`block px-4 py-2 rounded-lg text-sm transition-colors ${
                   location === item.href
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted"

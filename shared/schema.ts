@@ -26,11 +26,14 @@ export const orders = pgTable("orders", {
   customerPhone: text("customer_phone"),  // Allow null
   customerEmail: text("customer_email"),
   quantity: decimal("quantity", { precision: 3, scale: 1 }).notNull(),
+  details: text("details"),  // Added details field
   items: text("items").array(),
   totalAmount: integer("total_amount").notNull(),
-  status: text("status").default("pending"),
+  status: text("status").default("pending"), // Values: pending, completed, error
   pickupTime: timestamp("pickup_time").notNull(),
   deleted: boolean("deleted").default(false),
+  errorReason: text("error_reason"), // Added to track error reasons
+  errorDate: timestamp("error_date") // Added to track when errors occur
 });
 
 export const stock = pgTable("stock", {
@@ -55,7 +58,7 @@ export const businessHours = pgTable("business_hours", {
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, deleted: true });
 export const insertProductSchema = createInsertSchema(products).omit({ id: true, deleted: true });
 export const insertOrderSchema = createInsertSchema(orders)
-  .omit({ id: true, deleted: true, status: true })
+  .omit({ id: true, deleted: true, status: true, errorReason: true, errorDate: true })
   .extend({
     pickupTime: z.string().transform((val) => new Date(val)),
     quantity: z.number().min(0.5).step(0.5), // Solo permitir incrementos de 0.5

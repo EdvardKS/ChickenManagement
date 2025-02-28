@@ -1,10 +1,14 @@
+import { Pool } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
 import {
   type Category, type InsertCategory,
   type Product, type InsertProduct,
   type Order, type InsertOrder,
   type Stock, type InsertStock,
-  type BusinessHours, type InsertBusinessHours
+  type BusinessHours, type InsertBusinessHours,
+  categories, products, orders, stock, businessHours
 } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
@@ -27,159 +31,202 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<Order>): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
+  markOrderAsError(id: number): Promise<void>;
 
   // Stock
   getCurrentStock(): Promise<Stock | undefined>;
   updateStock(stock: Partial<Stock>): Promise<Stock>;
-  
+
   // Business Hours
   getBusinessHours(): Promise<BusinessHours[]>;
   updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours>;
 }
 
-export class MemStorage implements IStorage {
-  private categories: Map<number, Category>;
-  private products: Map<number, Product>;
-  private orders: Map<number, Order>;
-  private stockRecords: Map<string, Stock>;
-  private businessHours: Map<number, BusinessHours>;
-  private currentId: { [key: string]: number };
+// Configure database connection
+const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+const db = drizzle(pool, { schema: { categories, products, orders, stock, businessHours } });
 
-  constructor() {
-    this.categories = new Map();
-    this.products = new Map();
-    this.orders = new Map();
-    this.stockRecords = new Map();
-    this.businessHours = new Map();
-    this.currentId = {
-      categories: 1,
-      products: 1,
-      orders: 1,
-      stock: 1,
-      businessHours: 1
-    };
-  }
-
+export class DatabaseStorage implements IStorage {
   // Categories
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values()).filter(c => !c.deleted);
+    return await db.select().from(categories).where(eq(categories.deleted, false));
   }
 
   async getCategory(id: number): Promise<Category | undefined> {
-    return this.categories.get(id);
+    const [category] = await db.select().from(categories).where(eq(categories.id, id));
+    return category;
   }
 
   async createCategory(category: InsertCategory): Promise<Category> {
-    const id = this.currentId.categories++;
-    const newCategory = { ...category, id, deleted: false };
-    this.categories.set(id, newCategory);
+    const [newCategory] = await db.insert(categories).values(category).returning();
     return newCategory;
   }
 
   async updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category> {
-    const existing = await this.getCategory(id);
-    if (!existing) throw new Error("Category not found");
-    const updated = { ...existing, ...category };
-    this.categories.set(id, updated);
+    const [updated] = await db
+      .update(categories)
+      .set(category)
+      .where(eq(categories.id, id))
+      .returning();
     return updated;
   }
 
   async deleteCategory(id: number): Promise<void> {
-    const category = await this.getCategory(id);
-    if (category) {
-      this.categories.set(id, { ...category, deleted: true });
-    }
+    await db
+      .update(categories)
+      .set({ deleted: true })
+      .where(eq(categories.id, id));
   }
 
   // Products
   async getProducts(categoryId?: number): Promise<Product[]> {
-    return Array.from(this.products.values())
-      .filter(p => !p.deleted && (!categoryId || p.categoryId === categoryId));
+    let query = db
+      .select()
+      .from(products)
+      .where(eq(products.deleted, false));
+
+    if (categoryId) {
+      query = query.where(eq(products.categoryId, categoryId));
+    }
+
+    return await query;
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
-    return this.products.get(id);
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const id = this.currentId.products++;
-    const newProduct = { ...product, id, deleted: false };
-    this.products.set(id, newProduct);
+    const [newProduct] = await db.insert(products).values(product).returning();
     return newProduct;
   }
 
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product> {
-    const existing = await this.getProduct(id);
-    if (!existing) throw new Error("Product not found");
-    const updated = { ...existing, ...product };
-    this.products.set(id, updated);
+    const [updated] = await db
+      .update(products)
+      .set(product)
+      .where(eq(products.id, id))
+      .returning();
     return updated;
   }
 
   async deleteProduct(id: number): Promise<void> {
-    const product = await this.getProduct(id);
-    if (product) {
-      this.products.set(id, { ...product, deleted: true });
-    }
+    await db
+      .update(products)
+      .set({ deleted: true })
+      .where(eq(products.id, id));
   }
 
   // Orders
   async getOrders(): Promise<Order[]> {
-    return Array.from(this.orders.values()).filter(o => !o.deleted);
+    try {
+      console.log('Fetching orders from database...');
+      const orders = await db
+        .select()
+        .from(orders)
+        .where(
+          and(
+            eq(orders.deleted, false),
+            eq(orders.status, "pending") // Only get pending orders
+          )
+        )
+        .orderBy(orders.pickupTime);
+      console.log('Fetched orders:', orders);
+      return orders;
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      throw error;
+    }
   }
 
   async getOrder(id: number): Promise<Order | undefined> {
-    return this.orders.get(id);
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    const id = this.currentId.orders++;
-    const newOrder = { ...order, id, deleted: false, status: "pending" };
-    this.orders.set(id, newOrder);
+    const [newOrder] = await db
+      .insert(orders)
+      .values({ ...order, status: "pending", deleted: false })
+      .returning();
     return newOrder;
   }
 
-  async updateOrder(id: number, order: Partial<Order>): Promise<Order> {
-    const existing = await this.getOrder(id);
-    if (!existing) throw new Error("Order not found");
-    const updated = { ...existing, ...order };
-    this.orders.set(id, updated);
-    return updated;
+  async updateOrder(id: number, updates: Partial<Order>): Promise<Order> {
+    try {
+      console.log('Updating order:', id, updates);
+      const [updated] = await db
+        .update(orders)
+        .set(updates)
+        .where(eq(orders.id, id))
+        .returning();
+      console.log('Updated order:', updated);
+      return updated;
+    } catch (error) {
+      console.error('Error updating order:', error);
+      throw error;
+    }
   }
 
   async deleteOrder(id: number): Promise<void> {
-    const order = await this.getOrder(id);
-    if (order) {
-      this.orders.set(id, { ...order, deleted: true });
+    await db
+      .update(orders)
+      .set({ deleted: true })
+      .where(eq(orders.id, id));
+  }
+
+  async markOrderAsError(id: number): Promise<void> {
+    try {
+      console.log('Marking order as error:', id);
+      const res = await db
+        .update(orders)
+        .set({ 
+          status: "error",
+          deleted: true, // Mark as deleted to remove from active orders
+          errorDate: new Date()
+        })
+        .where(eq(orders.id, id))
+        .returning();
+      console.log('Order marked as error result:', res);
+    } catch (error) {
+      console.error('Error marking order as error:', error);
+      throw error;
     }
   }
 
   // Stock
   async getCurrentStock(): Promise<Stock | undefined> {
-    const today = new Date().toISOString().split('T')[0];
-    return this.stockRecords.get(today);
+    const [currentStock] = await db
+      .select()
+      .from(stock)
+      .orderBy(stock.date)
+      .limit(1);
+    return currentStock;
   }
 
-  async updateStock(stock: Partial<Stock>): Promise<Stock> {
-    const today = new Date().toISOString().split('T')[0];
-    const current = this.stockRecords.get(today);
-    const updated = { ...current, ...stock };
-    this.stockRecords.set(today, updated);
+  async updateStock(stockUpdate: Partial<Stock>): Promise<Stock> {
+    const [updated] = await db
+      .update(stock)
+      .set(stockUpdate)
+      .where(eq(stock.id, stockUpdate.id!))
+      .returning();
     return updated;
   }
 
   // Business Hours
   async getBusinessHours(): Promise<BusinessHours[]> {
-    return Array.from(this.businessHours.values());
+    return await db.select().from(businessHours);
   }
 
   async updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours> {
-    const existing = this.businessHours.get(id);
-    if (!existing) throw new Error("Business hours not found");
-    const updated = { ...existing, ...hours };
-    this.businessHours.set(id, updated);
+    const [updated] = await db
+      .update(businessHours)
+      .set(hours)
+      .where(eq(businessHours.id, id))
+      .returning();
     return updated;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

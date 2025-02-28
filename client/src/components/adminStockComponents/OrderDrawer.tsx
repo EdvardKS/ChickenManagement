@@ -148,49 +148,49 @@ export function OrderDrawer({
       <div className="border-b pb-4 space-y-2">
         <h3 className="text-xl font-semibold mb-2">Datos del Cliente</h3>
         <div className="flex justify-between">
-          <span className="text-lg">{order.customerName}</span>
           <span className="text-lg font-semibold">Nombre</span>
+          <span className="text-lg">{order.customerName}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-lg">{formValues.customerDNI}</span>
           <span className="text-lg font-semibold">DNI/NIF</span>
+          <span className="text-lg">{formValues.customerDNI}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-lg">{formValues.customerAddress}</span>
           <span className="text-lg font-semibold">Dirección</span>
+          <span className="text-lg">{formValues.customerAddress}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-lg">{formValues.customerPhone}</span>
           <span className="text-lg font-semibold">Teléfono</span>
+          <span className="text-lg">{formValues.customerPhone}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-lg">{formValues.customerEmail}</span>
           <span className="text-lg font-semibold">Email</span>
+          <span className="text-lg">{formValues.customerEmail}</span>
         </div>
       </div>
 
       <div className="border-b pb-4 space-y-2">
         <h3 className="text-xl font-semibold mb-2">Detalles del Pedido</h3>
         <div className="flex justify-between">
-          <span className="text-lg">{order.quantity} pollos</span>
           <span className="text-lg font-semibold">Cantidad</span>
+          <span className="text-lg">{order.quantity} pollos</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-lg">{format(new Date(order.pickupTime), "dd/MM/yyyy HH:mm")}</span>
           <span className="text-lg font-semibold">Fecha de recogida</span>
+          <span className="text-lg">{format(new Date(order.pickupTime), "dd/MM/yyyy HH:mm")}</span>
         </div>
         {order.details && (
           <div className="flex justify-between">
-            <span className="text-lg">{order.details}</span>
             <span className="text-lg font-semibold">Detalles</span>
+            <span className="text-lg">{order.details}</span>
           </div>
         )}
       </div>
 
       <div className="text-right">
         <div className="flex justify-between items-center">
-          <span className="text-xl font-bold">{formValues.totalAmount?.toFixed(2)}€</span>
           <span className="text-xl font-bold">Total (IVA incluido)</span>
+          <span className="text-xl font-bold">{formValues.totalAmount?.toFixed(2)}€</span>
         </div>
       </div>
     </div>
@@ -358,31 +358,31 @@ export function OrderDrawer({
               <div className="border-b pb-4 space-y-2">
                 <h3 className="text-xl font-semibold mb-2">Datos del Cliente</h3>
                 <div className="flex justify-between">
-                  <span className="text-lg">{order.customerName}</span>
                   <span className="text-lg font-semibold">Nombre</span>
+                  <span className="text-lg">{order.customerName}</span>
                 </div>
                 {order.customerPhone && (
                   <div className="flex justify-between">
-                    <span className="text-lg">{order.customerPhone}</span>
                     <span className="text-lg font-semibold">Teléfono</span>
+                    <span className="text-lg">{order.customerPhone}</span>
                   </div>
                 )}
                 {order.customerEmail && (
                   <div className="flex justify-between">
-                    <span className="text-lg">{order.customerEmail}</span>
                     <span className="text-lg font-semibold">Email</span>
+                    <span className="text-lg">{order.customerEmail}</span>
                   </div>
                 )}
                 {order.customerDNI && (
                   <div className="flex justify-between">
-                    <span className="text-lg">{order.customerDNI}</span>
                     <span className="text-lg font-semibold">DNI/NIF</span>
+                    <span className="text-lg">{order.customerDNI}</span>
                   </div>
                 )}
                 {order.customerAddress && (
                   <div className="flex justify-between">
-                    <span className="text-lg">{order.customerAddress}</span>
                     <span className="text-lg font-semibold">Dirección</span>
+                    <span className="text-lg">{order.customerAddress}</span>
                   </div>
                 )}
               </div>
@@ -390,33 +390,33 @@ export function OrderDrawer({
               <div className="border-b pb-4 space-y-2">
                 <h3 className="text-xl font-semibold mb-2">Detalles del Pedido</h3>
                 <div className="flex justify-between">
-                  <span className="text-lg">{order.quantity} pollos</span>
                   <span className="text-lg font-semibold">Cantidad</span>
+                  <span className="text-lg">{order.quantity} pollos</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-lg font-semibold">Fecha</span>
                   <span className="text-lg">
                     {format(new Date(order.pickupTime), "d 'de' MMMM", { locale: es })}
                   </span>
-                  <span className="text-lg font-semibold">Fecha</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-lg font-semibold">Hora</span>
                   <span className="text-lg">
                     {format(new Date(order.pickupTime), "HH:mm")}
                   </span>
-                  <span className="text-lg font-semibold">Hora</span>
                 </div>
                 {order.details && (
                   <div className="flex justify-between">
-                    <span className="text-lg">{order.details}</span>
                     <span className="text-lg font-semibold">Detalles</span>
+                    <span className="text-lg">{order.details}</span>
                   </div>
                 )}
                 {order.totalAmount && (
                   <div className="flex justify-between mt-4">
+                    <span className="text-xl font-bold">Total (IVA incluido)</span>
                     <span className="text-xl font-bold">
                       {parseFloat(order.totalAmount.toString()).toFixed(2)}€
                     </span>
-                    <span className="text-xl font-bold">Total (IVA incluido)</span>
                   </div>
                 )}
               </div>
@@ -426,7 +426,6 @@ export function OrderDrawer({
                   onClick={() => onConfirm(order.id)}
                   className="w-full text-2xl py-8 bg-green-300 hover:bg-green-500"
                   variant="outline"
-                  
                 >
                   ✔️ Confirmar Pedido
                 </Button>

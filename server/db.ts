@@ -11,7 +11,7 @@ export async function push() {
   try {
     // Import is done dynamically to avoid issues with ESM
     const { migrate } = await import("drizzle-orm/neon-serverless/migrator");
-    await migrate(db, { migrationsFolder: "./drizzle" });
+    await migrate(db, { migrationsFolder: "./migrations" });
     return true;
   } catch (error) {
     console.error("Migration failed:", error);

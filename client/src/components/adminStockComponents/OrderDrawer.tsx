@@ -41,18 +41,21 @@ export function OrderDrawer({
 }: OrderDrawerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
+  const [isPreviewingInvoice, setIsPreviewingInvoice] = useState(false);
   const { toast } = useToast();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-      customerEmail: order?.customerEmail || '',
-      customerPhone: order?.customerPhone || '',
-      customerDNI: order?.customerDNI || '',
-      customerAddress: order?.customerAddress || '',
-      totalAmount: order?.totalAmount ? parseFloat(order.totalAmount.toString()) : 0,
+      customerEmail: order?.customerEmail || 'cliente@ejemplo.com',
+      customerPhone: order?.customerPhone || '666777888',
+      customerDNI: order?.customerDNI || '12345678A',
+      customerAddress: order?.customerAddress || 'Calle Ejemplo 123, 28001 Madrid',
+      totalAmount: order?.totalAmount ? parseFloat(order.totalAmount.toString()) : 15.90,
     }
   });
+
+  const formValues = watch();
 
   const editForm = useForm({
     defaultValues: {
@@ -92,6 +95,7 @@ export function OrderDrawer({
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setIsGeneratingInvoice(false);
+      setIsPreviewingInvoice(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -113,6 +117,7 @@ export function OrderDrawer({
   const handleCancel = () => {
     setIsEditing(false);
     setIsGeneratingInvoice(false);
+    setIsPreviewingInvoice(false);
     reset();
     editForm.reset();
   };
@@ -120,6 +125,42 @@ export function OrderDrawer({
   if (!order) return null;
 
   const invoiceNumber = generateInvoiceNumber(order.id);
+
+  const renderInvoicePreview = () => (
+    <div className="p-6 border rounded-lg bg-white space-y-4">
+      <div className="text-center border-b pb-4">
+        <img 
+          src="/img/corporativa/slogan-negro.png" 
+          alt="Slogan" 
+          className="mx-auto h-16 mb-4"
+        />
+        <h2 className="text-3xl font-bold">Factura #{invoiceNumber}</h2>
+        <p className="text-gray-600">{format(new Date(), "dd/MM/yyyy")}</p>
+      </div>
+
+      <div className="border-b pb-4">
+        <h3 className="text-xl font-semibold mb-2">Datos del Cliente</h3>
+        <p>Nombre: {order.customerName}</p>
+        <p>DNI/NIF: {formValues.customerDNI}</p>
+        <p>Dirección: {formValues.customerAddress}</p>
+        <p>Teléfono: {formValues.customerPhone}</p>
+        <p>Email: {formValues.customerEmail}</p>
+      </div>
+
+      <div className="border-b pb-4">
+        <h3 className="text-xl font-semibold mb-2">Detalles del Pedido</h3>
+        <p>Cantidad: {order.quantity} pollos</p>
+        <p>Fecha de recogida: {format(new Date(order.pickupTime), "dd/MM/yyyy HH:mm")}</p>
+        {order.details && <p>Detalles: {order.details}</p>}
+      </div>
+
+      <div className="text-right">
+        <p className="text-xl font-bold">
+          Total (IVA incluido): {formValues.totalAmount?.toFixed(2)}€
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -135,56 +176,74 @@ export function OrderDrawer({
 
         <div className="p-6 space-y-6">
           {isGeneratingInvoice ? (
-            <form onSubmit={handleSubmit(handleGenerateInvoice)} className="space-y-4">
-              <div>
-                <Label className="text-lg">Email del cliente</Label>
-                <Input {...register('customerEmail')} className="mt-2" />
-                {errors.customerEmail && (
-                  <p className="text-red-500">{errors.customerEmail.message}</p>
-                )}
-              </div>
-              <div>
-                <Label className="text-lg">Teléfono</Label>
-                <Input {...register('customerPhone')} className="mt-2" />
-                {errors.customerPhone && (
-                  <p className="text-red-500">{errors.customerPhone.message}</p>
-                )}
-              </div>
-              <div>
-                <Label className="text-lg">DNI/NIF</Label>
-                <Input {...register('customerDNI')} className="mt-2" />
-                {errors.customerDNI && (
-                  <p className="text-red-500">{errors.customerDNI.message}</p>
-                )}
-              </div>
-              <div>
-                <Label className="text-lg">Dirección</Label>
-                <Input {...register('customerAddress')} className="mt-2" />
-                {errors.customerAddress && (
-                  <p className="text-red-500">{errors.customerAddress.message}</p>
-                )}
-              </div>
-              <div>
-                <Label className="text-lg">Total (con IVA)</Label>
-                <Input 
-                  type="number" 
-                  step="0.01" 
-                  {...register('totalAmount')} 
-                  className="mt-2" 
-                />
-                {errors.totalAmount && (
-                  <p className="text-red-500">{errors.totalAmount.message}</p>
-                )}
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button type="submit" className="flex-1">
-                  Generar y Enviar Factura
-                </Button>
-                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
-                  Cancelar
-                </Button>
-              </div>
-            </form>
+            <>
+              <form onSubmit={handleSubmit(data => {
+                setIsPreviewingInvoice(true);
+              })} className="space-y-4">
+                <div>
+                  <Label className="text-lg">Email del cliente</Label>
+                  <Input {...register('customerEmail')} className="mt-2" />
+                  {errors.customerEmail && (
+                    <p className="text-red-500">{errors.customerEmail.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-lg">Teléfono</Label>
+                  <Input {...register('customerPhone')} className="mt-2" />
+                  {errors.customerPhone && (
+                    <p className="text-red-500">{errors.customerPhone.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-lg">DNI/NIF</Label>
+                  <Input {...register('customerDNI')} className="mt-2" />
+                  {errors.customerDNI && (
+                    <p className="text-red-500">{errors.customerDNI.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-lg">Dirección</Label>
+                  <Input {...register('customerAddress')} className="mt-2" />
+                  {errors.customerAddress && (
+                    <p className="text-red-500">{errors.customerAddress.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-lg">Total (con IVA)</Label>
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    {...register('totalAmount')} 
+                    className="mt-2" 
+                  />
+                  {errors.totalAmount && (
+                    <p className="text-red-500">{errors.totalAmount.message}</p>
+                  )}
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" className="flex-1">
+                    Vista Previa
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+
+              {isPreviewingInvoice && (
+                <div className="mt-8 space-y-4">
+                  {renderInvoicePreview()}
+                  <div className="flex gap-2">
+                    <Button onClick={() => handleGenerateInvoice(formValues)} className="flex-1">
+                      Generar y Enviar Factura
+                    </Button>
+                    <Button onClick={() => setIsPreviewingInvoice(false)} variant="outline" className="flex-1">
+                      Editar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : isEditing ? (
             <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
               <div>

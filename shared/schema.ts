@@ -23,9 +23,9 @@ export const products = pgTable("products", {
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   customerName: text("customer_name").notNull(),
-  customerPhone: text("customer_phone"),  // Remove .notNull() to allow null
+  customerPhone: text("customer_phone"),  // Allow null
   customerEmail: text("customer_email"),
-  quantity: decimal("quantity").notNull(),
+  quantity: decimal("quantity", { precision: 3, scale: 1 }).notNull(),
   items: text("items").array(),
   totalAmount: integer("total_amount").notNull(),
   status: text("status").default("pending"),
@@ -36,10 +36,10 @@ export const orders = pgTable("orders", {
 export const stock = pgTable("stock", {
   id: serial("id").primaryKey(),
   date: timestamp("date").notNull(),
-  initialStock: decimal("initial_stock").notNull(),
-  currentStock: decimal("current_stock").notNull(),
-  unreservedStock: decimal("unreserved_stock").notNull(),
-  reservedStock: decimal("reserved_stock").notNull(),
+  initialStock: decimal("initial_stock", { precision: 5, scale: 1 }).notNull(),
+  currentStock: decimal("current_stock", { precision: 5, scale: 1 }).notNull(),
+  unreservedStock: decimal("unreserved_stock", { precision: 5, scale: 1 }).notNull(),
+  reservedStock: decimal("reserved_stock", { precision: 5, scale: 1 }).notNull(),
 });
 
 export const businessHours = pgTable("business_hours", {
@@ -55,10 +55,11 @@ export const businessHours = pgTable("business_hours", {
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, deleted: true });
 export const insertProductSchema = createInsertSchema(products).omit({ id: true, deleted: true });
 export const insertOrderSchema = createInsertSchema(orders)
-.omit({ id: true, deleted: true, status: true })
-.extend({
-  pickupTime: z.string().transform((val) => new Date(val)), // Convierte el string a Date automáticamente
-});
+  .omit({ id: true, deleted: true, status: true })
+  .extend({
+    pickupTime: z.string().transform((val) => new Date(val)),
+    quantity: z.number().min(0.5).step(0.5), // Solo permitir incrementos de 0.5
+  });
 
 export const insertStockSchema = createInsertSchema(stock).omit({ id: true });
 export const insertBusinessHoursSchema = createInsertSchema(businessHours).omit({ id: true });

@@ -16,9 +16,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Calcular el stock reservado basado en los pedidos pendientes
     const reservedStock = orders
       .filter(order => order.status === "pending")
-      .reduce((total, order) => total + (order.quantity || 0), 0);
+      .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
 
-    const currentStock = stock?.currentStock || 0;
+    const currentStock = parseFloat((stock?.currentStock || 0).toString());
 
     const response = {
       ...stock,
@@ -34,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const currentStock = await storage.getCurrentStock();
     const updatedStock = {
       ...currentStock,
-      currentStock: (currentStock?.currentStock || 0) + quantity,
+      currentStock: parseFloat((currentStock?.currentStock || 0).toString()) + parseFloat(quantity),
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);
@@ -43,12 +43,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/stock/remove", async (req, res) => {
     const { quantity } = req.body;
     const currentStock = await storage.getCurrentStock();
-    if ((currentStock?.currentStock || 0) - quantity < 0) {
-      return res.status(400).json({ error: "No hay suficiente stock" });
-    }
     const updatedStock = {
       ...currentStock,
-      currentStock: (currentStock?.currentStock || 0) - quantity,
+      currentStock: parseFloat((currentStock?.currentStock || 0).toString()) - parseFloat(quantity),
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);
@@ -57,12 +54,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/stock/sell", async (req, res) => {
     const { quantity } = req.body;
     const currentStock = await storage.getCurrentStock();
-    if ((currentStock?.currentStock || 0) - quantity < 0) {
-      return res.status(400).json({ error: "No hay suficiente stock" });
-    }
     const updatedStock = {
       ...currentStock,
-      currentStock: (currentStock?.currentStock || 0) - quantity,
+      currentStock: parseFloat((currentStock?.currentStock || 0).toString()) - parseFloat(quantity),
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);

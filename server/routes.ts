@@ -4,10 +4,70 @@ import { storage } from "./storage";
 import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema } from "@shared/schema";
 import { scrapeGoogleBusinessHours } from "./scraper";
-import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // Stock Management Routes
+  app.get("/api/stock", async (_req, res) => {
+    const stock = await storage.getCurrentStock();
+    res.json(stock);
+  });
+
+  app.post("/api/stock/add", async (req, res) => {
+    const { quantity } = req.body;
+    const currentStock = await storage.getCurrentStock();
+    const updatedStock = {
+      ...currentStock,
+      currentStock: (currentStock?.currentStock || 0) + quantity,
+      unreservedStock: (currentStock?.unreservedStock || 0) + quantity
+    };
+    const result = await storage.updateStock(updatedStock);
+    res.json(result);
+  });
+
+  app.post("/api/stock/remove", async (req, res) => {
+    const { quantity } = req.body;
+    const currentStock = await storage.getCurrentStock();
+    if ((currentStock?.currentStock || 0) - quantity < 0) {
+      return res.status(400).json({ error: "No hay suficiente stock" });
+    }
+    const updatedStock = {
+      ...currentStock,
+      currentStock: (currentStock?.currentStock || 0) - quantity,
+      unreservedStock: (currentStock?.unreservedStock || 0) - quantity
+    };
+    const result = await storage.updateStock(updatedStock);
+    res.json(result);
+  });
+
+  app.post("/api/stock/sell", async (req, res) => {
+    const { quantity } = req.body;
+    const currentStock = await storage.getCurrentStock();
+    if ((currentStock?.unreservedStock || 0) - quantity < 0) {
+      return res.status(400).json({ error: "No hay suficiente stock sin reservar" });
+    }
+    const updatedStock = {
+      ...currentStock,
+      currentStock: (currentStock?.currentStock || 0) - quantity,
+      unreservedStock: (currentStock?.unreservedStock || 0) - quantity
+    };
+    const result = await storage.updateStock(updatedStock);
+    res.json(result);
+  });
+
+  app.post("/api/stock/reset", async (_req, res) => {
+    const today = new Date();
+    const newStock = {
+      date: today,
+      initialStock: 0,
+      currentStock: 0,
+      reservedStock: 0,
+      unreservedStock: 0
+    };
+    const result = await storage.updateStock(newStock);
+    res.json(result);
+  });
 
   // Admin routes for database management
   app.post("/api/admin/run-migrations", async (_req, res) => {
@@ -150,17 +210,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const id = parseInt(req.params.id);
     await storage.deleteOrder(id);
     res.status(204).end();
-  });
-
-  // Stock
-  app.get("/api/stock", async (_req, res) => {
-    const stock = await storage.getCurrentStock();
-    res.json(stock);
-  });
-
-  app.patch("/api/stock", async (req, res) => {
-    const stock = await storage.updateStock(req.body);
-    res.json(stock);
   });
 
   // Business Hours

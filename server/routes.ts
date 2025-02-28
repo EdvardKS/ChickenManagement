@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import cron from "node-cron";
-import { insertOrderSchema, insertProductSchema, insertCategorySchema } from "@shared/schema";
+import { insertOrderSchema, insertProductSchema, insertCategorySchema, insertSettingsSchema } from "@shared/schema";
 import { scrapeGoogleBusinessHours } from "./scraper";
 import { format } from "date-fns";
 import nodemailer from "nodemailer";
@@ -705,6 +705,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error getting product analytics:', error);
       res.status(500).json({ error: 'Error al obtener análisis de productos' });
+    }
+  });
+
+
+  // Settings routes
+  app.get("/api/settings", async (_req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error('Error getting settings:', error);
+      res.status(500).json({ error: 'Error al obtener la configuración' });
+    }
+  });
+
+  app.post("/api/settings", async (req, res) => {
+    try {
+      const setting = insertSettingsSchema.parse(req.body);
+      const created = await storage.createSetting(setting);
+      res.json(created);
+    } catch (error) {
+      console.error('Error creating setting:', error);
+      res.status(500).json({ error: 'Error al crear la configuración' });
+    }
+  });
+
+  app.patch("/api/settings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const setting = insertSettingsSchema.partial().parse(req.body);
+      const updated = await storage.updateSetting(id, setting);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating setting:', error);
+      res.status(500).json({ error: 'Error al actualizar la configuración' });
+    }
+  });
+
+  app.delete("/api/settings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteSetting(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error('Error deleting setting:', error);
+      res.status(500).json({ error: 'Error al eliminar la configuración' });
+    }
+  });
+
+  // Add default settings if they don't exist
+  app.post("/api/settings/initialize", async (_req, res) => {
+    try {
+      const defaultSettings = [
+        { key: 'smtp_host', value: 'smtp.gmail.com' },
+        { key: 'smtp_port', value: '587' },
+        { key: 'smtp_user', value: 'your-email@gmail.com' },
+        { key: 'smtp_pass', value: 'your-app-password' },
+        { key: 'smtp_from', value: 'Your Restaurant <your-email@gmail.com>' },
+        { key: 'dias_abierto', value: '["V","S","D"]' },
+        { key: 'horario_abertura', value: '10:00' },
+        { key: 'horario_cerrar', value: '16:00' },
+        { key: 'minimo_pedido', value: '1' },
+        { key: 'maximo_pedido', value: '10' },
+        { key: 'tiempo_preparacion', value: '30' }, // minutos
+        { key: 'intervalo_recogida', value: '15' }, // minutos
+      ];
+
+      for (const setting of defaultSettings) {
+        const existing = await storage.getSettingByKey(setting.key);
+        if (!existing) {
+          await storage.createSetting(setting);
+        }
+      }
+
+      res.json({ message: 'Configuración inicial creada correctamente' });
+    } catch (error) {
+      console.error('Error initializing settings:', error);
+      res.status(500).json({ error: 'Error al inicializar la configuración' });
     }
   });
 

@@ -20,6 +20,7 @@ import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
 import NotFound from "@/pages/not-found";
+import AdminSettings from "@/pages/admin/settings"; // Added import
 
 // Update document metadata for SEO
 document.title = "Asador La Morenica | Pollos Asados a la Leña en Villena";
@@ -79,6 +80,11 @@ function Router() {
               <AdminDatabase />
             </div>
           </Route>
+          <Route path="/admin/settings"> {/* Added route */}
+            <div className="px-6 py-8">
+              <AdminSettings />
+            </div>
+          </Route> {/* Added route */}
           {/* Rutas de dashboards */}
           <Route path="/admin/dashboards/:dashboard*">
             <DashboardLayout>

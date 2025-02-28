@@ -46,7 +46,7 @@
   }
 
   .hero-banner p {
-    @apply text-xl md:text-2xl mb-8 max-w-2xl mx-auto;
+    @apply text-xl md:text-2xl mb-8   mx-auto;
   }
 
   .hero-banner-btns {

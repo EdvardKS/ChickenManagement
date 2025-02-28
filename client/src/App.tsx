@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import FloatingContact from "@/components/floating-contact";
+import AdminLayout from "@/components/layout/admin-layout";
 
 import Home from "@/pages/home";
 import Products from "@/pages/products";
@@ -16,6 +17,7 @@ import AdminHome from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
 import AdminDatabase from "@/pages/admin/database";
+import AdminSettings from "@/pages/admin/settings";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
@@ -34,8 +36,8 @@ function Router() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className={`flex-grow ${isAdminRoute ? 'bg-gray-50' : ''}`}>
+      {!isAdminRoute && <Header />}
+      <main className={isAdminRoute ? "flex-1" : ""}>
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/products">
@@ -58,36 +60,26 @@ function Router() {
               <Contact />
             </div>
           </Route>
-          {/* Rutas de administración */}
-          <Route path="/admin">
-            <div className="px-6 py-8">
-              <AdminHome />
-            </div>
-          </Route>
-          <Route path="/admin/products">
-            <div className="px-6 py-8">
-              <AdminProducts />
-            </div>
-          </Route>
-          <Route path="/admin/orders">
-            <div className="px-6 py-8">
-              <AdminOrders />
-            </div>
-          </Route>
-          <Route path="/admin/database">
-            <div className="px-6 py-8">
-              <AdminDatabase />
-            </div>
-          </Route>
-          {/* Rutas de dashboards */}
-          <Route path="/admin/dashboards/:dashboard*">
-            <DashboardLayout>
+          {/* Admin routes */}
+          <Route path="/admin*">
+            <AdminLayout>
               <Switch>
-                <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
-                <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
-                {/* Más rutas de dashboards se añadirán aquí */}
+                <Route path="/admin" component={AdminHome} />
+                <Route path="/admin/products" component={AdminProducts} />
+                <Route path="/admin/orders" component={AdminOrders} />
+                <Route path="/admin/database" component={AdminDatabase} />
+                <Route path="/admin/settings" component={AdminSettings} />
+                <Route path="/admin/dashboards/:dashboard*">
+                  <DashboardLayout>
+                    <Switch>
+                      <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
+                      <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
+                      {/* More dashboard routes will be added here */}
+                    </Switch>
+                  </DashboardLayout>
+                </Route>
               </Switch>
-            </DashboardLayout>
+            </AdminLayout>
           </Route>
           <Route>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -23,12 +23,12 @@ export const products = pgTable("products", {
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   customerName: text("customer_name").notNull(),
-  customerPhone: text("customer_phone"),
+  customerPhone: text("customer_phone"),  // Allow null
   customerEmail: text("customer_email"),
   quantity: decimal("quantity", { precision: 3, scale: 1 }).notNull(),
   items: text("items").array(),
   totalAmount: integer("total_amount").notNull(),
-  status: text("status", { enum: ['pending', 'delivered', 'cancelled', 'error'] }).default("pending"),
+  status: text("status").default("pending"),
   pickupTime: timestamp("pickup_time").notNull(),
   deleted: boolean("deleted").default(false),
 });
@@ -40,19 +40,6 @@ export const stock = pgTable("stock", {
   currentStock: decimal("current_stock", { precision: 5, scale: 1 }).notNull(),
   unreservedStock: decimal("unreserved_stock", { precision: 5, scale: 1 }).notNull(),
   reservedStock: decimal("reserved_stock", { precision: 5, scale: 1 }).notNull(),
-});
-
-export const stockLogs = pgTable("stock_logs", {
-  id: serial("id").primaryKey(),
-  date: timestamp("date").notNull(),
-  operation: text("operation", { 
-    enum: ['initial_setup', 'order_delivered', 'order_cancelled', 'order_error', 'manual_adjustment'] 
-  }).notNull(),
-  quantity: decimal("quantity", { precision: 5, scale: 1 }).notNull(),
-  previousStock: decimal("previous_stock", { precision: 5, scale: 1 }).notNull(),
-  newStock: decimal("new_stock", { precision: 5, scale: 1 }).notNull(),
-  orderId: integer("order_id").references(() => orders.id),
-  notes: text("notes"),
 });
 
 export const businessHours = pgTable("business_hours", {
@@ -71,11 +58,10 @@ export const insertOrderSchema = createInsertSchema(orders)
   .omit({ id: true, deleted: true, status: true })
   .extend({
     pickupTime: z.string().transform((val) => new Date(val)),
-    quantity: z.number().min(0.5).step(0.5),
+    quantity: z.number().min(0.5).step(0.5), // Solo permitir incrementos de 0.5
   });
 
 export const insertStockSchema = createInsertSchema(stock).omit({ id: true });
-export const insertStockLogSchema = createInsertSchema(stockLogs).omit({ id: true });
 export const insertBusinessHoursSchema = createInsertSchema(businessHours).omit({ id: true });
 
 // Types
@@ -87,7 +73,5 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Stock = typeof stock.$inferSelect;
 export type InsertStock = z.infer<typeof insertStockSchema>;
-export type StockLog = typeof stockLogs.$inferSelect;
-export type InsertStockLog = z.infer<typeof insertStockLogSchema>;
 export type BusinessHours = typeof businessHours.$inferSelect;
 export type InsertBusinessHours = z.infer<typeof insertBusinessHoursSchema>;

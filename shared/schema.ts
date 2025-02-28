@@ -25,6 +25,7 @@ export const orders = pgTable("orders", {
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone"),  // Remove .notNull() to allow null
   customerEmail: text("customer_email"),
+  quantity: integer("quantity").notNull(),
   items: text("items").array(),
   totalAmount: integer("total_amount").notNull(),
   status: text("status").default("pending"),
@@ -37,7 +38,8 @@ export const stock = pgTable("stock", {
   date: timestamp("date").notNull(),
   initialStock: integer("initial_stock").notNull(),
   currentStock: integer("current_stock").notNull(),
-  committed: integer("committed").notNull().default(0),
+  unreservedStock: integer("unreserved_stock").notNull(),
+  reservedStock: integer("reserved_stock").notNull(),
 });
 
 export const businessHours = pgTable("business_hours", {

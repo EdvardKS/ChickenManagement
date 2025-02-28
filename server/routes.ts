@@ -11,7 +11,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stock Management Routes
   app.get("/api/stock", async (_req, res) => {
     const stock = await storage.getCurrentStock();
-    res.json(stock);
+    const orders = await storage.getOrders();
+
+    // Calcular el stock reservado basado en los pedidos pendientes
+    const reservedStock = orders
+      .filter(order => order.status === "pending")
+      .reduce((total, order) => total + (order.quantity || 0), 0);
+
+    const currentStock = stock?.currentStock || 0;
+
+    const response = {
+      ...stock,
+      reservedStock,
+      unreservedStock: currentStock - reservedStock,
+    };
+
+    res.json(response);
   });
 
   app.post("/api/stock/add", async (req, res) => {
@@ -20,7 +35,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const updatedStock = {
       ...currentStock,
       currentStock: (currentStock?.currentStock || 0) + quantity,
-      unreservedStock: (currentStock?.unreservedStock || 0) + quantity
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);
@@ -35,7 +49,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const updatedStock = {
       ...currentStock,
       currentStock: (currentStock?.currentStock || 0) - quantity,
-      unreservedStock: (currentStock?.unreservedStock || 0) - quantity
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);
@@ -44,13 +57,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/stock/sell", async (req, res) => {
     const { quantity } = req.body;
     const currentStock = await storage.getCurrentStock();
-    if ((currentStock?.unreservedStock || 0) - quantity < 0) {
-      return res.status(400).json({ error: "No hay suficiente stock sin reservar" });
+    if ((currentStock?.currentStock || 0) - quantity < 0) {
+      return res.status(400).json({ error: "No hay suficiente stock" });
     }
     const updatedStock = {
       ...currentStock,
       currentStock: (currentStock?.currentStock || 0) - quantity,
-      unreservedStock: (currentStock?.unreservedStock || 0) - quantity
     };
     const result = await storage.updateStock(updatedStock);
     res.json(result);
@@ -62,8 +74,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       date: today,
       initialStock: 0,
       currentStock: 0,
+      unreservedStock: 0,
       reservedStock: 0,
-      unreservedStock: 0
     };
     const result = await storage.updateStock(newStock);
     res.json(result);

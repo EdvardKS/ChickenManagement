@@ -99,14 +99,14 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-screen w-[74%] flex flex-col">
+        <DrawerContent className="h-screen w-full sm:w-[74%] flex flex-col">
         <DrawerHeader>
           <DrawerTitle className="text-5xl text-center">Nuevo Encargo</DrawerTitle>
         </DrawerHeader>
         <form onSubmit={handleSubmit} className="p-6 my-4 space-y-6 flex-grow overflow-auto text-2xl">
 
           <div>
-            <Label className="text-2xl">Nombre del Cliente</Label>
+            <Label className="text-2xl">Nombre</Label>
             <Input 
               type="text" 
               placeholder=" " 
@@ -128,7 +128,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
           </div>
 
           <div>
-            <Label className="text-2xl">Cantidad de Pollos</Label>
+            <Label className="text-2xl">Pollos</Label>
             <Select
               value={formData.quantity}
               onValueChange={(value) => setFormData({ ...formData, quantity: value })}
@@ -151,7 +151,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
           </div>
 
           <div>
-            <Label className="text-2xl">Fecha de Recogida</Label>
+            <Label className="text-2xl">Fecha</Label>
             <Input 
               type="date" 
               value={formData.pickupDate}
@@ -161,7 +161,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
           </div>
 
           <div>
-            <Label className="text-2xl">Hora de Recogida</Label>
+            <Label className="text-2xl">Hora </Label>
             <Input 
               type="time" 
               value={formData.pickupTime}

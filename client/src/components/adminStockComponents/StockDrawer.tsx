@@ -71,6 +71,11 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   const formatQuantity = (quantity: number) => {
     return quantity === Math.floor(quantity) ? quantity.toString() : quantity.toString();
   };
+  const calculateBars = (quantity: number) => {
+    const bars = Math.floor(quantity / 6);
+    const remainingChickens = quantity % 6;
+    return remainingChickens > 0 ? `${bars} barras y ${remainingChickens} pollos` : `${bars} barras`;
+  };
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -92,6 +97,9 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
               <div className="flex justify-between mt-4">
                 <Button className="text-2xl p-5" variant="outline" onClick={() => handleUpdateStock('remove', 6)}>-6</Button>
                 <Button className="text-2xl p-5" variant="outline" onClick={() => handleUpdateStock('add', 6)}>+6</Button>
+              </div>
+              <div className="mt-4  font-semibold">
+                {calculateBars(parseInt(stock?.currentStock || "0", 10))}
               </div>
             </div>
 

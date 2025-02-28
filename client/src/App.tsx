@@ -16,6 +16,9 @@ import AdminHome from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
 import AdminDatabase from "@/pages/admin/database";
+import DashboardLayout from "@/pages/admin/dashboards/layout";
+import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
+import StockLevels from "@/pages/admin/dashboards/stock-levels";
 import NotFound from "@/pages/not-found";
 
 // Update document metadata for SEO
@@ -55,7 +58,7 @@ function Router() {
               <Contact />
             </div>
           </Route>
-          {/* Rutas de administración sin márgenes laterales */}
+          {/* Rutas de administración */}
           <Route path="/admin">
             <div className="px-6 py-8">
               <AdminHome />
@@ -75,6 +78,16 @@ function Router() {
             <div className="px-6 py-8">
               <AdminDatabase />
             </div>
+          </Route>
+          {/* Rutas de dashboards */}
+          <Route path="/admin/dashboards/:dashboard*">
+            <DashboardLayout>
+              <Switch>
+                <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
+                <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
+                {/* Más rutas de dashboards se añadirán aquí */}
+              </Switch>
+            </DashboardLayout>
           </Route>
           <Route>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

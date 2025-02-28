@@ -9,6 +9,9 @@ import nodemailer from "nodemailer";
 import PDFDocument from "pdfkit";
 import fs from "fs-extra";
 import path from "path";
+import { db } from './db';
+import { desc, sql, and, eq } from 'drizzle-orm';
+import { stockHistory, orders, categories, products } from '@shared/schema';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -615,6 +618,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Failed to scrape business hours:", error);
+    }
+  });
+
+  // Stock History
+  app.get("/api/stock/history", async (_req, res) => {
+    try {
+      const result = await db.select().from(stockHistory)
+        .orderBy(desc(stockHistory.createdAt))
+        .limit(100);
+      res.json(result);
+    } catch (error) {
+      console.error('Error getting stock history:', error);
+      res.status(500).json({ error: 'Error al obtener el historial de stock' });
+    }
+  });
+
+  // Sales Analytics
+  app.get("/api/analytics/sales", async (_req, res) => {
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const result = await db.select({
+        date: sql`DATE(${orders.createdAt})`,
+        total: sql`SUM(${orders.totalAmount})`,
+        count: sql`COUNT(*)`,
+      })
+      .from(orders)
+      .where(
+        and(
+          sql`${orders.createdAt} >= ${thirtyDaysAgo}`,
+          eq(orders.deleted, false)
+        )
+      )
+      .groupBy(sql`DATE(${orders.createdAt})`);
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error getting sales analytics:', error);
+      res.status(500).json({ error: 'Error al obtener análisis de ventas' });
+    }
+  });
+
+  // Customer Analytics
+  app.get("/api/analytics/customers", async (_req, res) => {
+    try {
+      const result = await db.select({
+        customerName: orders.customerName,
+        totalOrders: sql`COUNT(*)`,
+        totalSpent: sql`SUM(${orders.totalAmount})`,
+        avgOrderValue: sql`AVG(${orders.totalAmount})`,
+      })
+      .from(orders)
+      .where(eq(orders.deleted, false))
+      .groupBy(orders.customerName)
+      .orderBy(sql`COUNT(*)`, "desc")
+      .limit(10);
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error getting customer analytics:', error);
+      res.status(500).json({ error: 'Error al obtener análisis de clientes' });
+    }
+  });
+
+  // Product Performance
+  app.get("/api/analytics/products", async (_req, res) => {
+    try {
+      const result = await db.select({
+        categoryName: categories.name,
+        productCount: sql`COUNT(DISTINCT ${products.id})`,
+        avgPrice: sql`AVG(${products.price})`,
+      })
+      .from(categories)
+      .leftJoin(products, eq(categories.id, products.categoryId))
+      .where(
+        and(
+          eq(categories.deleted, false),
+          eq(products.deleted, false)
+        )
+      )
+      .groupBy(categories.name);
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error getting product analytics:', error);
+      res.status(500).json({ error: 'Error al obtener análisis de productos' });
     }
   });
 

@@ -1,0 +1,67 @@
+Funcionalidad de "Nuevo Encargo" (Pedidos):
+
+Datos a almacenar en la tabla de pedidos ("orders"):
+id (identificador único)
+fecha_creacion: Se asigna automáticamente en el servidor al crear el pedido.
+fecha_recogida: Fecha en la que se va a entregar el encargo.
+hora_recogida: Hora en la que se va a entregar el encargo.
+entregado: Booleano, por defecto false.
+cancelado: Booleano, por defecto false.
+apuntado_desde_panel: Booleano, que será true si el pedido se genera desde el panel "Nuevo Encargo".
+cantidad_pollos: Valor numérico en formato float (por ejemplo, 1.5) aunque en el frontend se muestre como “1 1/2”.
+nombre_cliente: Texto obligatorio (not null).
+telefono_cliente: Texto opcional (nullable).
+detalles: Texto opcional (nullable).
+es_dia_festivo: Booleano para marcar si el día del encargo fue festivo.
+nombre_festivo: Texto opcional para indicar qué día festivo es (si corresponde).
+(Posibles campos adicionales para futuras estadísticas).
+Rutas necesarias:
+POST /api/orders: Para crear un nuevo encargo. Debe validar los campos requeridos y asignar los valores por defecto (entregado, cancelado, apuntado_desde_panel).
+GET /api/orders: Para obtener la lista de pedidos.
+PATCH/PUT /api/orders/:id: Para actualizar el estado de un pedido (por ejemplo, marcarlo como entregado, cancelado o corregir un error).
+DELETE /api/orders/:id: Para eliminar un pedido. Al hacerlo, se debe marcar en la base de datos y ajustar el stock (reintegrar la cantidad de pollos que se había restado).
+Funcionalidad de Stock:
+
+Datos a almacenar en la tabla de stock (por ejemplo, "stock_logs" o "stock"):
+id (identificador único)
+tipo_accion: Una cadena que describa la acción (e.g., "montaje", "venta_sin_encargo", "entregado", "cancelado", "reset", "error").
+cantidad: Valor numérico (positivo o negativo) que indique el ajuste realizado.
+timestamp: Fecha y hora en la que se registró la acción.
+descripción/opcional: Información adicional para análisis posterior.
+Campos de stock a mantener en tiempo real (en otra tabla o en un registro global):
+pollos_totales_montados: Se actualiza con botones que suman/restan (normalmente en bloques de 6, con ajustes de ±1 o ±0.5).
+pollos_actual: Cantidad actual de pollos disponibles para la venta. Se actualiza cuando se realiza una venta sin encargo o cuando se marca un pedido como entregado.
+con_encargo: Suma de las cantidades de pollos en los pedidos activos.
+sin_encargo: Calculado como (pollos_actual – con_encargo).
+Rutas necesarias para stock:
+POST /api/stock/operacion: Para registrar una operación de stock (por ejemplo, al pulsar botones de ajuste, ventas sin encargo, etc.).
+GET /api/stock: Para obtener los valores actuales y el historial de operaciones.
+PATCH /api/stock/reset: Para resetear los valores diarios de stock.
+Lógica de negocio:
+Al pulsar el botón "entregado" en un pedido, se debe actualizar el campo “entregado” en el pedido y restar la cantidad correspondiente de "pollos_actual".
+Los botones de ±1 y ±0.5 para ventas sin encargo deben modificar "pollos_actual" y registrarse como operaciones en la tabla de stock.
+Si se elimina un pedido, se debe reintroducir la cantidad previamente restada a "pollos_actual". Si la eliminación se marca como error, registrar la operación para análisis.
+Incluir un pequeño botón de reset (con doble confirmación y estilos rojos de peligro) que permita reiniciar los valores del día. Este reemplaza el antiguo botón "Iniciar el día".
+Automatizar la instanciación de un nuevo stock a cero cada día a las 06:00. Además, a las 07:00 se debe ejecutar un proceso de verificación para asegurarse de que los valores se hayan reseteado; en caso contrario, se ejecuta el reset.
+Integración en la tabla de pedidos (frontend):
+
+Cada fila de pedido debe contar con botones de acción:
+Entregado: Al pulsarlo, se marca el pedido como entregado y se resta la cantidad de pollos de "pollos_actual".
+Cancelado: Marca el pedido como cancelado.
+ApuntadoPorError: Marca el pedido como error, se ajusta el stock y se registra para estadísticas.
+WhatsApp: Si el pedido tiene teléfono, debe mostrarse un ícono de WhatsApp que, al pulsarlo, genere dinámicamente un enlace (por ejemplo, https://wa.me/<telefono>?text=...) para enviar un mensaje de confirmación.
+Un único botón de acción en la tabla debe abrir un drawer con los detalles completos del pedido, centrado en la pantalla. Si el pedido requiere confirmación por WhatsApp, se debe mostrar el ícono en la esquina superior del botón de apertura del drawer para alertar a los vendedores.
+Análisis y Dashboard Administrativo:
+
+Crear una nueva página para el administrador que muestre análisis de datos:
+Estadísticas de pedidos: cantidad entregados, cancelados, errores, etc.
+Estadísticas de stock: ventas totales, stock actual, ventas sin encargo, etc.
+Información adicional basada en los datos recopilados (por ejemplo, días festivos y comportamiento de ventas en esos días).
+Requerimientos Técnicos y Consideraciones:
+
+Utilizar un framework de backend (por ejemplo, Express.js o similar) y una base de datos relacional (PostgreSQL, MySQL, etc.).
+Diseñar la base de datos de forma transaccional para asegurar la consistencia de los datos al actualizar pedidos y stock.
+Validar todas las entradas de datos y utilizar parámetros seguros para prevenir inyecciones SQL.
+El código debe ser modular, escalable y bien comentado, permitiendo futuras extensiones (por ejemplo, nuevos análisis o nuevas operaciones de stock).
+Integrar las nuevas rutas en el frontend existente, asegurando que las actualizaciones de stock y pedidos se reflejen en tiempo real.
+Incluir pruebas unitarias básicas para la lógica de negocio y las rutas.

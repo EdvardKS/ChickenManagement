@@ -3,6 +3,13 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useForm } from "react-hook-form";
@@ -138,40 +145,92 @@ export function OrderDrawer({
         <p className="text-gray-600">{format(new Date(), "dd/MM/yyyy")}</p>
       </div>
 
-      <div className="border-b pb-4">
+      <div className="border-b pb-4 space-y-2">
         <h3 className="text-xl font-semibold mb-2">Datos del Cliente</h3>
-        <p>Nombre: {order.customerName}</p>
-        <p>DNI/NIF: {formValues.customerDNI}</p>
-        <p>Dirección: {formValues.customerAddress}</p>
-        <p>Teléfono: {formValues.customerPhone}</p>
-        <p>Email: {formValues.customerEmail}</p>
+        <div className="flex justify-between">
+          <span className="text-lg">{order.customerName}</span>
+          <span className="text-lg font-semibold">Nombre</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-lg">{formValues.customerDNI}</span>
+          <span className="text-lg font-semibold">DNI/NIF</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-lg">{formValues.customerAddress}</span>
+          <span className="text-lg font-semibold">Dirección</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-lg">{formValues.customerPhone}</span>
+          <span className="text-lg font-semibold">Teléfono</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-lg">{formValues.customerEmail}</span>
+          <span className="text-lg font-semibold">Email</span>
+        </div>
       </div>
 
-      <div className="border-b pb-4">
+      <div className="border-b pb-4 space-y-2">
         <h3 className="text-xl font-semibold mb-2">Detalles del Pedido</h3>
-        <p>Cantidad: {order.quantity} pollos</p>
-        <p>Fecha de recogida: {format(new Date(order.pickupTime), "dd/MM/yyyy HH:mm")}</p>
-        {order.details && <p>Detalles: {order.details}</p>}
+        <div className="flex justify-between">
+          <span className="text-lg">{order.quantity} pollos</span>
+          <span className="text-lg font-semibold">Cantidad</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-lg">{format(new Date(order.pickupTime), "dd/MM/yyyy HH:mm")}</span>
+          <span className="text-lg font-semibold">Fecha de recogida</span>
+        </div>
+        {order.details && (
+          <div className="flex justify-between">
+            <span className="text-lg">{order.details}</span>
+            <span className="text-lg font-semibold">Detalles</span>
+          </div>
+        )}
       </div>
 
       <div className="text-right">
-        <p className="text-xl font-bold">
-          Total (IVA incluido): {formValues.totalAmount?.toFixed(2)}€
-        </p>
+        <div className="flex justify-between items-center">
+          <span className="text-xl font-bold">{formValues.totalAmount?.toFixed(2)}€</span>
+          <span className="text-xl font-bold">Total (IVA incluido)</span>
+        </div>
       </div>
     </div>
   );
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="min-h-[85vh] sm:min-h-[auto]">
+      <DrawerContent className="min-h-[85vh] sm:min-h-[auto] font-['Poppins']">
         <DrawerHeader className="text-center border-b pb-4">
-          <img 
-            src="/img/corporativa/slogan-negro.png" 
-            alt="Slogan" 
-            className="mx-auto h-16 mb-4"
-          />
-          <DrawerTitle className="text-3xl">Factura #{invoiceNumber}</DrawerTitle>
+          <div className="flex justify-between items-center px-4">
+            <div className="flex-1"></div>
+            <img 
+              src="/img/corporativa/slogan-negro.png" 
+              alt="Slogan" 
+              className="h-16"
+            />
+            <div className="flex-1 flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    ✏️ Editar Pedido
+                  </DropdownMenuItem>
+                  {!order.invoicePDF && (
+                    <DropdownMenuItem onClick={() => setIsGeneratingInvoice(true)}>
+                      🧾 Generar Factura
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => onError(order.id)}>
+                    ⚠️ Marcar como Error
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          <DrawerTitle className="text-3xl mt-4">Factura #{invoiceNumber}</DrawerTitle>
         </DrawerHeader>
 
         <div className="p-6 space-y-6">
@@ -281,51 +340,91 @@ export function OrderDrawer({
             </form>
           ) : (
             <>
-              <div className="border-b pb-4">
+              <div className="border-b pb-4 space-y-2">
                 <h3 className="text-xl font-semibold mb-2">Datos del Cliente</h3>
-                <p className="text-lg">Nombre: {order.customerName}</p>
-                {order.customerPhone && <p className="text-lg">Teléfono: {order.customerPhone}</p>}
-                {order.customerEmail && <p className="text-lg">Email: {order.customerEmail}</p>}
-                {order.customerDNI && <p className="text-lg">DNI/NIF: {order.customerDNI}</p>}
-                {order.customerAddress && <p className="text-lg">Dirección: {order.customerAddress}</p>}
+                <div className="flex justify-between">
+                  <span className="text-lg">{order.customerName}</span>
+                  <span className="text-lg font-semibold">Nombre</span>
+                </div>
+                {order.customerPhone && (
+                  <div className="flex justify-between">
+                    <span className="text-lg">{order.customerPhone}</span>
+                    <span className="text-lg font-semibold">Teléfono</span>
+                  </div>
+                )}
+                {order.customerEmail && (
+                  <div className="flex justify-between">
+                    <span className="text-lg">{order.customerEmail}</span>
+                    <span className="text-lg font-semibold">Email</span>
+                  </div>
+                )}
+                {order.customerDNI && (
+                  <div className="flex justify-between">
+                    <span className="text-lg">{order.customerDNI}</span>
+                    <span className="text-lg font-semibold">DNI/NIF</span>
+                  </div>
+                )}
+                {order.customerAddress && (
+                  <div className="flex justify-between">
+                    <span className="text-lg">{order.customerAddress}</span>
+                    <span className="text-lg font-semibold">Dirección</span>
+                  </div>
+                )}
               </div>
 
-              <div className="border-b pb-4">
+              <div className="border-b pb-4 space-y-2">
                 <h3 className="text-xl font-semibold mb-2">Detalles del Pedido</h3>
-                <p className="text-lg">Cantidad: {order.quantity} pollos</p>
-                <p className="text-lg">
-                  Fecha: {format(new Date(order.pickupTime), "EEEE d 'de' MMMM", { locale: es })}
-                </p>
-                <p className="text-lg">
-                  Hora: {format(new Date(order.pickupTime), "HH:mm")}
-                </p>
+                <div className="flex justify-between">
+                  <span className="text-lg">{order.quantity} pollos</span>
+                  <span className="text-lg font-semibold">Cantidad</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-lg">
+                    {format(new Date(order.pickupTime), "d 'de' MMMM", { locale: es })}
+                  </span>
+                  <span className="text-lg font-semibold">Fecha</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-lg">
+                    {format(new Date(order.pickupTime), "HH:mm")}
+                  </span>
+                  <span className="text-lg font-semibold">Hora</span>
+                </div>
                 {order.details && (
-                  <p className="text-lg">Detalles adicionales: {order.details}</p>
+                  <div className="flex justify-between">
+                    <span className="text-lg">{order.details}</span>
+                    <span className="text-lg font-semibold">Detalles</span>
+                  </div>
                 )}
                 {order.totalAmount && (
-                  <p className="text-lg font-bold mt-2">
-                    Total (IVA incluido): {parseFloat(order.totalAmount.toString()).toFixed(2)}€
-                  </p>
+                  <div className="flex justify-between mt-4">
+                    <span className="text-xl font-bold">
+                      {parseFloat(order.totalAmount.toString()).toFixed(2)}€
+                    </span>
+                    <span className="text-xl font-bold">Total (IVA incluido)</span>
+                  </div>
                 )}
               </div>
 
-              <div className="flex flex-col gap-3 pt-4">
-                {!order.invoicePDF && (
-                  <Button
-                    onClick={() => setIsGeneratingInvoice(true)}
-                    className="w-full text-lg"
-                    variant="outline"
-                  >
-                    🧾 Generar Factura
-                  </Button>
-                )}
-
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  className="w-full text-lg"
-                  variant="outline"
+              <div className="flex flex-col gap-4 pt-4">
+                <Button 
+                  onClick={() => onConfirm(order.id)}
+                  className="w-full text-2xl py-8"
+                  variant="default"
                 >
-                  ✏️ Editar Pedido
+                  ✔️ Confirmar Pedido
+                </Button>
+
+                <Button 
+                  onClick={() => onDelete(order.id)}
+                  className="w-full text-2xl py-8"
+                  variant="outline"
+                  style={{
+                    borderColor: 'rgb(239 68 68)',
+                    color: 'rgb(239 68 68)',
+                  }}
+                >
+                  ❌ Eliminar Pedido
                 </Button>
 
                 {order.customerPhone && (
@@ -339,36 +438,12 @@ export function OrderDrawer({
                       );
                       window.open(`https://wa.me/34${order.customerPhone}?text=${message}`, '_blank');
                     }}
-                    className="w-full text-lg"
+                    className="w-full text-2xl py-8"
                     variant="outline"
                   >
                     💬 Enviar WhatsApp
                   </Button>
                 )}
-
-                <Button 
-                  onClick={() => onConfirm(order.id)}
-                  className="w-full text-lg"
-                  variant="default"
-                >
-                  ✔️ Confirmar Pedido
-                </Button>
-
-                <Button 
-                  onClick={() => onDelete(order.id)}
-                  className="w-full text-lg"
-                  variant="destructive"
-                >
-                  ❌ Eliminar Pedido
-                </Button>
-
-                <Button 
-                  onClick={() => onError(order.id)}
-                  className="w-full text-lg"
-                  variant="outline"
-                >
-                  ⚠️ Marcar como Error
-                </Button>
               </div>
             </>
           )}

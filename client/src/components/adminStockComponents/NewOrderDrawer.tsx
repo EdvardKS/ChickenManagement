@@ -9,7 +9,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -36,6 +35,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
     pickupDate: today.toISOString().split('T')[0],
     pickupTime: "13:30",
     details: "",
+    totalAmount: 0, // Added totalAmount field
   });
 
   const createOrder = useMutation({
@@ -46,6 +46,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
         quantity: parseFloat(data.quantity),
         pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}`),
         details: data.details,
+        totalAmount: 0, // Required field, set to 0 for now
         is_manual_entry: true,
       });
       return res.json();
@@ -64,6 +65,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
         pickupDate: today.toISOString().split('T')[0],
         pickupTime: "13:30",
         details: "",
+        totalAmount: 0, // Added totalAmount field
       });
       onOpenChange(false);
     },

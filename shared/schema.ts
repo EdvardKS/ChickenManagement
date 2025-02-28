@@ -23,7 +23,7 @@ export const products = pgTable("products", {
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   customerName: text("customer_name").notNull(),
-  customerPhone: text("customer_phone").notNull(),
+  customerPhone: text("customer_phone"),  // Remove .notNull() to allow null
   customerEmail: text("customer_email"),
   items: text("items").array(),
   totalAmount: integer("total_amount").notNull(),

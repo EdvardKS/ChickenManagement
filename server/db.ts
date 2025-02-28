@@ -3,16 +3,16 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import * as schema from "@shared/schema";
 import { WebSocket } from "ws";
 
+// Configure database connection with retries
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL!,
-  // Adding additional configuration for WebSocket stability
   max: 1,
   connectionTimeoutMillis: 5000,
   // Use the ws package for WebSocket connections
-  webSocketConstructor: WebSocket
+  webSocketConstructor: WebSocket as any
 });
 
-export const db = drizzle(pool, { schema });
+const db = drizzle(pool, { schema });
 
 // Helper function to run migrations
 export async function push() {
@@ -45,5 +45,13 @@ export async function checkConnection() {
   }
 }
 
-// Initialize connection
-checkConnection().catch(console.error);
+// Initialize connection and run migrations
+checkConnection()
+  .then(() => {
+    console.log('Database connected, running migrations...');
+    return push();
+  })
+  .then(() => {
+    console.log('Migrations completed successfully');
+  })
+  .catch(console.error);

@@ -52,7 +52,12 @@ export const businessHours = pgTable("business_hours", {
 // Insert Schemas
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, deleted: true });
 export const insertProductSchema = createInsertSchema(products).omit({ id: true, deleted: true });
-export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, deleted: true, status: true });
+export const insertOrderSchema = createInsertSchema(orders)
+.omit({ id: true, deleted: true, status: true })
+.extend({
+  pickupTime: z.string().transform((val) => new Date(val)), // Convierte el string a Date automáticamente
+});
+
 export const insertStockSchema = createInsertSchema(stock).omit({ id: true });
 export const insertBusinessHoursSchema = createInsertSchema(businessHours).omit({ id: true });
 

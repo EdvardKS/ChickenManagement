@@ -8,27 +8,24 @@ import Footer from "@/components/layout/footer";
 import FloatingContact from "@/components/floating-contact";
 import AdminLayout from "@/components/layout/admin-layout";
 
+// Public pages
 import Home from "@/pages/home";
 import Products from "@/pages/products";
 import Order from "@/pages/order";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
+
+// Admin pages
 import AdminHome from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
-import AdminDatabase from "@/pages/admin/database";
 import AdminSettings from "@/pages/admin/settings";
+
+// Dashboard pages
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
 import NotFound from "@/pages/not-found";
-
-// Update document metadata for SEO
-document.title = "Asador La Morenica | Pollos Asados a la Leña en Villena";
-const metaDescription = document.createElement('meta');
-metaDescription.name = 'description';
-metaDescription.content = 'Los mejores pollos asados a la leña en Villena y comarca. Tradición y sabor único desde hace más de 20 años. Fusión de cocina española y armenia.';
-document.head.appendChild(metaDescription);
 
 function Router() {
   const [location] = useLocation();
@@ -39,6 +36,7 @@ function Router() {
       {!isAdminRoute && <Header />}
       <main className={isAdminRoute ? "flex-1" : ""}>
         <Switch>
+          {/* Public routes */}
           <Route path="/" component={Home} />
           <Route path="/products">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -60,28 +58,32 @@ function Router() {
               <Contact />
             </div>
           </Route>
-          <Route path="/admin">
-            {({ params }) => (
-              <AdminLayout>
+
+          {/* Admin routes */}
+          <Route path="/admin/dashboards/:page*">
+            <AdminLayout>
+              <DashboardLayout>
                 <Switch>
-                  <Route path="/admin" component={AdminHome} />
-                  <Route path="/admin/products" component={AdminProducts} />
-                  <Route path="/admin/orders" component={AdminOrders} />
-                  <Route path="/admin/database" component={AdminDatabase} />
-                  <Route path="/admin/settings" component={AdminSettings} />
-                  <Route path="/admin/dashboards">
-                    <DashboardLayout>
-                      <Switch>
-                        <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
-                        <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
-                      </Switch>
-                    </DashboardLayout>
-                  </Route>
+                  <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
+                  <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
                   <Route component={NotFound} />
                 </Switch>
-              </AdminLayout>
-            )}
+              </DashboardLayout>
+            </AdminLayout>
           </Route>
+
+          <Route path="/admin/:page*">
+            <AdminLayout>
+              <Switch>
+                <Route path="/admin" component={AdminHome} />
+                <Route path="/admin/products" component={AdminProducts} />
+                <Route path="/admin/orders" component={AdminOrders} />
+                <Route path="/admin/settings" component={AdminSettings} />
+                <Route component={NotFound} />
+              </Switch>
+            </AdminLayout>
+          </Route>
+
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -3,8 +3,11 @@ import {
   type Product, type InsertProduct,
   type Order, type InsertOrder,
   type Stock, type InsertStock,
-  type BusinessHours, type InsertBusinessHours
+  type BusinessHours, type InsertBusinessHours,
+  categories, products, orders, stock, stockHistory, orderLogs, businessHours
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
@@ -31,155 +34,225 @@ export interface IStorage {
   // Stock
   getCurrentStock(): Promise<Stock | undefined>;
   updateStock(stock: Partial<Stock>): Promise<Stock>;
-  
+
   // Business Hours
   getBusinessHours(): Promise<BusinessHours[]>;
   updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours>;
 }
 
-export class MemStorage implements IStorage {
-  private categories: Map<number, Category>;
-  private products: Map<number, Product>;
-  private orders: Map<number, Order>;
-  private stockRecords: Map<string, Stock>;
-  private businessHours: Map<number, BusinessHours>;
-  private currentId: { [key: string]: number };
-
-  constructor() {
-    this.categories = new Map();
-    this.products = new Map();
-    this.orders = new Map();
-    this.stockRecords = new Map();
-    this.businessHours = new Map();
-    this.currentId = {
-      categories: 1,
-      products: 1,
-      orders: 1,
-      stock: 1,
-      businessHours: 1
-    };
-  }
-
+export class DatabaseStorage implements IStorage {
   // Categories
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values()).filter(c => !c.deleted);
+    return await db.select().from(categories).where(eq(categories.deleted, false));
   }
 
   async getCategory(id: number): Promise<Category | undefined> {
-    return this.categories.get(id);
+    const [category] = await db.select().from(categories).where(eq(categories.id, id));
+    return category;
   }
 
   async createCategory(category: InsertCategory): Promise<Category> {
-    const id = this.currentId.categories++;
-    const newCategory = { ...category, id, deleted: false };
-    this.categories.set(id, newCategory);
+    const [newCategory] = await db.insert(categories).values(category).returning();
     return newCategory;
   }
 
   async updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category> {
-    const existing = await this.getCategory(id);
-    if (!existing) throw new Error("Category not found");
-    const updated = { ...existing, ...category };
-    this.categories.set(id, updated);
+    const [updated] = await db
+      .update(categories)
+      .set(category)
+      .where(eq(categories.id, id))
+      .returning();
     return updated;
   }
 
   async deleteCategory(id: number): Promise<void> {
-    const category = await this.getCategory(id);
-    if (category) {
-      this.categories.set(id, { ...category, deleted: true });
-    }
+    await db
+      .update(categories)
+      .set({ deleted: true })
+      .where(eq(categories.id, id));
   }
 
   // Products
   async getProducts(categoryId?: number): Promise<Product[]> {
-    return Array.from(this.products.values())
-      .filter(p => !p.deleted && (!categoryId || p.categoryId === categoryId));
+    let query = db.select().from(products).where(eq(products.deleted, false));
+    if (categoryId) {
+      query = query.where(eq(products.categoryId, categoryId));
+    }
+    return await query;
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
-    return this.products.get(id);
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const id = this.currentId.products++;
-    const newProduct = { ...product, id, deleted: false };
-    this.products.set(id, newProduct);
+    const [newProduct] = await db.insert(products).values(product).returning();
     return newProduct;
   }
 
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product> {
-    const existing = await this.getProduct(id);
-    if (!existing) throw new Error("Product not found");
-    const updated = { ...existing, ...product };
-    this.products.set(id, updated);
+    const [updated] = await db
+      .update(products)
+      .set(product)
+      .where(eq(products.id, id))
+      .returning();
     return updated;
   }
 
   async deleteProduct(id: number): Promise<void> {
-    const product = await this.getProduct(id);
-    if (product) {
-      this.products.set(id, { ...product, deleted: true });
-    }
+    await db
+      .update(products)
+      .set({ deleted: true })
+      .where(eq(products.id, id));
   }
 
   // Orders
   async getOrders(): Promise<Order[]> {
-    return Array.from(this.orders.values()).filter(o => !o.deleted);
+    return await db
+      .select()
+      .from(orders)
+      .orderBy(orders.pickupTime)
+      .where(eq(orders.deleted, false));
   }
 
   async getOrder(id: number): Promise<Order | undefined> {
-    return this.orders.get(id);
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    const id = this.currentId.orders++;
-    const newOrder = { ...order, id, deleted: false, status: "pending" };
-    this.orders.set(id, newOrder);
+    const now = new Date();
+    const [newOrder] = await db
+      .insert(orders)
+      .values({
+        ...order,
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now
+      })
+      .returning();
+
+    // Registrar en el log
+    await db.insert(orderLogs).values({
+      orderId: newOrder.id,
+      action: 'create',
+      newState: JSON.stringify(newOrder),
+      createdBy: 'system'
+    });
+
     return newOrder;
   }
 
-  async updateOrder(id: number, order: Partial<Order>): Promise<Order> {
-    const existing = await this.getOrder(id);
-    if (!existing) throw new Error("Order not found");
-    const updated = { ...existing, ...order };
-    this.orders.set(id, updated);
+  async updateOrder(id: number, orderData: Partial<Order>): Promise<Order> {
+    const oldOrder = await this.getOrder(id);
+    const now = new Date();
+
+    const [updated] = await db
+      .update(orders)
+      .set({ ...orderData, updatedAt: now })
+      .where(eq(orders.id, id))
+      .returning();
+
+    // Registrar en el log
+    await db.insert(orderLogs).values({
+      orderId: id,
+      action: 'update',
+      previousState: JSON.stringify(oldOrder),
+      newState: JSON.stringify(updated),
+      createdBy: 'system'
+    });
+
     return updated;
   }
 
   async deleteOrder(id: number): Promise<void> {
-    const order = await this.getOrder(id);
-    if (order) {
-      this.orders.set(id, { ...order, deleted: true });
-    }
+    const oldOrder = await this.getOrder(id);
+
+    await db
+      .update(orders)
+      .set({ deleted: true, updatedAt: new Date() })
+      .where(eq(orders.id, id));
+
+    // Registrar en el log
+    await db.insert(orderLogs).values({
+      orderId: id,
+      action: 'delete',
+      previousState: JSON.stringify(oldOrder),
+      createdBy: 'system'
+    });
   }
 
   // Stock
   async getCurrentStock(): Promise<Stock | undefined> {
-    const today = new Date().toISOString().split('T')[0];
-    return this.stockRecords.get(today);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [currentStock] = await db
+      .select()
+      .from(stock)
+      .where(eq(stock.date, today))
+      .orderBy(desc(stock.lastUpdated))
+      .limit(1);
+
+    return currentStock;
   }
 
-  async updateStock(stock: Partial<Stock>): Promise<Stock> {
-    const today = new Date().toISOString().split('T')[0];
-    const current = this.stockRecords.get(today);
-    const updated = { ...current, ...stock };
-    this.stockRecords.set(today, updated);
-    return updated;
+  async updateStock(stockData: Partial<Stock>): Promise<Stock> {
+    const currentStock = await this.getCurrentStock();
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    let updatedStock: Stock;
+
+    if (!currentStock) {
+      const [newStock] = await db
+        .insert(stock)
+        .values({
+          ...stockData,
+          date: now,
+          lastUpdated: new Date()
+        })
+        .returning();
+      updatedStock = newStock;
+    } else {
+      const [updated] = await db
+        .update(stock)
+        .set({
+          ...stockData,
+          lastUpdated: new Date()
+        })
+        .where(eq(stock.id, currentStock.id))
+        .returning();
+      updatedStock = updated;
+    }
+
+    // Registrar en el historial
+    await db.insert(stockHistory).values({
+      stockId: updatedStock.id,
+      action: currentStock ? 'update' : 'create',
+      quantity: parseFloat(stockData.currentStock?.toString() || '0'),
+      previousStock: parseFloat(currentStock?.currentStock?.toString() || '0'),
+      newStock: parseFloat(updatedStock.currentStock.toString()),
+      createdBy: 'system'
+    });
+
+    return updatedStock;
   }
 
   // Business Hours
   async getBusinessHours(): Promise<BusinessHours[]> {
-    return Array.from(this.businessHours.values());
+    return await db.select().from(businessHours);
   }
 
   async updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours> {
-    const existing = this.businessHours.get(id);
-    if (!existing) throw new Error("Business hours not found");
-    const updated = { ...existing, ...hours };
-    this.businessHours.set(id, updated);
+    const [updated] = await db
+      .update(businessHours)
+      .set(hours)
+      .where(eq(businessHours.id, id))
+      .returning();
     return updated;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

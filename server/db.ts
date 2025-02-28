@@ -1,10 +1,10 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { Pool } from "@neondatabase/serverless";
 import * as schema from "@shared/schema";
 
 // Use environment variable for database URL
-const sql = neon(process.env.DATABASE_URL!);
-export const db = drizzle(sql, { schema });
+const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+export const db = drizzle(pool, { schema });
 
 // Helper function to run migrations
 export async function push() {

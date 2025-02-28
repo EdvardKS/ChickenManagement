@@ -1,16 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { Package, ShoppingBag, Clock } from "lucide-react";
+import { ShoppingBag, ChartBar } from "lucide-react";
 import { Link } from "wouter";
-import type { Order, Stock } from "@shared/schema";
+import type { Order } from "@shared/schema";
 
 export default function AdminHome() {
   const { data: orders } = useQuery<Order[]>({ 
     queryKey: ['/api/orders'] 
-  });
-  
-  const { data: stock } = useQuery<Stock>({ 
-    queryKey: ['/api/stock'] 
   });
 
   const pendingOrders = orders?.filter(o => o.status === "pending").length ?? 0;
@@ -34,16 +30,16 @@ export default function AdminHome() {
           </Card>
         </Link>
 
-        <Link href="/admin/stock">
+        <Link href="/admin/dashboards/orders-overview">
           <Card className="hover:bg-accent cursor-pointer">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Stock Actual
+                <ChartBar className="h-5 w-5" />
+                Dashboards
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-bold">{stock?.currentStock ?? 0}</p>
+              <p>Análisis y visualización de datos</p>
             </CardContent>
           </Card>
         </Link>
@@ -52,7 +48,7 @@ export default function AdminHome() {
           <Card className="hover:bg-accent cursor-pointer">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+                <Package className="h-5 w-5" />
                 Gestión de Productos
               </CardTitle>
             </CardHeader>

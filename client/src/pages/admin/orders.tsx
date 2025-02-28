@@ -10,8 +10,15 @@ export default function AdminOrders() {
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
   const [isStockDrawerOpen, setIsStockDrawerOpen] = useState(false);
 
-  const { data: orders } = useQuery<Order[]>({ queryKey: ['/api/orders'] });
-  const { data: stock } = useQuery<Stock>({ queryKey: ['/api/stock'] });
+  const { data: orders } = useQuery<Order[]>({ 
+    queryKey: ['/api/orders'],
+    refetchInterval: 5000 // Poll every 5 seconds
+  });
+
+  const { data: stock } = useQuery<Stock>({ 
+    queryKey: ['/api/stock'],
+    refetchInterval: 5000 // Poll every 5 seconds
+  });
 
   return (
     <div className="space-y-8">

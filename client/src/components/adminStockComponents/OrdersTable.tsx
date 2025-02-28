@@ -113,6 +113,36 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     },
   });
 
+  const updateOrder = useMutation({
+    mutationFn: async (order: Order) => {
+      try {
+        console.log('Updating order:', order.id);
+        const res = await apiRequest("PATCH", `/api/orders/${order.id}`, order);
+        console.log('Update response status:', res.status);
+        if (!res.ok) throw new Error('Error al actualizar el pedido');
+        return res.json();
+      } catch (error) {
+        console.error('Update order error:', error);
+        throw new Error('No se pudo actualizar el pedido');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setIsDrawerOpen(false);
+      toast({
+        title: "Pedido actualizado",
+        description: "El pedido se ha actualizado correctamente",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar el pedido",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
     setIsDrawerOpen(true);
@@ -186,6 +216,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         onConfirm={(id) => completeOrder.mutate(id)}
         onDelete={(id) => deleteOrder.mutate(id)}
         onError={(id) => markAsError.mutate(id)}
+        onUpdate={(order) => updateOrder.mutate(order)}
       />
     </div>
   );

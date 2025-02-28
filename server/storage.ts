@@ -10,40 +10,13 @@ import {
 } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
-export interface IStorage {
-  // Categories
-  getCategories(): Promise<Category[]>;
-  getCategory(id: number): Promise<Category | undefined>;
-  createCategory(category: InsertCategory): Promise<Category>;
-  updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category>;
-  deleteCategory(id: number): Promise<void>;
+// Configure database connection with retries
+const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL!,
+  max: 1,
+  connectionTimeoutMillis: 5000
+});
 
-  // Products
-  getProducts(categoryId?: number): Promise<Product[]>;
-  getProduct(id: number): Promise<Product | undefined>;
-  createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product>;
-  deleteProduct(id: number): Promise<void>;
-
-  // Orders
-  getOrders(): Promise<Order[]>;
-  getOrder(id: number): Promise<Order | undefined>;
-  createOrder(order: InsertOrder): Promise<Order>;
-  updateOrder(id: number, order: Partial<Order>): Promise<Order>;
-  deleteOrder(id: number): Promise<void>;
-  markOrderAsError(id: number): Promise<void>;
-
-  // Stock
-  getCurrentStock(): Promise<Stock | undefined>;
-  updateStock(stock: Partial<Stock>): Promise<Stock>;
-
-  // Business Hours
-  getBusinessHours(): Promise<BusinessHours[]>;
-  updateBusinessHours(id: number, hours: Partial<InsertBusinessHours>): Promise<BusinessHours>;
-}
-
-// Configure database connection
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 const db = drizzle(pool, { schema: { categories, products, orders, stock, businessHours } });
 
 export class DatabaseStorage implements IStorage {
@@ -184,34 +157,49 @@ export class DatabaseStorage implements IStorage {
         .set({ 
           status: "error",
           deleted: true, // Mark as deleted to remove from active orders
-          errorDate: new Date()
+          errorDate: new Date(),
+          errorReason: "Marked as error by user"
         })
         .where(eq(orders.id, id))
         .returning();
       console.log('Order marked as error result:', res);
     } catch (error) {
-      console.error('Error marking order as error:', error);
-      throw error;
+      console.error('Mark as error error:', error);
+      throw new Error('No se pudo marcar el pedido como error');
     }
   }
 
   // Stock
   async getCurrentStock(): Promise<Stock | undefined> {
-    const [currentStock] = await db
-      .select()
-      .from(stock)
-      .orderBy(stock.date)
-      .limit(1);
-    return currentStock;
+    try {
+      console.log('Fetching current stock...');
+      const [currentStock] = await db
+        .select()
+        .from(stock)
+        .orderBy(stock.date)
+        .limit(1);
+      console.log('Current stock:', currentStock);
+      return currentStock;
+    } catch (error) {
+      console.error('Error fetching stock:', error);
+      throw error;
+    }
   }
 
   async updateStock(stockUpdate: Partial<Stock>): Promise<Stock> {
-    const [updated] = await db
-      .update(stock)
-      .set(stockUpdate)
-      .where(eq(stock.id, stockUpdate.id!))
-      .returning();
-    return updated;
+    try {
+      console.log('Updating stock:', stockUpdate);
+      const [updated] = await db
+        .update(stock)
+        .set(stockUpdate)
+        .where(eq(stock.id, stockUpdate.id!))
+        .returning();
+      console.log('Updated stock:', updated);
+      return updated;
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      throw error;
+    }
   }
 
   // Business Hours
@@ -228,5 +216,11 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 }
+
+// Handle connection errors
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
 
 export const storage = new DatabaseStorage();

@@ -205,30 +205,45 @@ export function OrderDrawer({
             <img 
               src="/img/corporativa/slogan-negro.png" 
               alt="Slogan" 
-              className="h-16"
+              className="h-36"
             />
             <div className="flex-1 flex justify-end">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-6 w-6" />
+                  <Button 
+                    variant="ghost" 
+                    size="lg" 
+                    className="border border-grey p-2 rounded-md"
+                  >
+                    <MoreVertical className="h-12 w-12" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+
+                <DropdownMenuContent align="end" className="text-xl">
+                  <DropdownMenuItem 
+                    onClick={() => setIsEditing(true)} 
+                    className="text-xl py-4 px-6"
+                  >
                     ✏️ Editar Pedido
                   </DropdownMenuItem>
                   {!order.invoicePDF && (
-                    <DropdownMenuItem onClick={() => setIsGeneratingInvoice(true)}>
+                    <DropdownMenuItem 
+                      onClick={() => setIsGeneratingInvoice(true)} 
+                      className="text-xl py-4 px-6"
+                    >
                       🧾 Generar Factura
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => onError(order.id)}>
+                  <DropdownMenuItem 
+                    onClick={() => onError(order.id)} 
+                    className="text-xl py-4 px-6"
+                  >
                     ⚠️ Marcar como Error
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+
           </div>
           <DrawerTitle className="text-3xl mt-4">Factura #{invoiceNumber}</DrawerTitle>
         </DrawerHeader>
@@ -409,8 +424,9 @@ export function OrderDrawer({
               <div className="flex flex-col gap-4 pt-4">
                 <Button 
                   onClick={() => onConfirm(order.id)}
-                  className="w-full text-2xl py-8"
-                  variant="default"
+                  className="w-full text-2xl py-8 bg-green-300 hover:bg-green-500"
+                  variant="outline"
+                  
                 >
                   ✔️ Confirmar Pedido
                 </Button>
@@ -424,7 +440,7 @@ export function OrderDrawer({
                     color: 'rgb(239 68 68)',
                   }}
                 >
-                  ❌ Eliminar Pedido
+                  ❌ Cancelar Pedido
                 </Button>
 
                 {order.customerPhone && (

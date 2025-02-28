@@ -15,8 +15,7 @@ import Contact from "@/pages/contact";
 import AdminHome from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
-import AdminStock from "@/pages/admin/stock";
-import AdminDatabase from "@/pages/admin/database"; // Agregamos la nueva página
+import AdminDatabase from "@/pages/admin/database";
 import NotFound from "@/pages/not-found";
 
 // Update document metadata for SEO
@@ -66,11 +65,6 @@ function Router() {
           <Route path="/admin/orders">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <AdminOrders />
-            </div>
-          </Route>
-          <Route path="/admin/stock">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <AdminStock />
             </div>
           </Route>
           <Route path="/admin/database">

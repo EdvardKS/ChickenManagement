@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import {
@@ -12,18 +12,24 @@ import {
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [location] = useLocation();
+  const isHome = location === "/";
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > window.innerHeight - 100);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    if (isHome) {
+      const handleScroll = () => {
+        setIsScrolled(window.scrollY > window.innerHeight - 100);
+      };
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    } else {
+      setIsScrolled(true);
+    }
+  }, [isHome]);
 
   return (
     <header
-      className={`fixed top-0 py-5 left-0 w-full z-50 transition-colors duration-300 ${
+      className={`${isHome ? 'fixed' : 'relative'} top-0 py-5 left-0 w-full z-50 transition-colors duration-300 ${
         isScrolled ? "bg-[#f8efe5] shadow-md" : "bg-transparent"
       }`}
     >
@@ -109,21 +115,13 @@ export default function Header() {
                   <a className="text-lg">Admin</a>
                 </Link>
                 <Link href="/order">
-                  <Button
-                    className={`${
-                      isScrolled
-                        ? "bg-transparent border-2 border-white text-white"
-                        : "bg-[#8B4513] text-white border-none"
-                    }`}
-                  >
+                  <Button className="w-full bg-[#8B4513] text-white hover:bg-[#734010]">
                     Hacer Pedido
                   </Button>
                 </Link>
               </div>
             </SheetContent>
           </Sheet>
-
-
         </div>
       </div>
     </header>

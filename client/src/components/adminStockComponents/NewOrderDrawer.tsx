@@ -101,83 +101,88 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="h-screen w-[74%] flex flex-col">
         <DrawerHeader>
-          <DrawerTitle>Nuevo Encargo</DrawerTitle>
+          <DrawerTitle className="text-5xl text-center">Nuevo Encargo</DrawerTitle>
         </DrawerHeader>
-        <form onSubmit={handleSubmit} className="p-4 space-y-4 flex-grow overflow-auto">
+        <form onSubmit={handleSubmit} className="p-6 my-4 space-y-6 flex-grow overflow-auto text-2xl">
+
           <div>
-            <Label>Nombre del Cliente</Label>
+            <Label className="text-2xl">Nombre del Cliente</Label>
             <Input 
               type="text" 
-              placeholder="Ej. Juan Pérez" 
+              placeholder=" " 
               value={formData.customerName}
               onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+              className="w-full p-6 my-4 text-2xl"
             />
           </div>
 
           <div>
-            <Label>Teléfono (opcional)</Label>
+            <Label className="text-2xl">Teléfono (opcional)</Label>
             <Input 
               type="tel" 
-              placeholder="Ej. 666555444"
+              placeholder=" "
               value={formData.customerPhone}
               onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+              className="w-full p-6 my-4 text-2xl"
             />
           </div>
 
           <div>
-            <Label>Cantidad de Pollos</Label>
+            <Label className="text-2xl">Cantidad de Pollos</Label>
             <Select
               value={formData.quantity}
               onValueChange={(value) => setFormData({ ...formData, quantity: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full p-6 my-4 text-2xl">
                 <SelectValue placeholder="Selecciona la cantidad" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">0 pollos</SelectItem> {/* Opción de 0 por defecto */}
+                <SelectItem value="0" className="text-2xl">0 pollos</SelectItem>
                 {Array.from({ length: 20 }, (_, i) => {
                   const value = (i + 1) / 2;
                   return (
-                    <SelectItem key={value} value={value.toString()}>
+                    <SelectItem key={value} value={value.toString()} className="text-2xl">
                       {value === 1 ? "1 pollo" : `${value} pollos`}
                     </SelectItem>
                   );
                 })}
               </SelectContent>
             </Select>
-
           </div>
 
           <div>
-            <Label>Fecha de Recogida</Label>
+            <Label className="text-2xl">Fecha de Recogida</Label>
             <Input 
               type="date" 
               value={formData.pickupDate}
               onChange={(e) => setFormData({ ...formData, pickupDate: e.target.value })}
+              className="w-full p-6 my-4 text-2xl"
             />
           </div>
 
           <div>
-            <Label>Hora de Recogida</Label>
+            <Label className="text-2xl">Hora de Recogida</Label>
             <Input 
               type="time" 
               value={formData.pickupTime}
               onChange={(e) => setFormData({ ...formData, pickupTime: e.target.value })}
+              className="w-full p-6 my-4 text-2xl"
             />
           </div>
 
           <div>
-            <Label>Detalles del pedido</Label>
+            <Label className="text-2xl">Detalles del pedido</Label>
             <Textarea 
               placeholder="¿Algo más?..." 
               value={formData.details}
               onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+              className="w-full p-6 my-4 text-2xl"
             />
           </div>
 
           <Button 
             type="submit"
-            className="bg-yellow-600 hover:bg-yellow-700 text-white w-full"
+            className="bg-yellow-600 hover:bg-yellow-700 text-white w-full p-6 my-4 text-2xl"
             disabled={createOrder.isPending}
           >
             {createOrder.isPending ? "Creando..." : "Crear Encargo"}
@@ -186,4 +191,5 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
       </DrawerContent>
     </Drawer>
   );
+
 }

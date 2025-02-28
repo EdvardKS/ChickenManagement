@@ -74,9 +74,9 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-screen w-full sm:w-[74%] flex flex-col">
+      <DrawerContent className="h-screen w-full sm:w-[74%] flex flex-col ">
         <DrawerHeader>
-          <DrawerTitle>Stock Actual 🐔</DrawerTitle>
+          <DrawerTitle className="  text-center text-5xl py-5">Stock Actual 🐔</DrawerTitle>
         </DrawerHeader>
         
         <div className="p-4 space-y-4 flex-grow overflow-auto">
@@ -85,7 +85,8 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
               <Label className="text-lg font-semibold">Total de pollos Montado:</Label>
               <div className="flex justify-between items-center mt-2">
                 <Button className="text-2xl p-5" variant="outline" onClick={() => handleUpdateStock('remove', 1)}>-1</Button>
-                <span className="text-4xl font-bold">{formatQuantity(stock?.currentStock || 0)}</span>
+                <span className="text-4xl font-bold">{formatQuantity(parseInt(stock?.currentStock || "0", 10))}</span>
+
                 <Button className="text-2xl p-5" variant="outline" onClick={() => handleUpdateStock('add', 1)}>+1</Button>
               </div>
               <div className="flex justify-between mt-4">

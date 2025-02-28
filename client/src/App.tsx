@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -28,15 +28,36 @@ import StockLevels from "@/pages/admin/dashboards/stock-levels";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const [location] = useLocation();
-  const isAdminRoute = location.startsWith("/admin");
+  const isAdminRoute = window.location.pathname.startsWith("/admin");
+
+  if (isAdminRoute) {
+    return (
+      <AdminLayout>
+        <Switch>
+          <Route path="/admin" component={AdminHome} />
+          <Route path="/admin/orders" component={AdminOrders} />
+          <Route path="/admin/products" component={AdminProducts} />
+          <Route path="/admin/settings" component={AdminSettings} />
+          <Route path="/admin/dashboards/:page">
+            <DashboardLayout>
+              <Switch>
+                <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
+                <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
+                <Route component={NotFound} />
+              </Switch>
+            </DashboardLayout>
+          </Route>
+          <Route component={NotFound} />
+        </Switch>
+      </AdminLayout>
+    );
+  }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {!isAdminRoute && <Header />}
-      <main className={isAdminRoute ? "flex-1" : ""}>
+    <>
+      <Header />
+      <main>
         <Switch>
-          {/* Public routes */}
           <Route path="/" component={Home} />
           <Route path="/products">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -58,42 +79,12 @@ function Router() {
               <Contact />
             </div>
           </Route>
-
-          {/* Admin routes */}
-          <Route path="/admin/dashboards/:page*">
-            <AdminLayout>
-              <DashboardLayout>
-                <Switch>
-                  <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
-                  <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
-                  <Route component={NotFound} />
-                </Switch>
-              </DashboardLayout>
-            </AdminLayout>
-          </Route>
-
-          <Route path="/admin/:page*">
-            <AdminLayout>
-              <Switch>
-                <Route path="/admin" component={AdminHome} />
-                <Route path="/admin/products" component={AdminProducts} />
-                <Route path="/admin/orders" component={AdminOrders} />
-                <Route path="/admin/settings" component={AdminSettings} />
-                <Route component={NotFound} />
-              </Switch>
-            </AdminLayout>
-          </Route>
-
           <Route component={NotFound} />
         </Switch>
       </main>
-      {!isAdminRoute && (
-        <>
-          <Footer />
-          <FloatingContact />
-        </>
-      )}
-    </div>
+      <Footer />
+      <FloatingContact />
+    </>
   );
 }
 

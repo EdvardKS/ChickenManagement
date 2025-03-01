@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Menús",
+        "description": "Tenemos menús! Echa un vistazo y encárganos.",
+        "image": "categoria_menu.jpg"
+    },
+    {
+        "name": "Aperitivo",
+        "description": "Ojea todos nuestros aperitivos! Será por variedad...",
+        "image": "categoria_aperitivo.jpg"
+    },
+    {
+        "name": "Rustidera",
+        "description": "Tu Rustidera bajo encargo, mira lo que te ofrecemos.",
+        "image": "categoria_rustidera.jpg"
+    },
+    {
+        "name": "Ensaladilla",
+        "description": "Echa un ojo a todas nuestras ensaladillas caseras.",
+        "image": "categoria_ensaladilla.jpg"
+    },
+    {
+        "name": "Paellas",
+        "description": "Encarga tu paella con antelación, revisa nuestras opciones.",
+        "image": "categoria_paellas.jpg"
+    },
+    {
+        "name": "Principal",
+        "description": "Platos principales preparados con los mejores ingredientes.",
+        "image": "categoria_principal.jpg"
+    },
+    {
+        "name": "Brasas",
+        "description": "Disfruta de carnes y pescados a la brasa, todo al punto.",
+        "image": "categoria_brasas.jpg"
+    }
+]

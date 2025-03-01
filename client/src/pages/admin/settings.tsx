@@ -3,6 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Settings } from "@shared/schema";
@@ -110,37 +118,59 @@ export default function AdminSettings() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4">
-        {settings?.map((setting) => (
-          <Card key={setting.id}>
-            <CardContent className="flex items-center gap-4 pt-6">
-              <Input
-                defaultValue={setting.key}
-                onBlur={(e) => {
-                  if (e.target.value !== setting.key) {
-                    handleUpdate(setting.id, e.target.value, setting.value);
-                  }
-                }}
-              />
-              <Input
-                defaultValue={setting.value}
-                onBlur={(e) => {
-                  if (e.target.value !== setting.value) {
-                    handleUpdate(setting.id, setting.key, e.target.value);
-                  }
-                }}
-              />
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() => handleDelete(setting.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Configuraciones Existentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Clave</TableHead>
+                <TableHead>Valor</TableHead>
+                <TableHead className="w-[100px]">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {settings?.map((setting) => (
+                <TableRow key={setting.id}>
+                  <TableCell>{setting.id}</TableCell>
+                  <TableCell>
+                    <Input
+                      defaultValue={setting.key}
+                      onBlur={(e) => {
+                        if (e.target.value !== setting.key) {
+                          handleUpdate(setting.id, e.target.value, setting.value);
+                        }
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      defaultValue={setting.value}
+                      onBlur={(e) => {
+                        if (e.target.value !== setting.value) {
+                          handleUpdate(setting.id, setting.key, e.target.value);
+                        }
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => handleDelete(setting.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

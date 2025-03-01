@@ -11,7 +11,7 @@ import fs from "fs-extra";
 import path from "path";
 import { db } from './db';
 import { desc, sql, and, eq } from 'drizzle-orm';
-import { stockHistory, orders, categories, products } from '@shared/schema';
+import { stockHistory, orders, categories, products, settings } from '@shared/schema';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -712,8 +712,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Settings routes
   app.get("/api/settings", async (_req, res) => {
     try {
-      const settings = await storage.getSettings();
-      res.json(settings);
+      // Use SQL to get all settings since we don't have a getAll method
+      const result = await db.select().from(settings);
+      res.json(result);
     } catch (error) {
       console.error('Error getting settings:', error);
       res.status(500).json({ error: 'Error al obtener la configuración' });
@@ -722,31 +723,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/settings", async (req, res) => {
     try {
-      const setting = insertSettingsSchema.parse(req.body);
-      const created = await storage.createSetting(setting);
-      res.json(created);
+      const { key, value } = req.body;
+      await storage.updateSetting(key, value);
+
+      // Get the updated setting to return
+      const result = await db.select().from(settings).where(eq(settings.key, key));
+      res.json(result[0]);
     } catch (error) {
       console.error('Error creating setting:', error);
       res.status(500).json({ error: 'Error al crear la configuración' });
     }
   });
 
-  app.patch("/api/settings/:id", async (req, res) => {
+  app.patch("/api/settings/:key", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const setting = insertSettingsSchema.partial().parse(req.body);
-      const updated = await storage.updateSetting(id, setting);
-      res.json(updated);
+      const { key } = req.params;
+      const { value } = req.body;
+      await storage.updateSetting(key, value);
+
+      // Get the updated setting to return
+      const result = await db.select().from(settings).where(eq(settings.key, key));
+      res.json(result[0]);
     } catch (error) {
       console.error('Error updating setting:', error);
       res.status(500).json({ error: 'Error al actualizar la configuración' });
     }
   });
 
-  app.delete("/api/settings/:id", async (req, res) => {
+  app.delete("/api/settings/:key", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      await storage.deleteSetting(id);
+      const { key } = req.params;
+      await db.delete(settings).where(eq(settings.key, key));
       res.status(204).end();
     } catch (error) {
       console.error('Error deleting setting:', error);
@@ -773,9 +780,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
 
       for (const setting of defaultSettings) {
-        const existing = await storage.getSettingByKey(setting.key);
+        const existing = await storage.getSetting(setting.key);
         if (!existing) {
-          await storage.createSetting(setting);
+          await storage.updateSetting(setting.key, setting.value);
         }
       }
 

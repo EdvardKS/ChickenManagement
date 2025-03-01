@@ -21,16 +21,28 @@ export default function AdminSettings() {
   const [newKey, setNewKey] = useState("");
   const [newValue, setNewValue] = useState("");
 
-  const { data: settings } = useQuery<Settings[]>({
-    queryKey: ['/api/settings']
+  const { data: settings } = useQuery<Settings[]>({ 
+    queryKey: ['/api/settings'] 
   });
 
-  const handleUpdate = async (id: number, key: string, value: string) => {
+  // Inicializar configuraciones por defecto al montar el componente
+  useEffect(() => {
+    fetch('/api/settings/initialize', { method: 'POST' })
+      .then(response => response.json())
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      })
+      .catch(error => {
+        console.error('Error initializing settings:', error);
+      });
+  }, [queryClient]);
+
+  const handleUpdate = async (key: string, value: string) => {
     try {
-      await fetch(`/api/settings/${id}`, {
+      await fetch(`/api/settings/${key}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, value })
+        body: JSON.stringify({ value })
       });
       queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
       toast({
@@ -78,9 +90,9 @@ export default function AdminSettings() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (key: string) => {
     try {
-      await fetch(`/api/settings/${id}`, { method: 'DELETE' });
+      await fetch(`/api/settings/${key}`, { method: 'DELETE' });
       queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
       toast({
         title: "Configuración eliminada",
@@ -126,7 +138,6 @@ export default function AdminSettings() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
                 <TableHead>Clave</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead className="w-[100px]">Acciones</TableHead>
@@ -134,24 +145,14 @@ export default function AdminSettings() {
             </TableHeader>
             <TableBody>
               {settings?.map((setting) => (
-                <TableRow key={setting.id}>
-                  <TableCell>{setting.id}</TableCell>
-                  <TableCell>
-                    <Input
-                      defaultValue={setting.key}
-                      onBlur={(e) => {
-                        if (e.target.value !== setting.key) {
-                          handleUpdate(setting.id, e.target.value, setting.value);
-                        }
-                      }}
-                    />
-                  </TableCell>
+                <TableRow key={setting.key}>
+                  <TableCell>{setting.key}</TableCell>
                   <TableCell>
                     <Input
                       defaultValue={setting.value}
                       onBlur={(e) => {
                         if (e.target.value !== setting.value) {
-                          handleUpdate(setting.id, setting.key, e.target.value);
+                          handleUpdate(setting.key, e.target.value);
                         }
                       }}
                     />
@@ -160,7 +161,7 @@ export default function AdminSettings() {
                     <Button
                       variant="destructive"
                       size="icon"
-                      onClick={() => handleDelete(setting.id)}
+                      onClick={() => handleDelete(setting.key)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

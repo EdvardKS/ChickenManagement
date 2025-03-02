@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, RefreshCcw, Search } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -22,21 +22,44 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import fs from 'fs-extra';
+import path from 'path';
 
 export default function AdminSeeds() {
+  // Estados para la gestión de semillas
   const [selectedFile, setSelectedFile] = useState<string>("");
   const [selectedTable, setSelectedTable] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentItem, setCurrentItem] = useState("");
+
+  // Estados para la creación de tablas
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnType, setNewColumnType] = useState("text");
   const [newColumns, setNewColumns] = useState<Array<{name: string, type: string}>>([]);
   const [newTableName, setNewTableName] = useState("");
+
+  // Estados para el CRUD
+  const [editingCategory, setEditingCategory] = useState<number | null>(null);
+  const [editingProduct, setEditingProduct] = useState<number | null>(null);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [searchCategory, setSearchCategory] = useState("");
+  const [searchProduct, setSearchProduct] = useState("");
+  const [newCategory, setNewCategory] = useState({ name: "", description: "", image: "" });
+  const [newProduct, setNewProduct] = useState({ 
+    name: "", 
+    description: "", 
+    price: 0,
+    imageUrl: "",
+    categoryId: 0
+  });
+  const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
+  const [showNewProductModal, setShowNewProductModal] = useState(false);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Queries
+  // Consultas
   const { data: categories } = useQuery({
     queryKey: ['/api/categories'],
   });
@@ -45,10 +68,26 @@ export default function AdminSeeds() {
     queryKey: ['/api/products'],
   });
 
-  const seedFiles = [
-    { value: "category", label: "Categorías (category.json)" },
-    { value: "products", label: "Productos (products.json)" }
-  ];
+  // Efecto para cargar archivos de semillas
+  const [availableSeeds, setAvailableSeeds] = useState<Array<{value: string, label: string}>>([]);
+
+  useEffect(() => {
+    const loadSeedFiles = async () => {
+      try {
+        const response = await fetch('/api/admin/seeds/list');
+        if (response.ok) {
+          const files = await response.json();
+          setAvailableSeeds(files.map((file: string) => ({
+            value: file,
+            label: `${file.charAt(0).toUpperCase() + file.slice(1)} (${file}.json)`
+          })));
+        }
+      } catch (error) {
+        console.error('Error loading seed files:', error);
+      }
+    };
+    loadSeedFiles();
+  }, []);
 
   const tableTypes = [
     { value: "category", label: "Categorías" },
@@ -63,6 +102,188 @@ export default function AdminSeeds() {
     { value: "date", label: "Fecha" }
   ];
 
+  // Funciones CRUD para Categorías
+  const handleCategoryEdit = async (id: number, field: string, value: string) => {
+    try {
+      const response = await fetch(`/api/categories/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      });
+
+      if (!response.ok) throw new Error('Error al actualizar la categoría');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      setEditingCategory(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al actualizar la categoría",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCategoryCreate = async () => {
+    try {
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCategory)
+      });
+
+      if (!response.ok) throw new Error('Error al crear la categoría');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      setShowNewCategoryModal(false);
+      setNewCategory({ name: "", description: "", image: "" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al crear la categoría",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCategoryDelete = async (id: number) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta categoría?')) return;
+
+    try {
+      const response = await fetch(`/api/categories/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Error al eliminar la categoría');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      toast({
+        title: "Éxito",
+        description: "Categoría eliminada correctamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al eliminar la categoría",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCategoryRestore = async (id: number) => {
+    try {
+      const response = await fetch(`/api/categories/${id}/restore`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) throw new Error('Error al restaurar la categoría');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      toast({
+        title: "Éxito",
+        description: "Categoría restaurada correctamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al restaurar la categoría",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Funciones CRUD para Productos
+  const handleProductEdit = async (id: number, field: string, value: any) => {
+    try {
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      });
+
+      if (!response.ok) throw new Error('Error al actualizar el producto');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      setEditingProduct(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al actualizar el producto",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleProductCreate = async () => {
+    try {
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProduct)
+      });
+
+      if (!response.ok) throw new Error('Error al crear el producto');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      setShowNewProductModal(false);
+      setNewProduct({ name: "", description: "", price: 0, imageUrl: "", categoryId: 0 });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al crear el producto",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleProductDelete = async (id: number) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return;
+
+    try {
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Error al eliminar el producto');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      toast({
+        title: "Éxito",
+        description: "Producto eliminado correctamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al eliminar el producto",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleProductRestore = async (id: number) => {
+    try {
+      const response = await fetch(`/api/products/${id}/restore`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) throw new Error('Error al restaurar el producto');
+
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      toast({
+        title: "Éxito",
+        description: "Producto restaurado correctamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al restaurar el producto",
+        variant: "destructive"
+      });
+    }
+  };
+
+
+  // Resto del código para manejo de semillas...
   const handleExecuteSeed = async () => {
     if (!selectedFile || !selectedTable) {
       toast({
@@ -77,7 +298,6 @@ export default function AdminSeeds() {
     setProgress(0);
 
     try {
-      // Primero hacemos la comprobación
       const previewResponse = await fetch(`/api/admin/seeds/${selectedFile}/preview`);
       if (!previewResponse.ok) throw new Error("Error al obtener vista previa");
 
@@ -91,7 +311,6 @@ export default function AdminSeeds() {
         return;
       }
 
-      // Si el usuario confirma, procedemos con la inserción
       const response = await fetch(`/api/admin/seeds/${selectedFile}/execute`, {
         method: "POST"
       });
@@ -104,7 +323,6 @@ export default function AdminSeeds() {
         description: `Se procesaron ${data.count} registros correctamente`,
       });
 
-      // Refrescar los datos
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
     } catch (error) {
@@ -117,73 +335,6 @@ export default function AdminSeeds() {
       setIsLoading(false);
       setProgress(100);
     }
-  };
-
-  const handleDeleteCategory = async (id: number) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta categoría?')) return;
-
-    try {
-      const response = await fetch(`/api/categories/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Error al eliminar la categoría');
-
-      toast({
-        title: "Éxito",
-        description: "Categoría eliminada correctamente"
-      });
-
-      // Refrescar los datos
-      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error al eliminar la categoría",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDeleteProduct = async (id: number) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return;
-
-    try {
-      const response = await fetch(`/api/products/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Error al eliminar el producto');
-
-      toast({
-        title: "Éxito",
-        description: "Producto eliminado correctamente"
-      });
-
-      // Refrescar los datos
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error al eliminar el producto",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleAddColumn = () => {
-    if (!newColumnName || !newColumnType) {
-      toast({
-        title: "Error",
-        description: "Por favor ingresa nombre y tipo para la columna",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setNewColumns([...newColumns, { name: newColumnName, type: newColumnType }]);
-    setNewColumnName("");
-    setNewColumnType("text");
   };
 
   const handleCreateTable = async () => {
@@ -227,10 +378,26 @@ export default function AdminSeeds() {
     }
   };
 
+  const handleAddColumn = () => {
+    if (!newColumnName || !newColumnType) {
+      toast({
+        title: "Error",
+        description: "Por favor ingresa nombre y tipo para la columna",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setNewColumns([...newColumns, { name: newColumnName, type: newColumnType }]);
+    setNewColumnName("");
+    setNewColumnType("text");
+  };
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Gestión de Semillas</h1>
 
+      {/* Card para inserción de datos */}
       <Card>
         <CardHeader>
           <CardTitle>Insertar Datos desde Archivos JSON</CardTitle>
@@ -282,7 +449,10 @@ export default function AdminSeeds() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button onClick={handleAddColumn}>
+                  <Button onClick={() => {
+                    setNewColumns([...newColumns, { name: newColumnName, type: newColumnType }]);
+                    setNewColumnName("");
+                  }}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -312,7 +482,7 @@ export default function AdminSeeds() {
                   <SelectValue placeholder="Selecciona un archivo para sembrar" />
                 </SelectTrigger>
                 <SelectContent>
-                  {seedFiles.map((file) => (
+                  {availableSeeds.map((file) => (
                     <SelectItem key={file.value} value={file.value}>
                       {file.label}
                     </SelectItem>
@@ -343,9 +513,57 @@ export default function AdminSeeds() {
         </CardContent>
       </Card>
 
+      {/* Card para Categorías */}
       <Card>
-        <CardHeader>
-          <CardTitle>Categorías Existentes</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Categorías</CardTitle>
+          <div className="flex gap-4">
+            <Input
+              placeholder="Buscar categorías..."
+              value={searchCategory}
+              onChange={(e) => setSearchCategory(e.target.value)}
+              className="w-64"
+            />
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleted(!showDeleted)}
+            >
+              {showDeleted ? "Mostrar Activos" : "Mostrar Eliminados"}
+            </Button>
+            <Dialog open={showNewCategoryModal} onOpenChange={setShowNewCategoryModal}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Categoría
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Crear Nueva Categoría</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Nombre"
+                    value={newCategory.name}
+                    onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                  />
+                  <Input
+                    placeholder="Descripción"
+                    value={newCategory.description}
+                    onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                  />
+                  <Input
+                    placeholder="URL de imagen"
+                    value={newCategory.image}
+                    onChange={(e) => setNewCategory({...newCategory, image: e.target.value})}
+                  />
+                  <Button onClick={handleCategoryCreate} className="w-full">
+                    Crear Categoría
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -354,23 +572,76 @@ export default function AdminSeeds() {
                 <TableHead>ID</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Descripción</TableHead>
+                <TableHead>Imagen</TableHead>
                 <TableHead className="w-[100px]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories?.map((category) => (
+              {categories?.filter(category => 
+                category.name.toLowerCase().includes(searchCategory.toLowerCase()) &&
+                category.deleted === showDeleted
+              ).map((category) => (
                 <TableRow key={category.id}>
                   <TableCell>{category.id}</TableCell>
-                  <TableCell>{category.name}</TableCell>
-                  <TableCell>{category.description}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteCategory(category.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {editingCategory === category.id ? (
+                      <Input
+                        defaultValue={category.name}
+                        onBlur={(e) => handleCategoryEdit(category.id, 'name', e.target.value)}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {category.name}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingCategory(category.id)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingCategory === category.id ? (
+                      <Input
+                        defaultValue={category.description}
+                        onBlur={(e) => handleCategoryEdit(category.id, 'description', e.target.value)}
+                      />
+                    ) : (
+                      category.description
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingCategory === category.id ? (
+                      <Input
+                        defaultValue={category.image}
+                        onBlur={(e) => handleCategoryEdit(category.id, 'image', e.target.value)}
+                      />
+                    ) : (
+                      category.image
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {showDeleted ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleCategoryRestore(category.id)}
+                        >
+                          <RefreshCcw className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleCategoryDelete(category.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -379,9 +650,78 @@ export default function AdminSeeds() {
         </CardContent>
       </Card>
 
+      {/* Card para Productos */}
       <Card>
-        <CardHeader>
-          <CardTitle>Productos Existentes</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Productos</CardTitle>
+          <div className="flex gap-4">
+            <Input
+              placeholder="Buscar productos..."
+              value={searchProduct}
+              onChange={(e) => setSearchProduct(e.target.value)}
+              className="w-64"
+            />
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleted(!showDeleted)}
+            >
+              {showDeleted ? "Mostrar Activos" : "Mostrar Eliminados"}
+            </Button>
+            <Dialog open={showNewProductModal} onOpenChange={setShowNewProductModal}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo Producto
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Crear Nuevo Producto</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Nombre"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                  />
+                  <Input
+                    placeholder="Descripción"
+                    value={newProduct.description}
+                    onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Precio"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value)})}
+                  />
+                  <Input
+                    placeholder="URL de imagen"
+                    value={newProduct.imageUrl}
+                    onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
+                  />
+                  <Select
+                    value={newProduct.categoryId.toString()}
+                    onValueChange={(value) => setNewProduct({...newProduct, categoryId: parseInt(value)})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={handleProductCreate} className="w-full">
+                    Crear Producto
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -391,26 +731,109 @@ export default function AdminSeeds() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Descripción</TableHead>
                 <TableHead>Precio</TableHead>
+                <TableHead>Imagen</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead className="w-[100px]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products?.map((product) => (
+              {products?.filter(product => 
+                product.name.toLowerCase().includes(searchProduct.toLowerCase()) &&
+                product.deleted === showDeleted
+              ).map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>{product.id}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.categoryId}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteProduct(product.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {editingProduct === product.id ? (
+                      <Input
+                        defaultValue={product.name}
+                        onBlur={(e) => handleProductEdit(product.id, 'name', e.target.value)}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {product.name}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingProduct(product.id)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Input
+                        defaultValue={product.description}
+                        onBlur={(e) => handleProductEdit(product.id, 'description', e.target.value)}
+                      />
+                    ) : (
+                      product.description
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Input
+                        type="number"
+                        defaultValue={product.price}
+                        onBlur={(e) => handleProductEdit(product.id, 'price', parseFloat(e.target.value))}
+                      />
+                    ) : (
+                      product.price
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Input
+                        defaultValue={product.imageUrl}
+                        onBlur={(e) => handleProductEdit(product.id, 'imageUrl', e.target.value)}
+                      />
+                    ) : (
+                      product.imageUrl
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Select
+                        defaultValue={product.categoryId.toString()}
+                        onValueChange={(value) => handleProductEdit(product.id, 'categoryId', parseInt(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories?.map((category) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      categories?.find(c => c.id === product.categoryId)?.name
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {showDeleted ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleProductRestore(product.id)}
+                        >
+                          <RefreshCcw className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleProductDelete(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

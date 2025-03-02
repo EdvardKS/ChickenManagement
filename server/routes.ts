@@ -347,7 +347,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/categories/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteCategory(id);
+      await db.update(categories)
+        .set({ deleted: true })
+        .where(eq(categories.id, id));
       res.status(204).end();
     } catch (error) {
       console.error('Error deleting category:', error);
@@ -393,7 +395,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/products/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteProduct(id);
+      await db.update(products)
+        .set({ deleted: true })
+        .where(eq(products.id, id));
       res.status(204).end();
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -855,7 +859,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             // Buscar si existe un producto con el mismo nombre
             const existingProducts = await db.select().from(products).where(eq(products.name, product.name));
-
             if (existingProducts.length > 0) {
               console.log('Actualizando producto existente:', existingProducts[0].id);
               await storage.updateProduct(existingProducts[0].id, {
@@ -979,114 +982,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Seeds Preview
-  app.get("/api/admin/seeds/:type/preview", async (req, res) => {
+  // List available seed files
+  app.get("/api/admin/seeds/list", async (_req, res) => {
     try {
-      const { type } = req.params;
-      const seedPath = path.join(process.cwd(), 'database', 'seeds', `${type}.json`);
-
-      if (!await fs.pathExists(seedPath)) {
-        return res.status(404).json({ error: 'Archivo de semilla no encontrado' });
-      }
-
-      const seedData = await fs.readJson(seedPath);
-      return res.json({ 
-        count: Array.isArray(seedData) ? seedData.length : 1,
-        sample: Array.isArray(seedData) ? seedData[0] : seedData
-      });
+      const seedsDir = path.join(process.cwd(), 'database', 'seeds');
+      const files = await fs.readdir(seedsDir);
+      const jsonFiles = files
+        .filter(file => file.endsWith('.json'))
+        .map(file => file.replace('.json', ''));
+      res.json(jsonFiles);
     } catch (error) {
-      console.error('Error previewing seed:', error);
-      res.status(500).json({ error: 'Error al obtener vista previa de la semilla' });
+      console.error('Error listing seed files:', error);
+      res.status(500).json({ error: 'Error al listar archivos de semillas' });
     }
   });
 
-  // Seeds Execute
-  app.post("/api/admin/seeds/:type/execute", async (req, res) => {
+  // Restore category
+  app.post("/api/categories/:id/restore", async (req, res) => {
     try {
-      const { type } = req.params;
-      const seedPath = path.join(process.cwd(), 'database', 'seeds', `${type}.json`);
-
-      if (!await fs.pathExists(seedPath)) {
-        return res.status(404).json({ error: 'Archivo de semilla no encontrado' });
-      }
-
-      const seedData = await fs.readJson(seedPath);
-      let count = 0;
-
-      if (type === 'category') {
-        for (const category of Array.isArray(seedData) ? seedData : [seedData]) {
-          console.log('Procesando categoría:', category);
-          // Buscar si existe una categoría con el mismo nombre
-          const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
-
-          if (existingCategories.length > 0) {
-            console.log('Actualizando categoría existente:', existingCategories[0].id);
-            await storage.updateCategory(existingCategories[0].id, category);
-          } else {
-            console.log('Creando nueva categoría');
-            await storage.createCategory(category);
-          }
-          count++;
-        }
-      } else if (type === 'products') {
-        for (const product of Array.isArray(seedData) ? seedData : [seedData]) {
-          console.log('Procesando producto:', product);
-          console.log('Estructura del producto:', {
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            category_id: product.category_id
-          });
-
-          try {
-            // Buscar si existe un producto con el mismo nombre
-            const existingProducts = await db.select().from(products).where(eq(products.name, product.name));
-
-            if (existingProducts.length > 0) {
-              console.log('Actualizando producto existente:', existingProducts[0].id);
-              await storage.updateProduct(existingProducts[0].id, {
-                name: product.name,
-                description: product.description,
-                imageUrl: product.image,
-                price: product.price,
-                categoryId: product.category_id
-              });
-            } else {
-              console.log('Creando nuevo producto');
-              await storage.createProduct({
-                name: product.name,
-                description: product.description,
-                imageUrl: product.image,
-                price: product.price,
-                categoryId: product.category_id
-              });
-            }
-            count++;
-            console.log('Producto procesado exitosamente');
-          } catch (error) {
-            console.error('Error al procesar producto:', error);
-            throw error;
-          }
-        }
-      }
-
-      // Create backup with timestamp
-      const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      const backupPath = path.join(
-        process.cwd(), 
-        'database', 
-        'seeds', 
-        'backups',
-        `${type}_${timestamp}.json`
-      );
-
-      await fs.ensureDir(path.dirname(backupPath));
-      await fs.writeJson(backupPath, seedData, { spaces: 2 });
-
-      res.json({ message: 'Semilla ejecutada correctamente', count });
+      const id = parseInt(req.params.id);
+      await db.update(categories)
+        .set({ deleted: false })
+        .where(eq(categories.id, id));
+      res.json({ message: 'Categoría restaurada correctamente' });
     } catch (error) {
-      console.error('Error executing seed:', error);
-      res.status(500).json({ error: 'Error al ejecutar la semilla' });
+      console.error('Error restoring category:', error);
+      res.status(500).json({ error: 'Error al restaurar la categoría' });
+    }
+  });
+
+  // Restore product
+  app.post("/api/products/:id/restore", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await db.update(products)
+        .set({ deleted: false })
+        .where(eq(products.id, id));
+      res.json({ message: 'Producto restaurado correctamente' });
+    } catch (error) {
+      console.error('Error restoring product:', error);
+      res.status(500).json({ error: 'Error al restaurar el producto' });
+    }
+  });
+
+  // Create table dynamically
+  app.post("/api/admin/tables", async (req, res) => {
+    try {
+      const { name, columns } = req.body;
+
+      // Generar el SQL para crear la tabla
+      const columnDefinitions = columns
+        .map(col => `${col.name} ${col.type}`)
+        .join(', ');
+
+      const sql = `CREATE TABLE IF NOT EXISTS ${name} (
+        id SERIAL PRIMARY KEY,
+        ${columnDefinitions},
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deleted BOOLEAN DEFAULT FALSE
+      )`;
+
+      await db.execute(sql);
+
+      res.json({ message: 'Tabla creada correctamente' });
+    } catch (error) {
+      console.error('Error creating table:', error);
+      res.status(500).json({ error: 'Error al crear la tabla' });
     }
   });
 

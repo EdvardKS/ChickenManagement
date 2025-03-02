@@ -22,8 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import fs from 'fs-extra';
-import path from 'path';
 
 export default function AdminSeeds() {
   // Estados para la gestión de semillas
@@ -42,7 +40,8 @@ export default function AdminSeeds() {
   // Estados para el CRUD
   const [editingCategory, setEditingCategory] = useState<number | null>(null);
   const [editingProduct, setEditingProduct] = useState<number | null>(null);
-  const [showDeleted, setShowDeleted] = useState(false);
+  const [showDeletedCategories, setShowDeletedCategories] = useState(false);
+  const [showDeletedProducts, setShowDeletedProducts] = useState(false);
   const [searchCategory, setSearchCategory] = useState("");
   const [searchProduct, setSearchProduct] = useState("");
   const [newCategory, setNewCategory] = useState({ name: "", description: "", image: "" });
@@ -88,19 +87,6 @@ export default function AdminSeeds() {
     };
     loadSeedFiles();
   }, []);
-
-  const tableTypes = [
-    { value: "category", label: "Categorías" },
-    { value: "products", label: "Productos" },
-    { value: "new", label: "Crear Nueva Tabla" }
-  ];
-
-  const dataTypes = [
-    { value: "text", label: "Texto" },
-    { value: "number", label: "Número" },
-    { value: "boolean", label: "Booleano" },
-    { value: "date", label: "Fecha" }
-  ];
 
   // Funciones CRUD para Categorías
   const handleCategoryEdit = async (id: number, field: string, value: string) => {
@@ -283,7 +269,6 @@ export default function AdminSeeds() {
   };
 
 
-  // Resto del código para manejo de semillas...
   const handleExecuteSeed = async () => {
     if (!selectedFile || !selectedTable) {
       toast({
@@ -449,10 +434,7 @@ export default function AdminSeeds() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button onClick={() => {
-                    setNewColumns([...newColumns, { name: newColumnName, type: newColumnType }]);
-                    setNewColumnName("");
-                  }}>
+                  <Button onClick={handleAddColumn}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -526,9 +508,9 @@ export default function AdminSeeds() {
             />
             <Button
               variant="outline"
-              onClick={() => setShowDeleted(!showDeleted)}
+              onClick={() => setShowDeletedCategories(!showDeletedCategories)}
             >
-              {showDeleted ? "Mostrar Activos" : "Mostrar Eliminados"}
+              {showDeletedCategories ? "Mostrar Activos" : "Mostrar Eliminados"}
             </Button>
             <Dialog open={showNewCategoryModal} onOpenChange={setShowNewCategoryModal}>
               <DialogTrigger asChild>
@@ -573,25 +555,28 @@ export default function AdminSeeds() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Descripción</TableHead>
                 <TableHead>Imagen</TableHead>
-                <TableHead className="w-[100px]">Acciones</TableHead>
+                <TableHead className="w-[150px]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {categories?.filter(category => 
                 category.name.toLowerCase().includes(searchCategory.toLowerCase()) &&
-                category.deleted === showDeleted
+                category.deleted === showDeletedCategories
               ).map((category) => (
                 <TableRow key={category.id}>
                   <TableCell>{category.id}</TableCell>
                   <TableCell>
-                    {editingCategory === category.id ? (
-                      <Input
-                        defaultValue={category.name}
-                        onBlur={(e) => handleCategoryEdit(category.id, 'name', e.target.value)}
-                      />
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        {category.name}
+                    {category.name}
+                  </TableCell>
+                  <TableCell>
+                    {category.description}
+                  </TableCell>
+                  <TableCell>
+                    {category.image}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {!showDeletedCategories && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -599,32 +584,8 @@ export default function AdminSeeds() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingCategory === category.id ? (
-                      <Input
-                        defaultValue={category.description}
-                        onBlur={(e) => handleCategoryEdit(category.id, 'description', e.target.value)}
-                      />
-                    ) : (
-                      category.description
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingCategory === category.id ? (
-                      <Input
-                        defaultValue={category.image}
-                        onBlur={(e) => handleCategoryEdit(category.id, 'image', e.target.value)}
-                      />
-                    ) : (
-                      category.image
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {showDeleted ? (
+                      )}
+                      {showDeletedCategories ? (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -663,9 +624,9 @@ export default function AdminSeeds() {
             />
             <Button
               variant="outline"
-              onClick={() => setShowDeleted(!showDeleted)}
+              onClick={() => setShowDeletedProducts(!showDeletedProducts)}
             >
-              {showDeleted ? "Mostrar Activos" : "Mostrar Eliminados"}
+              {showDeletedProducts ? "Mostrar Activos" : "Mostrar Eliminados"}
             </Button>
             <Dialog open={showNewProductModal} onOpenChange={setShowNewProductModal}>
               <DialogTrigger asChild>
@@ -728,30 +689,35 @@ export default function AdminSeeds() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
+                <TableHead>Imagen</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Descripción</TableHead>
                 <TableHead>Precio</TableHead>
-                <TableHead>Imagen</TableHead>
                 <TableHead>Categoría</TableHead>
-                <TableHead className="w-[100px]">Acciones</TableHead>
+                <TableHead className="w-[150px]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products?.filter(product => 
                 product.name.toLowerCase().includes(searchProduct.toLowerCase()) &&
-                product.deleted === showDeleted
+                product.deleted === showDeletedProducts
               ).map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>{product.id}</TableCell>
                   <TableCell>
-                    {editingProduct === product.id ? (
-                      <Input
-                        defaultValue={product.name}
-                        onBlur={(e) => handleProductEdit(product.id, 'name', e.target.value)}
-                      />
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        {product.name}
+                    <img 
+                      src={`/img/products/${product.imageUrl}`} 
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.description}</TableCell>
+                  <TableCell>{product.price}</TableCell>
+                  <TableCell>{categories?.find(c => c.id === product.categoryId)?.name}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {!showDeletedProducts && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -759,64 +725,8 @@ export default function AdminSeeds() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingProduct === product.id ? (
-                      <Input
-                        defaultValue={product.description}
-                        onBlur={(e) => handleProductEdit(product.id, 'description', e.target.value)}
-                      />
-                    ) : (
-                      product.description
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingProduct === product.id ? (
-                      <Input
-                        type="number"
-                        defaultValue={product.price}
-                        onBlur={(e) => handleProductEdit(product.id, 'price', parseFloat(e.target.value))}
-                      />
-                    ) : (
-                      product.price
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingProduct === product.id ? (
-                      <Input
-                        defaultValue={product.imageUrl}
-                        onBlur={(e) => handleProductEdit(product.id, 'imageUrl', e.target.value)}
-                      />
-                    ) : (
-                      product.imageUrl
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingProduct === product.id ? (
-                      <Select
-                        defaultValue={product.categoryId.toString()}
-                        onValueChange={(value) => handleProductEdit(product.id, 'categoryId', parseInt(value))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories?.map((category) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      categories?.find(c => c.id === product.categoryId)?.name
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {showDeleted ? (
+                      )}
+                      {showDeletedProducts ? (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -844,3 +754,16 @@ export default function AdminSeeds() {
     </div>
   );
 }
+
+const tableTypes = [
+    { value: "category", label: "Categorías" },
+    { value: "products", label: "Productos" },
+    { value: "new", label: "Crear Nueva Tabla" }
+  ];
+
+  const dataTypes = [
+    { value: "text", label: "Texto" },
+    { value: "number", label: "Número" },
+    { value: "boolean", label: "Booleano" },
+    { value: "date", label: "Fecha" }
+  ];

@@ -1,0 +1,64 @@
+7:43:00 PM [express] GET /api/admin/seeds/products/preview 304 in 1ms :: {"count":1,"sample":{"name"…
+Procesando producto: {
+  name: 'Kebab a Espada',
+  description: 'Receta Armenia que consiste en trozos de carne marinados ensartados en una espada y directos puestos a la brasa, servido en pan de la casa.',
+  image: 'brasa_kebab',
+  category_id: 1
+}
+Estructura del producto: {
+  name: 'Kebab a Espada',
+  description: 'Receta Armenia que consiste en trozos de carne marinados ensartados en una espada y directos puestos a la brasa, servido en pan de la casa.',
+  price: undefined,
+  category_id: 1
+}
+Creando nuevo producto
+Error al procesar producto: NeonDbError: null value in column "price" of relation "products" violates not-null constraint
+    at execute (file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonHttpPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-http/session.ts:68:18)
+    at async DatabaseStorage.createProduct (/home/runner/workspace/server/storage.ts:100:26)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:870:15) {
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (3, Kebab a Espada, Receta Armenia que consiste en trozos de carne marinados ensarta..., null, brasa_kebab, 1, f).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'products',
+  column: 'price',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '2006',
+  routine: 'ExecConstraints',
+  sourceError: undefined
+}
+Error executing seed: NeonDbError: null value in column "price" of relation "products" violates not-null constraint
+    at execute (file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonHttpPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-http/session.ts:68:18)
+    at async DatabaseStorage.createProduct (/home/runner/workspace/server/storage.ts:100:26)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:870:15) {
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (3, Kebab a Espada, Receta Armenia que consiste en trozos de carne marinados ensarta..., null, brasa_kebab, 1, f).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'products',
+  column: 'price',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '2006',
+  routine: 'ExecConstraints',
+  sourceError: undefined
+}
+7:43:01 PM [express] POST /api/admin/seeds/products/execute 500 in 310ms :: {"error":"Error al ejecu…
+7:43:05 PM [express] GET /api/business-hours 304 in 166ms :: []

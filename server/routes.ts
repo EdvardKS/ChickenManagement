@@ -857,7 +857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const existingProducts = await db.select().from(products).where(eq(products.name, product.name));
 
             if (existingProducts.length > 0) {
-              console.log('Actualizando productoexistente:', existingProducts[0].id);
+              console.log('Actualizando producto existente:', existingProducts[0].id);
               await storage.updateProduct(existingProducts[0].id, {
                 name: product.name,
                 description: product.description,
@@ -909,7 +909,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const dirs = [
         path.join(process.cwd(), 'database', 'seeds'),
-        path.join(process.cwd(), 'database', 'seeds', 'backups')      ];
+        path.join(process.cwd(), 'database', 'seeds', 'backups')      
+      ];
 
       for (const dir of dirs) {
         await fs.ensureDir(dir);
@@ -922,6 +923,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: "Menús",
             description: "Tenemos menús! Echa un vistazo y encárganos.",
             image: "categoria_menu.jpg"
+          },
+          {
+            name: "Aperitivo",
+            description: "Ojea todos nuestros aperitivos! Será por variedad...",
+            image: "categoria_aperitivo.jpg"
+          },
+          {
+            name: "Rustidera",
+            description: "Tu Rustidera bajo encargo, mira lo que te ofrecemos.",
+            image: "categoria_rustidera.jpg"
           }
         ],
         'products.json': [
@@ -929,8 +940,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: "Kebab a Espada",
             description: "Receta Armenia que consiste en trozos de carne marinados ensartados en una espada y directos puestos a la brasa, servido en pan de la casa.",
             image: "brasa_kebab",
-            price: 1500, // Añadido el precio requerido
+            price: 1500,
             category_id: 1
+          },
+          {
+            name: "Medio Pollo Asado",
+            description: "Medio pollo asado a la leña con nuestro toque especial",
+            image: "medio_pollo",
+            price: 800,
+            category_id: 1
+          },
+          {
+            name: "Patatas Bravas",
+            description: "Patatas bravas caseras con nuestra salsa especial",
+            image: "patatas_bravas",
+            price: 500,
+            category_id: 2
+          },
+          {
+            name: "Rustidera Mixta",
+            description: "Rustidera con variedad de carnes y verduras asadas",
+            image: "rustidera_mixta",
+            price: 2500,
+            category_id: 3
           }
         ]
       };

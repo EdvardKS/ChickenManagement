@@ -1119,5 +1119,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Ruta para subir imagen durante la creación de producto
+  app.post("/api/products/upload-image", upload.single('image'), async (req, res) => {
+    try {
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No se ha subido ningún archivo' });
+      }
+
+      res.json({ 
+        filename: file.filename,
+        message: 'Imagen subida correctamente'
+      });
+    } catch (error) {
+      console.error('Error uploading product image:', error);
+      res.status(500).json({ error: 'Error al subir la imagen del producto' });
+    }
+  });
+
   return httpServer;
 }

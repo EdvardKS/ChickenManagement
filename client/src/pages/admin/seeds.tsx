@@ -52,6 +52,10 @@ export default function AdminSeeds() {
     imageUrl: "",
     categoryId: 0
   });
+  // Nuevo estado para la imagen temporal
+  const [tempProductImage, setTempProductImage] = useState<File | null>(null);
+  const [tempImagePreview, setTempImagePreview] = useState<string>("");
+
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [showNewProductModal, setShowNewProductModal] = useState(false);
 
@@ -202,6 +206,22 @@ export default function AdminSeeds() {
 
   const handleProductCreate = async () => {
     try {
+      // Si hay una imagen, primero la subimos
+      if (tempProductImage) {
+        const formData = new FormData();
+        formData.append('image', tempProductImage);
+
+        const uploadResponse = await fetch('/api/products/upload-image', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!uploadResponse.ok) throw new Error('Error al subir la imagen');
+
+        const { filename } = await uploadResponse.json();
+        newProduct.imageUrl = filename;
+      }
+
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -213,6 +233,13 @@ export default function AdminSeeds() {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       setShowNewProductModal(false);
       setNewProduct({ name: "", description: "", price: 0, imageUrl: "", categoryId: 0 });
+      setTempProductImage(null);
+      setTempImagePreview("");
+
+      toast({
+        title: "Éxito",
+        description: "Producto creado correctamente"
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -402,6 +429,16 @@ export default function AdminSeeds() {
         variant: "destructive"
       });
     }
+  };
+
+  // Función para manejar la selección de imagen
+  const handleImageSelect = (file: File) => {
+    setTempProductImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setTempImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -724,11 +761,28 @@ export default function AdminSeeds() {
                     value={newProduct.price}
                     onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value)})}
                   />
-                  <Input
-                    placeholder="URL de imagen"
-                    value={newProduct.imageUrl}
-                    onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
-                  />
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium">
+                      Imagen del Producto
+                    </label>
+                    <div className="flex items-center gap-4">
+                      {tempImagePreview && (
+                        <img
+                          src={tempImagePreview}
+                          alt="Vista previa"
+                          className="w-20 h-20 object-cover rounded"
+                        />
+                      )}
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageSelect(file);
+                        }}
+                      />
+                    </div>
+                  </div>
                   <Select
                     value={newProduct.categoryId.toString()}
                     onValueChange={(value) => setNewProduct({...newProduct, categoryId: parseInt(value)})}

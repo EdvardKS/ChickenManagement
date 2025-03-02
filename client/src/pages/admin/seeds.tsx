@@ -14,14 +14,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Pencil, Plus, Trash2, RefreshCcw, Search, Upload } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// ... resto de importaciones ...
 
 export default function AdminSeeds() {
   // Estados para la gestión de semillas
@@ -755,12 +755,24 @@ export default function AdminSeeds() {
                     value={newProduct.description}
                     onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                   />
-                  <Input
-                    type="number"
-                    placeholder="Precio"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value)})}
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="Ej: 2.50"
+                          value={newProduct.price}
+                          onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value)})}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Introduce el precio con decimales</p>
+                        <p>Ejemplos: 2.50 para 2€50, 1.99 para 1€99</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium">
                       Imagen del Producto
@@ -882,13 +894,26 @@ export default function AdminSeeds() {
                   </TableCell>
                   <TableCell>
                     {editingProduct === product.id ? (
-                      <Input
-                        type="number"
-                        defaultValue={product.price}
-                        onBlur={(e) => handleProductEdit(product.id, 'price', parseFloat(e.target.value))}
-                      />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              defaultValue={product.price}
+                              onBlur={(e) => handleProductEdit(product.id, 'price', parseFloat(e.target.value))}
+                              placeholder="Ej: 2.50"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Introduce el precio con decimales</p>
+                            <p>Ejemplos: 2.50 para 2€50, 1.99 para 1€99</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     ) : (
-                      product.price
+                      `${product.price.toFixed(2)}€`
                     )}
                   </TableCell>
                   <TableCell>

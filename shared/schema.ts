@@ -14,7 +14,7 @@ export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  price: integer("price").notNull(), 
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(), 
   imageUrl: text("image_url"),
   categoryId: integer("category_id").references(() => categories.id),
   deleted: boolean("deleted").default(false),
@@ -60,22 +60,22 @@ export const stock = pgTable("stock", {
 export const stockHistory = pgTable("stock_history", {
   id: serial("id").primaryKey(),
   stockId: integer("stock_id").references(() => stock.id),
-  action: text("action").notNull(), 
+  action: text("action").notNull(),
   quantity: decimal("quantity", { precision: 5, scale: 1 }).notNull(),
   previousStock: decimal("previous_stock", { precision: 5, scale: 1 }).notNull(),
   newStock: decimal("new_stock", { precision: 5, scale: 1 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-  createdBy: text("created_by"), 
+  createdBy: text("created_by"),
 });
 
 export const orderLogs = pgTable("order_logs", {
   id: serial("id").primaryKey(),
   orderId: integer("order_id").references(() => orders.id),
-  action: text("action").notNull(), 
-  previousState: text("previous_state"), 
-  newState: text("new_state"), 
+  action: text("action").notNull(),
+  previousState: text("previous_state"),
+  newState: text("new_state"),
   createdAt: timestamp("created_at").defaultNow(),
-  createdBy: text("created_by"), 
+  createdBy: text("created_by"),
 });
 
 export const businessHours = pgTable("business_hours", {
@@ -88,7 +88,11 @@ export const businessHours = pgTable("business_hours", {
 });
 
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, deleted: true });
-export const insertProductSchema = createInsertSchema(products).omit({ id: true, deleted: true });
+export const insertProductSchema = createInsertSchema(products)
+  .omit({ id: true, deleted: true })
+  .extend({
+    price: z.number().min(0).step(0.01)
+  });
 export const insertOrderSchema = createInsertSchema(orders)
   .omit({ 
     id: true, 

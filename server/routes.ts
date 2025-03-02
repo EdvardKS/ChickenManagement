@@ -12,6 +12,21 @@ import path from "path";
 import { db } from './db';
 import { desc, sql, and, eq } from 'drizzle-orm';
 import { stockHistory, orders, categories, products, settings } from '@shared/schema';
+import multer from 'multer';
+
+// Configuración de multer para guardar imágenes
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const type = req.path.includes('products') ? 'products' : 'categories';
+    const dir = path.join(process.cwd(), 'client', 'public', 'img', type);
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
+});
+
+const upload = multer({ storage: multerStorage });
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -33,6 +48,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             autoUpdate: true
           });
         }
+      }
+
+      // Crear directorios para imágenes si no existen
+      const imageDirectories = [
+        path.join(process.cwd(), 'client', 'public', 'img', 'products'),
+        path.join(process.cwd(), 'client', 'public', 'img', 'categories')
+      ];
+
+      for (const dir of imageDirectories) {
+        await fs.ensureDir(dir);
       }
 
       // Crear stock inicial si no existe
@@ -846,7 +871,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           count++;
         }
-      } else if (type === 'products') {
+      } else if (type === 'products'){
         for (const product of Array.isArray(seedData) ? seedData : [seedData]) {
           console.log('Procesando producto:', product);
           console.log('Estructura del producto:', {
@@ -1049,6 +1074,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating table:', error);
       res.status(500).json({ error: 'Error al crear la tabla' });
+    }
+  });
+
+  // Ruta para subir imagen de producto
+  app.post("/api/products/:id/image", upload.single('image'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No se ha subido ningún archivo' });
+      }
+
+      await storage.updateProduct(id, {
+        imageUrl: path.basename(file.path)
+      });
+
+      res.json({ message: 'Imagen actualizada correctamente' });
+    } catch (error) {
+      console.error('Error uploading product image:', error);
+      res.status(500).json({ error: 'Error al subir la imagen del producto' });
+    }
+  });
+
+  // Ruta para subir imagen de categoría
+  app.post("/api/categories/:id/image", upload.single('image'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No se ha subido ningún archivo' });
+      }
+
+      await storage.updateCategory(id, {
+        imageUrl: path.basename(file.path)
+      });
+
+      res.json({ message: 'Imagen actualizada correctamente' });
+    } catch (error) {
+      console.error('Error uploading category image:', error);
+      res.status(500).json({ error: 'Error al subir la imagen de la categoría' });
     }
   });
 

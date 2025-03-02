@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Plus, Trash2, RefreshCcw, Search } from "lucide-react";
+import { Pencil, Plus, Trash2, RefreshCcw, Search, Upload } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -378,6 +378,32 @@ export default function AdminSeeds() {
     setNewColumnType("text");
   };
 
+  const handleImageUpload = async (id: number, file: File, type: 'category' | 'product') => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(`/api/${type}s/${id}/image`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) throw new Error(`Error al subir la imagen`);
+
+      queryClient.invalidateQueries({ queryKey: [`/api/${type}s`] });
+      toast({
+        title: "Éxito",
+        description: "Imagen actualizada correctamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al subir la imagen",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Gestión de Semillas</h1>
@@ -566,13 +592,55 @@ export default function AdminSeeds() {
                 <TableRow key={category.id}>
                   <TableCell>{category.id}</TableCell>
                   <TableCell>
-                    {category.name}
+                    {editingCategory === category.id ? (
+                      <Input
+                        defaultValue={category.name}
+                        onBlur={(e) => handleCategoryEdit(category.id, 'name', e.target.value)}
+                      />
+                    ) : (
+                      category.name
+                    )}
                   </TableCell>
                   <TableCell>
-                    {category.description}
+                    {editingCategory === category.id ? (
+                      <Input
+                        defaultValue={category.description}
+                        onBlur={(e) => handleCategoryEdit(category.id, 'description', e.target.value)}
+                      />
+                    ) : (
+                      category.description
+                    )}
                   </TableCell>
                   <TableCell>
-                    {category.image}
+                    {editingCategory === category.id ? (
+                      <div className="flex gap-2 items-center">
+                        <Input
+                          defaultValue={category.image}
+                          onBlur={(e) => handleCategoryEdit(category.id, 'image', e.target.value)}
+                        />
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          id={`category-image-${category.id}`}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageUpload(category.id, file, 'category');
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => document.getElementById(`category-image-${category.id}`)?.click()}
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {category.image}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -580,7 +648,7 @@ export default function AdminSeeds() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setEditingCategory(category.id)}
+                          onClick={() => setEditingCategory(editingCategory === category.id ? null : category.id)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -705,23 +773,98 @@ export default function AdminSeeds() {
                 <TableRow key={product.id}>
                   <TableCell>{product.id}</TableCell>
                   <TableCell>
-                    <img 
-                      src={`/img/products/${product.imageUrl}`} 
-                      alt={product.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
+                    {editingProduct === product.id ? (
+                      <div className="flex gap-2 items-center">
+                        <img 
+                          src={`/img/products/${product.imageUrl}`} 
+                          alt={product.name}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          id={`product-image-${product.id}`}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageUpload(product.id, file, 'product');
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => document.getElementById(`product-image-${product.id}`)?.click()}
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <img 
+                        src={`/img/products/${product.imageUrl}`} 
+                        alt={product.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                    )}
                   </TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{categories?.find(c => c.id === product.categoryId)?.name}</TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Input
+                        defaultValue={product.name}
+                        onBlur={(e) => handleProductEdit(product.id, 'name', e.target.value)}
+                      />
+                    ) : (
+                      product.name
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Input
+                        defaultValue={product.description}
+                        onBlur={(e) => handleProductEdit(product.id, 'description', e.target.value)}
+                      />
+                    ) : (
+                      product.description
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Input
+                        type="number"
+                        defaultValue={product.price}
+                        onBlur={(e) => handleProductEdit(product.id, 'price', parseFloat(e.target.value))}
+                      />
+                    ) : (
+                      product.price
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingProduct === product.id ? (
+                      <Select
+                        defaultValue={product.categoryId.toString()}
+                        onValueChange={(value) => handleProductEdit(product.id, 'categoryId', parseInt(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories?.map((category) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      categories?.find(c => c.id === product.categoryId)?.name
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       {!showDeletedProducts && (
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setEditingProduct(product.id)}
+                          onClick={() => setEditingProduct(editingProduct === product.id ? null : product.id)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -756,14 +899,14 @@ export default function AdminSeeds() {
 }
 
 const tableTypes = [
-    { value: "category", label: "Categorías" },
-    { value: "products", label: "Productos" },
-    { value: "new", label: "Crear Nueva Tabla" }
-  ];
+  { value: "category", label: "Categorías" },
+  { value: "products", label: "Productos" },
+  { value: "new", label: "Crear Nueva Tabla" }
+];
 
-  const dataTypes = [
-    { value: "text", label: "Texto" },
-    { value: "number", label: "Número" },
-    { value: "boolean", label: "Booleano" },
-    { value: "date", label: "Fecha" }
-  ];
+const dataTypes = [
+  { value: "text", label: "Texto" },
+  { value: "number", label: "Número" },
+  { value: "boolean", label: "Booleano" },
+  { value: "date", label: "Fecha" }
+];

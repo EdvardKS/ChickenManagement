@@ -853,19 +853,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
 
           try {
-            await storage.createProduct({
-              name: product.name,
-              description: product.description,
-              imageUrl: product.image,
-              price: product.price,
-              categoryId: product.category_id
-            });
+            // Buscar si existe un producto con el mismo nombre
+            const existingProducts = await db.select().from(products).where(eq(products.name, product.name));
+
+            if (existingProducts.length > 0) {
+              console.log('Actualizando productoexistente:', existingProducts[0].id);
+              await storage.updateProduct(existingProducts[0].id, {
+                name: product.name,
+                description: product.description,
+                imageUrl: product.image,
+                price: product.price,
+                categoryId: product.category_id
+              });
+            } else {
+              console.log('Creando nuevo producto');
+              await storage.createProduct({
+                name: product.name,
+                description: product.description,
+                imageUrl: product.image,
+                price: product.price,
+                categoryId: product.category_id
+              });
+            }
             count++;
-            console.log('Producto creado exitosamente');
+            console.log('Producto procesado exitosamente');
           } catch (error) {
-            console.error('Error al crear producto:', error);
+            console.error('Error al procesar producto:', error);
             throw error;
-                    }
+          }
         }
       }
 
@@ -992,17 +1007,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
 
           try {
-            await storage.createProduct({
-              name: product.name,
-              description: product.description,
-              imageUrl: product.image,
-              price: product.price,
-              categoryId: product.category_id
-            });
+            // Buscar si existe un producto con el mismo nombre
+            const existingProducts = await db.select().from(products).where(eq(products.name, product.name));
+
+            if (existingProducts.length > 0) {
+              console.log('Actualizando producto existente:', existingProducts[0].id);
+              await storage.updateProduct(existingProducts[0].id, {
+                name: product.name,
+                description: product.description,
+                imageUrl: product.image,
+                price: product.price,
+                categoryId: product.category_id
+              });
+            } else {
+              console.log('Creando nuevo producto');
+              await storage.createProduct({
+                name: product.name,
+                description: product.description,
+                imageUrl: product.image,
+                price: product.price,
+                categoryId: product.category_id
+              });
+            }
             count++;
-            console.log('Producto creado exitosamente');
+            console.log('Producto procesado exitosamente');
           } catch (error) {
-            console.error('Error al crear producto:', error);
+            console.error('Error al procesar producto:', error);
             throw error;
           }
         }

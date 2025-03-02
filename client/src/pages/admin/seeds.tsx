@@ -4,6 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function AdminSeeds() {
   const [selectedFile, setSelectedFile] = useState<string>("");
@@ -11,6 +21,12 @@ export default function AdminSeeds() {
   const [progress, setProgress] = useState(0);
   const [currentItem, setCurrentItem] = useState("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Obtener categorías
+  const { data: categories } = useQuery({
+    queryKey: ['/api/categories'],
+  });
 
   const seedFiles = [
     { value: "category", label: "Categorías (category.json)" },
@@ -55,8 +71,11 @@ export default function AdminSeeds() {
       const data = await response.json();
       toast({
         title: "Éxito",
-        description: `Se insertaron ${data.count} registros correctamente`,
+        description: `Se procesaron ${data.count} registros correctamente`,
       });
+
+      // Refrescar los datos
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
     } catch (error) {
       toast({
         title: "Error",
@@ -66,6 +85,32 @@ export default function AdminSeeds() {
     } finally {
       setIsLoading(false);
       setProgress(100);
+    }
+  };
+
+  const handleDeleteCategory = async (id: number) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta categoría?')) return;
+
+    try {
+      const response = await fetch(`/api/categories/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Error al eliminar la categoría');
+
+      toast({
+        title: "Éxito",
+        description: "Categoría eliminada correctamente"
+      });
+
+      // Refrescar los datos
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al eliminar la categoría",
+        variant: "destructive"
+      });
     }
   };
 
@@ -113,6 +158,42 @@ export default function AdminSeeds() {
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Categorías Existentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead className="w-[100px]">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {categories?.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell>{category.id}</TableCell>
+                  <TableCell>{category.name}</TableCell>
+                  <TableCell>{category.description}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteCategory(category.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

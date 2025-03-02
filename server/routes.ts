@@ -829,13 +829,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (type === 'category') {
         for (const category of Array.isArray(seedData) ? seedData : [seedData]) {
-          await storage.createCategory(category);
+          console.log('Procesando categoría:', category);
+          // Buscar si existe una categoría con el mismo nombre
+          const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
+
+          if (existingCategories.length > 0) {
+            console.log('Actualizando categoría existente:', existingCategories[0].id);
+            await storage.updateCategory(existingCategories[0].id, category);
+          } else {
+            console.log('Creando nueva categoría');
+            await storage.createCategory(category);
+          }
           count++;
         }
       } else if (type === 'products') {
         for (const product of Array.isArray(seedData) ? seedData : [seedData]) {
-          await storage.createProduct(product);
-          count++;
+          console.log('Procesando producto:', product);
+          console.log('Estructura del producto:', {
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            category_id: product.category_id
+          });
+
+          try {
+            await storage.createProduct({
+              name: product.name,
+              description: product.description,
+              imageUrl: product.image,
+              price: product.price,
+              categoryId: product.category_id
+            });
+            count++;
+            console.log('Producto creado exitosamente');
+          } catch (error) {
+            console.error('Error al crear producto:', error);
+            throw error;
+                    }
         }
       }
 
@@ -938,13 +968,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (type === 'category') {
         for (const category of Array.isArray(seedData) ? seedData : [seedData]) {
-          await storage.createCategory(category);
+          console.log('Procesando categoría:', category);
+          // Buscar si existe una categoría con el mismo nombre
+          const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
+
+          if (existingCategories.length > 0) {
+            console.log('Actualizando categoría existente:', existingCategories[0].id);
+            await storage.updateCategory(existingCategories[0].id, category);
+          } else {
+            console.log('Creando nueva categoría');
+            await storage.createCategory(category);
+          }
           count++;
         }
       } else if (type === 'products') {
         for (const product of Array.isArray(seedData) ? seedData : [seedData]) {
-          await storage.createProduct(product);
-          count++;
+          console.log('Procesando producto:', product);
+          console.log('Estructura del producto:', {
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            category_id: product.category_id
+          });
+
+          try {
+            await storage.createProduct({
+              name: product.name,
+              description: product.description,
+              imageUrl: product.image,
+              price: product.price,
+              categoryId: product.category_id
+            });
+            count++;
+            console.log('Producto creado exitosamente');
+          } catch (error) {
+            console.error('Error al crear producto:', error);
+            throw error;
+          }
         }
       }
 

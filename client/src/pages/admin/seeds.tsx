@@ -17,7 +17,7 @@ export default function AdminSeeds() {
     { value: "products", label: "Productos (products.json)" }
   ];
 
-  const handleSeedSelection = async () => {
+  const handleExecuteSeed = async () => {
     if (!selectedFile) {
       toast({
         title: "Error",
@@ -31,32 +31,21 @@ export default function AdminSeeds() {
     setProgress(0);
 
     try {
-      const response = await fetch(`/api/admin/seeds/${selectedFile}/preview`);
-      if (!response.ok) throw new Error("Error al obtener vista previa");
-      
-      const data = await response.json();
-      toast({
-        title: "Vista Previa",
-        description: `Se insertarán ${data.count} registros`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error al obtener vista previa",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      // Primero hacemos la comprobación
+      const previewResponse = await fetch(`/api/admin/seeds/${selectedFile}/preview`);
+      if (!previewResponse.ok) throw new Error("Error al obtener vista previa");
 
-  const handleExecuteSeed = async () => {
-    if (!selectedFile) return;
+      const previewData = await previewResponse.json();
+      const shouldProceed = window.confirm(
+        `Se insertarán ${previewData.count} registros. ¿Deseas continuar?`
+      );
 
-    setIsLoading(true);
-    setProgress(0);
+      if (!shouldProceed) {
+        setIsLoading(false);
+        return;
+      }
 
-    try {
+      // Si el usuario confirma, procedemos con la inserción
       const response = await fetch(`/api/admin/seeds/${selectedFile}/execute`, {
         method: "POST"
       });
@@ -71,7 +60,7 @@ export default function AdminSeeds() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Error al ejecutar la siembra",
+        description: "Error al procesar la operación",
         variant: "destructive"
       });
     } finally {
@@ -107,21 +96,13 @@ export default function AdminSeeds() {
               </SelectContent>
             </Select>
 
-            <div className="flex gap-4">
-              <Button
-                onClick={handleSeedSelection}
-                disabled={!selectedFile || isLoading}
-              >
-                Comprobar Archivo
-              </Button>
-              <Button
-                onClick={handleExecuteSeed}
-                disabled={!selectedFile || isLoading}
-                variant="default"
-              >
-                Ejecutar Inserción
-              </Button>
-            </div>
+            <Button
+              onClick={handleExecuteSeed}
+              disabled={!selectedFile || isLoading}
+              className="w-full"
+            >
+              {isLoading ? "Procesando..." : "Ejecutar Operación"}
+            </Button>
           </div>
 
           {isLoading && (

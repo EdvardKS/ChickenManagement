@@ -11,11 +11,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card>
       {product.imageUrl && (
-        <img 
-          src={product.imageUrl} 
-          alt={product.name}
-          className="w-full h-48 object-cover"
-        />
+      <img 
+        src={`/img/products/${product.imageUrl}`} 
+        alt={product.name}
+        className="w-full h-48 object-cover"
+      />
+
       )}
       
       <CardHeader>

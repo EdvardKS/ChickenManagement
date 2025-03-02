@@ -20,7 +20,8 @@ import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
 import NotFound from "@/pages/not-found";
-import AdminSettings from "@/pages/admin/settings"; // Added import
+import AdminSettings from "@/pages/admin/settings";
+import AdminSeeds from "@/pages/admin/seeds"; // Added import
 
 // Update document metadata for SEO
 document.title = "Asador La Morenica | Pollos Asados a la Leña en Villena";
@@ -80,11 +81,16 @@ function Router() {
               <AdminDatabase />
             </div>
           </Route>
-          <Route path="/admin/settings"> {/* Added route */}
+          <Route path="/admin/settings">
             <div className="px-6 py-8">
               <AdminSettings />
             </div>
-          </Route> {/* Added route */}
+          </Route>
+          <Route path="/admin/seeds">
+            <div className="px-6 py-8">
+              <AdminSeeds />
+            </div>
+          </Route>
           {/* Rutas de dashboards */}
           <Route path="/admin/dashboards/:dashboard*">
             <DashboardLayout>

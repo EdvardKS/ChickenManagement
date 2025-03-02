@@ -793,5 +793,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Seeds Preview
+  app.get("/api/admin/seeds/:type/preview", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const seedPath = path.join(process.cwd(), 'database', 'seeds', `${type}.json`);
+
+      if (!await fs.pathExists(seedPath)) {
+        return res.status(404).json({ error: 'Archivo de semilla no encontrado' });
+      }
+
+      const seedData = await fs.readJson(seedPath);
+      return res.json({ 
+        count: Array.isArray(seedData) ? seedData.length : 1,
+        sample: Array.isArray(seedData) ? seedData[0] : seedData
+      });
+    } catch (error) {
+      console.error('Error previewing seed:', error);
+      res.status(500).json({ error: 'Error al obtener vista previa de la semilla' });
+    }
+  });
+
+  // Seeds Execute
+  app.post("/api/admin/seeds/:type/execute", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const seedPath = path.join(process.cwd(), 'database', 'seeds', `${type}.json`);
+
+      if (!await fs.pathExists(seedPath)) {
+        return res.status(404).json({ error: 'Archivo de semilla no encontrado' });
+      }
+
+      const seedData = await fs.readJson(seedPath);
+      let count = 0;
+
+      if (type === 'category') {
+        for (const category of Array.isArray(seedData) ? seedData : [seedData]) {
+          await storage.createCategory(category);
+          count++;
+        }
+      } else if (type === 'products') {
+        for (const product of Array.isArray(seedData) ? seedData : [seedData]) {
+          await storage.createProduct(product);
+          count++;
+        }
+      }
+
+      // Create backup with timestamp
+      const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const backupPath = path.join(
+        process.cwd(), 
+        'database', 
+        'seeds', 
+        'backups',
+        `${type}_${timestamp}.json`
+      );
+
+      await fs.ensureDir(path.dirname(backupPath));
+      await fs.writeJson(backupPath, seedData, { spaces: 2 });
+
+      res.json({ message: 'Semilla ejecutada correctamente', count });
+    } catch (error) {
+      console.error('Error executing seed:', error);
+      res.status(500).json({ error: 'Error al ejecutar la semilla' });
+    }
+  });
+
+  // Create directories if they don't exist
+  app.post("/api/admin/seeds/initialize", async (_req, res) => {
+    try {
+      const dirs = [
+        path.join(process.cwd(), 'database', 'seeds'),
+        path.join(process.cwd(), 'database', 'seeds', 'backups')
+      ];
+
+      for (const dir of dirs) {
+        await fs.ensureDir(dir);
+      }
+
+      // Create initial seed files if they don't exist
+      const seedFiles = {
+        'category.json': [
+          {
+            name: "Menús",
+            description: "Tenemos menús! Echa un vistazo y encárganos.",
+            image: "categoria_menu.jpg"
+          }
+        ],
+        'products.json': [
+          {
+            name: "Kebab a Espada",
+            description: "Receta Armenia que consiste en trozos de carne marinados ensartados en una espada y directos puestos a la brasa, servido en pan de la casa.",
+            image: "brasa_kebab",
+            category_id: 1
+          }
+        ]
+      };
+
+      for (const [filename, data] of Object.entries(seedFiles)) {
+        const filePath = path.join(process.cwd(), 'database', 'seeds', filename);
+        if (!await fs.pathExists(filePath)) {
+          await fs.writeJson(filePath, data, { spaces: 2 });
+        }
+      }
+
+      res.json({ message: 'Sistema de semillas inicializado correctamente' });
+    } catch (error) {
+      console.error('Error initializing seeds:', error);
+      res.status(500).json({ error: 'Error al inicializar el sistema de semillas' });
+    }
+  });
+
   return httpServer;
 }

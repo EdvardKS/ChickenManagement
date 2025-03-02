@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { ShoppingBag, ChartBar, Package, Settings } from "lucide-react";
+import { ShoppingBag, ChartBar, Package, Settings, Database } from "lucide-react";
 import { Link } from "wouter";
 import type { Order } from "@shared/schema";
 
@@ -68,6 +68,20 @@ export default function AdminHome() {
             </CardHeader>
             <CardContent>
               <p>Gestionar ajustes del sistema</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/seeds">
+          <Card className="hover:bg-accent cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Gestión de Semillas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Importar datos desde archivos JSON</p>
             </CardContent>
           </Card>
         </Link>

@@ -11,14 +11,14 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI
 );
 
-// Load credentials from the JSON file (This part is kept for potential future use with the Google API)
+// Load credentials from the JSON file
 const credentialsPath = path.join(process.cwd(), 'google', 'client_secret_417296580036-n1a3ea53b2g6cejieql4orkdfhdhdhjn.apps.googleusercontent.com.json');
 const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
 
-// Configure authentication (This part is kept for potential future use with the Google API)
+// Configure authentication
 oauth2Client.setCredentials(credentials);
 
-// Initialize the Business Profile API client (This part is kept for potential future use with the Google API)
+// Initialize the Business Profile API client
 const businessProfile = google.mybusinessbusinessinformation({
   version: 'v1',
   auth: oauth2Client

@@ -161,9 +161,14 @@ export default function BusinessHoursPage() {
 
         <div className="grid gap-6">
           {hours?.map((hour) => (
-            <Card key={hour.id}>
+            <Card key={hour.id} className={`${hour.isOpen ? 'border-green-500' : 'border-red-500'} border-2`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>{DAYS[hour.dayOfWeek]}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {DAYS[hour.dayOfWeek]}
+                  <span className={`text-sm font-normal ${hour.isOpen ? 'text-green-600' : 'text-red-600'}`}>
+                    {hour.isOpen ? '(Abierto)' : '(Cerrado)'}
+                  </span>
+                </CardTitle>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Switch
@@ -177,6 +182,7 @@ export default function BusinessHoursPage() {
                         }
                       }}
                       disabled={!editMode}
+                      className={hour.isOpen ? 'bg-green-500' : 'bg-red-500'}
                     />
                   </TooltipTrigger>
                   <TooltipContent>
@@ -200,6 +206,7 @@ export default function BusinessHoursPage() {
                         }
                       }}
                       disabled={!editMode || !hour.isOpen}
+                      className={editMode && hour.isOpen ? 'border-green-500' : ''}
                     />
                   </div>
                   <div className="space-y-2">
@@ -216,6 +223,7 @@ export default function BusinessHoursPage() {
                         }
                       }}
                       disabled={!editMode || !hour.isOpen}
+                      className={editMode && hour.isOpen ? 'border-green-500' : ''}
                     />
                   </div>
                 </div>

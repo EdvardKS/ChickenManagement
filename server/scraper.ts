@@ -12,7 +12,7 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 // Load credentials from the JSON file (This part is kept for potential future use with the Google API)
-const credentialsPath = path.join(process.cwd(), 'google', 'web2-452608-a3c00a713126.json');
+const credentialsPath = path.join(process.cwd(), 'google', 'client_secret_417296580036-n1a3ea53b2g6cejieql4orkdfhdhdhjn.apps.googleusercontent.com.json');
 const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
 
 // Configure authentication (This part is kept for potential future use with the Google API)
@@ -46,7 +46,7 @@ export async function scrapeGoogleBusinessHours(): Promise<BusinessHours[]> {
       if (!hoursElement) return null;
 
       // Obtener todos los días y horarios
-      const days = Array.from(hoursElement.querySelectorAll('tr')).map(row => {
+      const days = Array.from(hoursElement.querySelectorAll('tr.K7Ltle')).map(row => {
         const cells = row.querySelectorAll('td');
         const day = cells[0]?.textContent?.trim() || '';
         const hours = cells[1]?.textContent?.trim() || '';
@@ -84,9 +84,13 @@ export async function scrapeGoogleBusinessHours(): Promise<BusinessHours[]> {
 
       if (hours !== 'Cerrado') {
         isOpen = true;
-        const [open, close] = hours.split(' - ');
-        openTime = open || "00:00";
-        closeTime = close || "00:00";
+        // Convertir el formato "9:00–17:00" a "09:00" y "17:00"
+        const [open, close] = hours.split('–').map(time => {
+          const [hours, minutes] = time.trim().split(':');
+          return `${hours.padStart(2, '0')}:${minutes}`;
+        });
+        openTime = open;
+        closeTime = close;
       }
 
       return {

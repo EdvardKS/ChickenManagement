@@ -2,6 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import { updateBusinessHours } from "@/lib/hours-scraper";
@@ -13,6 +14,8 @@ const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', '
 
 export default function BusinessHoursPage() {
   const [editMode, setEditMode] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(0);
+  const [syncStatus, setSyncStatus] = useState("");
 
   const { data: hours, isLoading } = useQuery<BusinessHours[]>({
     queryKey: ['/api/business-hours']
@@ -45,15 +48,45 @@ export default function BusinessHoursPage() {
   });
 
   const syncWithGoogleMutation = useMutation({
-    mutationFn: updateBusinessHours,
+    mutationFn: async () => {
+      setSyncProgress(10);
+      setSyncStatus("Iniciando sincronización con Google...");
+
+      // Primera fase: Iniciar el scraping
+      setSyncProgress(30);
+      setSyncStatus("Buscando información de horarios en Google...");
+
+      const response = await fetch('/api/business-hours/sync');
+      if (!response.ok) throw new Error('Failed to sync with Google');
+
+      setSyncProgress(60);
+      setSyncStatus("Procesando horarios encontrados...");
+
+      const data = await response.json();
+
+      setSyncProgress(90);
+      setSyncStatus("Actualizando horarios en el sistema...");
+
+      return data;
+    },
     onSuccess: () => {
+      setSyncProgress(100);
+      setSyncStatus("¡Sincronización completada!");
       queryClient.invalidateQueries({ queryKey: ['/api/business-hours'] });
       toast({
         title: "Sincronización completada",
-        description: "Los horarios se han sincronizado con Google Business."
+        description: "Los horarios se han sincronizado correctamente con Google Business."
       });
+
+      // Resetear el progreso después de un momento
+      setTimeout(() => {
+        setSyncProgress(0);
+        setSyncStatus("");
+      }, 2000);
     },
     onError: (error) => {
+      setSyncProgress(0);
+      setSyncStatus("");
       toast({
         title: "Error de sincronización",
         description: "No se pudo sincronizar con Google Business. " + error.message,
@@ -85,6 +118,14 @@ export default function BusinessHoursPage() {
           </Button>
         </div>
       </div>
+
+      {/* Barra de progreso y estado */}
+      {(syncWithGoogleMutation.isPending || syncProgress > 0) && (
+        <div className="mb-6 space-y-2">
+          <Progress value={syncProgress} className="w-full" />
+          <p className="text-sm text-muted-foreground">{syncStatus}</p>
+        </div>
+      )}
 
       <div className="grid gap-6">
         {hours?.map((hour) => (

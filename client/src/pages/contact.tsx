@@ -61,7 +61,7 @@ export default function Contact() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <BusinessHoursDisplay hours={businessHours} />
+            <BusinessHoursDisplay hours={businessHours} variant="compact" />
           </CardContent>
         </Card>
       </div>
@@ -83,9 +83,4 @@ export default function Contact() {
       </Card>
     </div>
   );
-}
-
-function getDayName(day: number): string {
-  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  return days[day];
 }

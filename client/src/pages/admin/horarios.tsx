@@ -9,6 +9,7 @@ import { updateBusinessHours } from "@/lib/hours-scraper";
 import type { BusinessHours } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -112,107 +113,141 @@ export default function BusinessHoursPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Gestión de Horarios</h1>
-        <div className="space-x-4">
-          <Button 
-            onClick={() => setEditMode(!editMode)}
-            variant={editMode ? "secondary" : "outline"}
-          >
-            {editMode ? "Cancelar Edición" : "Editar Horarios"}
-          </Button>
-          <Button 
-            onClick={() => syncWithGoogleMutation.mutate()}
-            disabled={syncWithGoogleMutation.isPending}
-          >
-            {syncWithGoogleMutation.isPending ? "Sincronizando..." : "Sincronizar con Google"}
-          </Button>
+    <TooltipProvider>
+      <div className="container mx-auto py-10">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Gestión de Horarios</h1>
+          <div className="space-x-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => setEditMode(!editMode)}
+                  variant={editMode ? "secondary" : "outline"}
+                >
+                  {editMode ? "✏️ Guardando cambios..." : "✏️ Editar Horarios"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{editMode ? 
+                  "Haz clic para terminar de editar los horarios" : 
+                  "Haz clic para modificar los horarios manualmente"}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => syncWithGoogleMutation.mutate()}
+                  disabled={syncWithGoogleMutation.isPending}
+                >
+                  {syncWithGoogleMutation.isPending ? "🔄 Sincronizando..." : "🔄 Sincronizar con Google"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Obtiene automáticamente los horarios desde la página de Google Business</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* Barra de progreso y estado */}
+        {(syncWithGoogleMutation.isPending || syncProgress > 0) && (
+          <div className="mb-6 space-y-2">
+            <Progress value={syncProgress} className="w-full" />
+            <p className="text-sm text-muted-foreground">{syncStatus}</p>
+          </div>
+        )}
+
+        <div className="grid gap-6">
+          {hours?.map((hour) => (
+            <Card key={hour.id}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>{DAYS[hour.dayOfWeek]}</CardTitle>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Switch
+                      checked={hour.isOpen}
+                      onCheckedChange={(checked) => {
+                        if (editMode) {
+                          updateHoursMutation.mutate({
+                            ...hour,
+                            isOpen: checked
+                          });
+                        }
+                      }}
+                      disabled={!editMode}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{hour.isOpen ? "Abierto" : "Cerrado"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Hora de apertura</label>
+                    <Input
+                      type="time"
+                      value={hour.openTime}
+                      onChange={(e) => {
+                        if (editMode) {
+                          updateHoursMutation.mutate({
+                            ...hour,
+                            openTime: e.target.value
+                          });
+                        }
+                      }}
+                      disabled={!editMode || !hour.isOpen}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Hora de cierre</label>
+                    <Input
+                      type="time"
+                      value={hour.closeTime}
+                      onChange={(e) => {
+                        if (editMode) {
+                          updateHoursMutation.mutate({
+                            ...hour,
+                            closeTime: e.target.value
+                          });
+                        }
+                      }}
+                      disabled={!editMode || !hour.isOpen}
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center space-x-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Switch
+                        checked={hour.autoUpdate}
+                        onCheckedChange={(checked) => {
+                          if (editMode) {
+                            updateHoursMutation.mutate({
+                              ...hour,
+                              autoUpdate: checked
+                            });
+                          }
+                        }}
+                        disabled={!editMode}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Permite que este horario se actualice automáticamente cuando se sincroniza con Google</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-sm text-gray-500">
+                    Actualización automática desde Google
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
-
-      {/* Barra de progreso y estado */}
-      {(syncWithGoogleMutation.isPending || syncProgress > 0) && (
-        <div className="mb-6 space-y-2">
-          <Progress value={syncProgress} className="w-full" />
-          <p className="text-sm text-muted-foreground">{syncStatus}</p>
-        </div>
-      )}
-
-      <div className="grid gap-6">
-        {hours?.map((hour) => (
-          <Card key={hour.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>{DAYS[hour.dayOfWeek]}</CardTitle>
-              <Switch
-                checked={hour.isOpen}
-                onCheckedChange={(checked) => {
-                  if (editMode) {
-                    updateHoursMutation.mutate({
-                      ...hour,
-                      isOpen: checked
-                    });
-                  }
-                }}
-                disabled={!editMode}
-              />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Hora de apertura</label>
-                  <Input
-                    type="time"
-                    value={hour.openTime}
-                    onChange={(e) => {
-                      if (editMode) {
-                        updateHoursMutation.mutate({
-                          ...hour,
-                          openTime: e.target.value
-                        });
-                      }
-                    }}
-                    disabled={!editMode || !hour.isOpen}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Hora de cierre</label>
-                  <Input
-                    type="time"
-                    value={hour.closeTime}
-                    onChange={(e) => {
-                      if (editMode) {
-                        updateHoursMutation.mutate({
-                          ...hour,
-                          closeTime: e.target.value
-                        });
-                      }
-                    }}
-                    disabled={!editMode || !hour.isOpen}
-                  />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center space-x-2">
-                <Switch
-                  checked={hour.autoUpdate}
-                  onCheckedChange={(checked) => {
-                    if (editMode) {
-                      updateHoursMutation.mutate({
-                        ...hour,
-                        autoUpdate: checked
-                      });
-                    }
-                  }}
-                  disabled={!editMode}
-                />
-                <span className="text-sm text-gray-500">
-                  Actualización automática desde Google
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    </TooltipProvider>
   );
 }

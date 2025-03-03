@@ -38,7 +38,7 @@ export async function scrapeGoogleBusinessHours(): Promise<BusinessHours[]> {
         '--no-zygote',
         '--disable-gpu'
       ],
-      executablePath: '/nix/store/chrome/chrome'
+      executablePath: '/usr/bin/chromium-browser'
     });
 
     const page = await browser.newPage();

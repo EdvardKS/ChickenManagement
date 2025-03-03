@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema, insertSettingsSchema } from "@shared/schema";
-import { scrapeGoogleBusinessHours } from "./scraper";
+import { scrapeGoogleBusinessHours, updateGoogleBusinessHours } from "./scraper";
 import { format } from "date-fns";
 import nodemailer from "nodemailer";
 import PDFDocument from "pdfkit";
@@ -860,7 +860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const category of Array.isArray(seedData) ? seedData : [seedData]) {
           console.log('Procesando categoría:', category);
           // Buscar si existe una categoría con el mismo nombre
-          const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
+                    const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
 
           if (existingCategories.length > 0) {
             console.log('Actualizando categoría existente:', existingCategories[0].id);
@@ -1135,6 +1135,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error uploading product image:', error);
       res.status(500).json({ error: 'Error al subir la imagen del producto' });
+    }
+  });
+
+  // Add new routes for Google Business hours synchronization
+  app.get("/api/business-hours/sync", async (_req, res) => {
+    try {
+      const hours = await scrapeGoogleBusinessHours();
+
+      // Update our database with the latest hours from Google
+      for (const hour of hours) {
+        await storage.updateBusinessHours(hour.id, hour);
+      }
+
+      res.json(hours);
+    } catch (error) {
+      console.error('Error syncing business hours:', error);
+      res.status(500).json({ error: 'Error al sincronizar horarios con Google' });
+    }
+  });
+
+  app.post("/api/business-hours/sync", async (req, res) => {
+    try {
+      const { hours } = req.body;
+      await updateGoogleBusinessHours(hours);
+      res.json({ message: 'Horarios sincronizados correctamente' });
+    } catch (error) {
+      console.error('Error updating Google business hours:', error);
+      res.status(500).json({ error: 'Error al actualizar horarios en Google' });
     }
   });
 

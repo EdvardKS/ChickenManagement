@@ -11,17 +11,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
-// Reordenar los días empezando por Lunes
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-const DAY_MAP = {
-  'Lunes': 1,
-  'Martes': 2,
-  'Miércoles': 3,
-  'Jueves': 4,
-  'Viernes': 5,
-  'Sábado': 6,
-  'Domingo': 0
-};
+const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 export default function BusinessHoursPage() {
   const [editMode, setEditMode] = useState(false);
@@ -122,13 +112,6 @@ export default function BusinessHoursPage() {
     return <div>Cargando horarios...</div>;
   }
 
-  // Ordenar los horarios según el orden de los días definido
-  const sortedHours = [...(hours || [])].sort((a, b) => {
-    const dayA = DAY_MAP[DAYS[a.dayOfWeek]];
-    const dayB = DAY_MAP[DAYS[b.dayOfWeek]];
-    return dayA - dayB;
-  });
-
   return (
     <TooltipProvider>
       <div className="container mx-auto py-10">
@@ -177,11 +160,11 @@ export default function BusinessHoursPage() {
         )}
 
         <div className="grid gap-6">
-          {sortedHours?.map((hour) => (
-            <Card key={hour.id} className={`${hour.isOpen ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500'} border-2`}>
+          {hours?.map((hour) => (
+            <Card key={hour.id} className={`${hour.isOpen ? 'border-green-500' : 'border-red-500'} border-2`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="flex items-center gap-2">
-                  {DAYS[DAY_MAP[hour.dayOfWeek]]}
+                  {DAYS[hour.dayOfWeek]}
                   <span className={`text-sm font-normal ${hour.isOpen ? 'text-green-600' : 'text-red-600'}`}>
                     {hour.isOpen ? '(Abierto)' : '(Cerrado)'}
                   </span>
@@ -208,74 +191,66 @@ export default function BusinessHoursPage() {
                 </Tooltip>
               </CardHeader>
               <CardContent>
-                {hour.isOpen ? (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Hora de apertura</label>
-                        <Input
-                          type="time"
-                          value={hour.openTime}
-                          onChange={(e) => {
-                            if (editMode) {
-                              updateHoursMutation.mutate({
-                                ...hour,
-                                openTime: e.target.value
-                              });
-                            }
-                          }}
-                          disabled={!editMode}
-                          className={editMode ? 'border-green-500' : ''}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Hora de cierre</label>
-                        <Input
-                          type="time"
-                          value={hour.closeTime}
-                          onChange={(e) => {
-                            if (editMode) {
-                              updateHoursMutation.mutate({
-                                ...hour,
-                                closeTime: e.target.value
-                              });
-                            }
-                          }}
-                          disabled={!editMode}
-                          className={editMode ? 'border-green-500' : ''}
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center space-x-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Switch
-                            checked={hour.autoUpdate}
-                            onCheckedChange={(checked) => {
-                              if (editMode) {
-                                updateHoursMutation.mutate({
-                                  ...hour,
-                                  autoUpdate: checked
-                                });
-                              }
-                            }}
-                            disabled={!editMode}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Permite que este horario se actualice automáticamente cuando se sincroniza con Google</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <span className="text-sm text-gray-500">
-                        Actualización automática desde Google
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-4 text-gray-500 italic">
-                    Cerrado
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Hora de apertura</label>
+                    <Input
+                      type="time"
+                      value={hour.openTime}
+                      onChange={(e) => {
+                        if (editMode) {
+                          updateHoursMutation.mutate({
+                            ...hour,
+                            openTime: e.target.value
+                          });
+                        }
+                      }}
+                      disabled={!editMode || !hour.isOpen}
+                      className={editMode && hour.isOpen ? 'border-green-500' : ''}
+                    />
                   </div>
-                )}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Hora de cierre</label>
+                    <Input
+                      type="time"
+                      value={hour.closeTime}
+                      onChange={(e) => {
+                        if (editMode) {
+                          updateHoursMutation.mutate({
+                            ...hour,
+                            closeTime: e.target.value
+                          });
+                        }
+                      }}
+                      disabled={!editMode || !hour.isOpen}
+                      className={editMode && hour.isOpen ? 'border-green-500' : ''}
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center space-x-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Switch
+                        checked={hour.autoUpdate}
+                        onCheckedChange={(checked) => {
+                          if (editMode) {
+                            updateHoursMutation.mutate({
+                              ...hour,
+                              autoUpdate: checked
+                            });
+                          }
+                        }}
+                        disabled={!editMode}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Permite que este horario se actualice automáticamente cuando se sincroniza con Google</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-sm text-gray-500">
+                    Actualización automática desde Google
+                  </span>
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -29,7 +29,16 @@ export async function scrapeGoogleBusinessHours(): Promise<BusinessHours[]> {
     // Iniciar navegador
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu'
+      ],
+      executablePath: '/nix/store/chrome/chrome'
     });
 
     const page = await browser.newPage();

@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import stockRoutes from './routes/stockRoutes';
+import orderRoutes from './routes/orderRoutes';
 import { storage } from "./storage";
 import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema, insertSettingsSchema } from "@shared/schema";
@@ -80,84 +82,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stock Management Routes
-  app.get("/api/stockActually", async (_req, res) => {
-    try {
-      console.log('Getting current stock and orders');
-      const stock = await storage.getCurrentStock();
-      const orders = await storage.getOrders();
+  // Register routes
+  app.use('/api/stock', stockRoutes);
+  app.use('/api/orders', orderRoutes);
 
-      // Filtrar pedidos de hoy
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      console.log('Calculating reserved stock for today:', today);
-      // Calcular el stock reservado basado solo en los pedidos pendientes de hoy
-      const reservedStock = orders
-        .filter(order => {
-          const orderDate = new Date(order.pickupTime);
-          orderDate.setHours(0, 0, 0, 0);
-          return orderDate.getTime() === today.getTime() &&
-                 order.status === "pending" &&
-                 !order.deleted;
-        })
-        .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
-
-      const currentStock = parseFloat((stock?.currentStock || 0).toString());
-      console.log('Current stock:', currentStock, 'Reserved stock:', reservedStock);
-
-      const response = {
-        ...stock,
-        reservedStock,
-        unreservedStock: currentStock - reservedStock,
-      };
-
-      console.log('Stock response:', response);
-      res.json(response);
-    } catch (error) {
-      console.error('Error getting stock:', error);
-      res.status(500).json({ error: 'Error al obtener el stock' });
-    }
-  });
-  // Stock Management Routes
-  app.get("/api/stock", async (_req, res) => {
-    try {
-      console.log('Getting current stock and orders');
-      const stock = await storage.getCurrentStock();
-      const orders = await storage.getOrders();
-
-      // Filtrar pedidos de hoy
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      console.log('Calculating reserved stock for today:', today);
-      // Calcular el stock reservado basado solo en los pedidos pendientes de hoy
-      const reservedStock = orders
-        .filter(order => {
-          const orderDate = new Date(order.pickupTime);
-          orderDate.setHours(0, 0, 0, 0);
-          return orderDate.getTime() === today.getTime() &&
-                 order.status === "pending" &&
-                 !order.deleted;
-        })
-        .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
-
-      const currentStock = parseFloat((stock?.currentStock || 0).toString());
-      console.log('Current stock:', currentStock, 'Reserved stock:', reservedStock);
-
-      const response = {
-        ...stock,
-        reservedStock,
-        unreservedStock: currentStock - reservedStock,
-      };
-
-      console.log('Stock response:', response);
-      res.json(response);
-    } catch (error) {
-      console.error('Error getting stock:', error);
-      res.status(500).json({ error: 'Error al obtener el stock' });
-    }
-  });
 
   // Categories
   app.get("/api/categories", async (_req, res) => {
@@ -201,243 +129,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating product:', error);
       res.status(500).json({ error: 'Error al crear el producto' });
-    }
-  });
-
-  // Orders
-  app.get("/api/orders", async (_req, res) => {
-    try {
-      const orders = await storage.getOrders();
-      res.json(orders);
-    } catch (error) {
-      console.error('Error getting orders:', error);
-      res.status(500).json({ error: 'Error al obtener los pedidos' });
-    }
-  });
-
-  app.post("/api/orders", async (req, res) => {
-    try {
-      const order = insertOrderSchema.parse(req.body);
-      const created = await storage.createOrder(order);
-
-      // Actualizar stock reservado cuando se crea un nuevo pedido
-      req.stockUpdate = await prepareStockUpdate(
-        'new_order',
-        parseFloat(created.quantity.toString()),
-        'client'
-      );
-
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(undefined);
-        });
-      });
-
-      res.json(created);
-    } catch (error) {
-      console.error('Error creating order:', error);
-      res.status(500).json({ error: 'Error al crear el pedido' });
-    }
-  });
-
-  app.post("/api/stock/add", async (req, res) => {
-    try {
-      const { quantity } = req.body;
-      console.log('Adding stock quantity:', quantity);
-
-      // Preparar actualización de stock
-      req.stockUpdate = await prepareStockUpdate(
-        'direct_sale_correction',
-        parseFloat(quantity),
-        'admin'
-      );
-
-      // Aplicar middleware de stock
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(undefined);
-        });
-      });
-
-      res.json(await storage.getCurrentStock());
-    } catch (error) {
-      console.error('Error adding stock:', error);
-      res.status(500).json({ error: 'Error al añadir stock' });
-    }
-  });
-
-  app.post("/api/stock/remove", async (req, res) => {
-    try {
-      const { quantity } = req.body;
-
-      // Preparar actualización de stock
-      req.stockUpdate = await prepareStockUpdate(
-        'direct_sale',
-        parseFloat(quantity),
-        'admin'
-      );
-
-      // Aplicar middleware de stock
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(undefined);
-        });
-      });
-
-      res.json(await storage.getCurrentStock());
-    } catch (error) {
-      console.error('Error removing stock:', error);
-      res.status(500).json({ error: 'Error al quitar stock' });
-    }
-  });
-
-  app.post("/api/stock/reset", async (_req, res) => {
-    try {
-      // Preparar actualización de stock
-      req.stockUpdate = await prepareStockUpdate(
-        'reset_stock',
-        0,
-        'admin'
-      );
-
-      // Aplicar middleware de stock
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(undefined);
-        });
-      });
-
-      res.json(await storage.getCurrentStock());
-    } catch (error) {
-      console.error('Error resetting stock:', error);
-      res.status(500).json({ error: 'Error al resetear el stock' });
-    }
-  });
-
-  // Confirmar pedido
-  app.patch("/api/orders/:id/confirm", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const order = await storage.getOrder(id);
-
-      if (!order) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-
-      // Preparar actualización de stock
-      req.stockUpdate = await prepareStockUpdate(
-        'order_delivered',
-        parseFloat(order.quantity.toString()),
-        'admin'
-      );
-
-      // Aplicar middleware de stock
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(undefined);
-        });
-      });
-
-      // Actualizar el pedido
-      const updatedOrder = await storage.updateOrder(id, {
-        status: "completed",
-        updatedAt: new Date()
-      });
-
-      res.json(updatedOrder);
-    } catch (error) {
-      console.error('Error confirming order:', error);
-      res.status(500).json({ error: 'Error al confirmar el pedido' });
-    }
-  });
-
-  // Marcar pedido como error
-  app.patch("/api/orders/:id/error", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const order = await storage.getOrder(id);
-
-      if (!order) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-
-      // Preparar actualización de stock
-      req.stockUpdate = await prepareStockUpdate(
-        'order_error',
-        parseFloat(order.quantity.toString()),
-        'admin'
-      );
-
-      // Aplicar middleware de stock
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(undefined);
-        });
-      });
-
-      // Marcar como eliminado y error
-      const updatedOrder = await storage.updateOrder(id, {
-        deleted: true,
-        status: "error",
-        updatedAt: new Date()
-      });
-
-      res.json(updatedOrder);
-    } catch (error) {
-      console.error('Error marking order as error:', error);
-      res.status(500).json({ error: 'Error al marcar el pedido como error' });
-    }
-  });
-
-  // Actualizar pedido
-  app.patch("/api/orders/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const orderData = req.body;
-      const currentOrder = await storage.getOrder(id);
-
-      if (!currentOrder) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-
-      // Si el estado cambia a cancelado
-      if (orderData.status === 'cancelled' && currentOrder.status !== 'cancelled') {
-        req.stockUpdate = await prepareStockUpdate(
-          'order_cancelled',
-          parseFloat(currentOrder.quantity.toString()),
-          'admin'
-        );
-
-        await new Promise((resolve, reject) => {
-          stockMiddleware(req, res, (err) => {
-            if (err) reject(err);
-            else resolve(undefined);
-          });
-        });
-      }
-
-      const updated = await storage.updateOrder(id, orderData);
-      res.json(updated);
-    } catch (error) {
-      console.error('Error updating order:', error);
-      res.status(500).json({ error: 'Error al actualizar el pedido' });
-    }
-  });
-
-  app.delete("/api/orders/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteOrder(id);
-      res.status(204).end();
-    } catch (error) {
-      console.error('Error deleting order:', error);
-      res.status(500).json({ error: 'Error al eliminar el pedido' });
     }
   });
 
@@ -640,14 +331,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         total: sql`SUM(${orders.totalAmount})`,
         count: sql`COUNT(*)`,
       })
-      .from(orders)
-      .where(
-        and(
-          sql`${orders.createdAt} >= ${thirtyDaysAgo}`,
-          eq(orders.deleted, false)
+        .from(orders)
+        .where(
+          and(
+            sql`${orders.createdAt} >= ${thirtyDaysAgo}`,
+            eq(orders.deleted, false)
+          )
         )
-      )
-      .groupBy(sql`DATE(${orders.createdAt})`);
+        .groupBy(sql`DATE(${orders.createdAt})`);
 
       res.json(result);
     } catch (error) {
@@ -665,11 +356,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalSpent: sql`SUM(${orders.totalAmount})`,
         avgOrderValue: sql`AVG(${orders.totalAmount})`,
       })
-      .from(orders)
-      .where(eq(orders.deleted, false))
-      .groupBy(orders.customerName)
-      .orderBy(sql`COUNT(*)`, "desc")
-      .limit(10);
+        .from(orders)
+        .where(eq(orders.deleted, false))
+        .groupBy(orders.customerName)
+        .orderBy(sql`COUNT(*)`, "desc")
+        .limit(10);
 
       res.json(result);
     } catch (error) {
@@ -686,15 +377,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         productCount: sql`COUNT(DISTINCT ${products.id})`,
         avgPrice: sql`AVG(${products.price})`,
       })
-      .from(categories)
-      .leftJoin(products, eq(categories.id, products.categoryId))
-      .where(
-        and(
-          eq(categories.deleted, false),
-          eq(products.deleted, false)
+        .from(categories)
+        .leftJoin(products, eq(categories.id, products.categoryId))
+        .where(
+          and(
+            eq(categories.deleted, false),
+            eq(products.deleted, false)
+          )
         )
-      )
-      .groupBy(categories.name);
+        .groupBy(categories.name);
 
       res.json(result);
     } catch (error) {
@@ -799,7 +490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const seedData = await fs.readJson(seedPath);
-      return res.json({ 
+      return res.json({
         count: Array.isArray(seedData) ? seedData.length : 1,
         sample: Array.isArray(seedData) ? seedData[0] : seedData
       });
@@ -826,7 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const category of Array.isArray(seedData) ? seedData : [seedData]) {
           console.log('Procesando categoría:', category);
           // Buscar si existe una categoría con el mismo nombre
-                    const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
+          const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
 
           if (existingCategories.length > 0) {
             console.log('Actualizando categoría existente:', existingCategories[0].id);
@@ -837,7 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           count++;
         }
-      } else if (type === 'products'){
+      } else if (type === 'products') {
         for (const product of Array.isArray(seedData) ? seedData : [seedData]) {
           console.log('Procesando producto:', product);
           console.log('Estructura del producto:', {
@@ -881,9 +572,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create backup with timestamp
       const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const backupPath = path.join(
-        process.cwd(), 
-        'database', 
-        'seeds', 
+        process.cwd(),
+        'database',
+        'seeds',
         'backups',
         `${type}_${timestamp}.json`
       );
@@ -903,7 +594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const dirs = [
         path.join(process.cwd(), 'database', 'seeds'),
-        path.join(process.cwd(), 'database', 'seeds', 'backups')      
+        path.join(process.cwd(), 'database', 'seeds', 'backups')
       ];
 
       for (const dir of dirs) {
@@ -1094,7 +785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'No se ha subido ningún archivo' });
       }
 
-      res.json({ 
+      res.json({
         filename: file.filename,
         message: 'Imagen subida correctamente'
       });

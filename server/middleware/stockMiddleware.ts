@@ -26,41 +26,41 @@ export async function stockMiddleware(
   _res: Response,
   next: NextFunction
 ) {
-  const stockUpdate = req.stockUpdate;
-  if (!stockUpdate) return next();
-
   try {
+    const stockUpdate = req.stockUpdate;
+    if (!stockUpdate) return next();
+
+    console.log('Processing stock update:', stockUpdate);
+
     const currentStock = await storage.getCurrentStock();
     if (!currentStock) throw new Error('No stock found');
 
-    // Update stock values
+    // Asegurar que todos los valores sean números antes de la conversión a string
     const newStock: Partial<Stock> = {
-      initialStock: stockUpdate.initialStock.toString(),
-      currentStock: stockUpdate.currentStock.toString(),
-      reservedStock: stockUpdate.reservedStock.toString(),
-      unreservedStock: stockUpdate.unreservedStock.toString(),
+      initialStock: String(Math.max(0, stockUpdate.initialStock)),
+      currentStock: String(Math.max(0, stockUpdate.currentStock)),
+      reservedStock: String(Math.max(0, stockUpdate.reservedStock)),
+      unreservedStock: String(Math.max(0, stockUpdate.unreservedStock)),
       lastUpdated: new Date()
     };
 
     console.log('Updating stock with:', newStock);
 
-    // Update stock
+    // Actualizar stock
     const updatedStock = await storage.updateStock(newStock);
-
     console.log('Stock updated:', updatedStock);
 
-    // Create stock history entry
+    // Crear entrada en el historial
     const historyEntry: Partial<StockHistory> = {
       stockId: updatedStock.id,
       action: stockUpdate.action,
       quantity: stockUpdate.quantity,
-      previousStock: parseFloat(currentStock.currentStock.toString()),
-      newStock: parseFloat(updatedStock.currentStock.toString()),
+      previousStock: parseFloat(currentStock.currentStock),
+      newStock: parseFloat(updatedStock.currentStock),
       createdBy: stockUpdate.source || 'system'
     };
 
     await storage.createStockHistory(historyEntry);
-
     next();
   } catch (error) {
     console.error('Error in stock middleware:', error);
@@ -76,9 +76,10 @@ export async function prepareStockUpdate(
   const currentStock = await storage.getCurrentStock();
   if (!currentStock) throw new Error('No stock found');
 
-  const initial = parseFloat(currentStock.initialStock.toString());
-  const current = parseFloat(currentStock.currentStock.toString());
-  const reserved = parseFloat(currentStock.reservedStock.toString());
+  // Convertir todos los valores a números
+  const initial = parseFloat(currentStock.initialStock);
+  const current = parseFloat(currentStock.currentStock);
+  const reserved = parseFloat(currentStock.reservedStock);
 
   let newInitial = initial;
   let newCurrent = current;
@@ -94,9 +95,6 @@ export async function prepareStockUpdate(
 
   switch (action) {
     case 'order_cancelled':
-      // Solo afecta al stock reservado
-      newReserved = Math.max(0, reserved - quantity);
-      break;
     case 'order_error':
       // Solo afecta al stock reservado
       newReserved = Math.max(0, reserved - quantity);
@@ -111,9 +109,9 @@ export async function prepareStockUpdate(
       newCurrent = Math.max(0, current - quantity);
       break;
     case 'direct_sale_correction':
-      // Aumenta stock total y inicial si es necesario
+      // Aumenta stock total y si es la primera venta del día, también el inicial
       newCurrent = current + quantity;
-      if (current === 0) {
+      if (current === 0 && initial === 0) {
         newInitial = quantity;
       }
       break;
@@ -132,13 +130,12 @@ export async function prepareStockUpdate(
     initialStock: newInitial,
     currentStock: newCurrent,
     reservedStock: newReserved,
-    unreservedStock: newCurrent - newReserved,
+    unreservedStock: Math.max(0, newCurrent - newReserved),
     action,
     quantity,
     source
   };
 
   console.log('Prepared stock update:', update);
-
   return update;
 }

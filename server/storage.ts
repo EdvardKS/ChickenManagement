@@ -228,15 +228,15 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    // Ensure all required fields are present
+    // Asegurar que todos los campos se conviertan a string
     const updatedValues = {
-      initialStock: stockData.initialStock || currentStock?.initialStock || "0",
-      currentStock: stockData.currentStock || currentStock?.currentStock || "0",
-      reservedStock: stockData.reservedStock || currentStock?.reservedStock || "0",
-      unreservedStock: (
-        parseFloat(stockData.currentStock || currentStock?.currentStock || "0") -
-        parseFloat(stockData.reservedStock || currentStock?.reservedStock || "0")
-      ).toString(),
+      initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
+      currentStock: String(stockData.currentStock || currentStock?.currentStock || 0),
+      reservedStock: String(stockData.reservedStock || currentStock?.reservedStock || 0),
+      unreservedStock: String(
+        parseFloat(String(stockData.currentStock || currentStock?.currentStock || 0)) -
+        parseFloat(String(stockData.reservedStock || currentStock?.reservedStock || 0))
+      ),
       lastUpdated: new Date()
     };
 
@@ -262,6 +262,16 @@ export class DatabaseStorage implements IStorage {
         .returning();
       updatedStock = updated;
     }
+
+    // Crear entrada en el historial
+    await this.createStockHistory({
+      stockId: updatedStock.id,
+      action: "update",
+      quantity: parseFloat(updatedValues.currentStock) - parseFloat(currentStock?.currentStock || "0"),
+      previousStock: parseFloat(currentStock?.currentStock || "0"),
+      newStock: parseFloat(updatedValues.currentStock),
+      createdBy: "system"
+    });
 
     console.log('Stock update result:', updatedStock);
     return updatedStock;

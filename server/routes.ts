@@ -13,6 +13,7 @@ import { db } from './db';
 import { desc, sql, and, eq } from 'drizzle-orm';
 import { stockHistory, orders, categories, products, settings } from '@shared/schema';
 import multer from 'multer';
+import { stockMiddleware, prepareStockUpdate } from './middleware/stockMiddleware';
 
 // Configuración de multer para guardar imágenes
 const multerStorage = multer.diskStorage({
@@ -211,20 +212,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pedido no encontrado' });
       }
 
+      // Preparar actualización de stock
+      req.stockUpdate = await prepareStockUpdate(
+        'order_delivered',
+        parseFloat(order.quantity.toString()),
+        'admin'
+      );
+
+      // Aplicar middleware de stock
+      await new Promise((resolve, reject) => {
+        stockMiddleware(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(undefined);
+        });
+      });
+
       // Actualizar el pedido
       const updatedOrder = await storage.updateOrder(id, {
         status: "completed",
         updatedAt: new Date()
       });
-
-      // Actualizar el stock
-      const currentStock = await storage.getCurrentStock();
-      if (currentStock) {
-        await storage.updateStock({
-          ...currentStock,
-          currentStock: parseFloat(currentStock.currentStock.toString()) - parseFloat(order.quantity.toString()),
-        });
-      }
 
       res.json(updatedOrder);
     } catch (error) {
@@ -243,6 +250,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pedido no encontrado' });
       }
 
+      // Preparar actualización de stock
+      req.stockUpdate = await prepareStockUpdate(
+        'order_error',
+        parseFloat(order.quantity.toString()),
+        'admin'
+      );
+
+      // Aplicar middleware de stock
+      await new Promise((resolve, reject) => {
+        stockMiddleware(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(undefined);
+        });
+      });
+
       // Marcar como eliminado y error
       const updatedOrder = await storage.updateOrder(id, {
         deleted: true,
@@ -257,245 +279,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/stock/remove", async (req, res) => {
-    try {
-      const { quantity } = req.body;
-      const currentStock = await storage.getCurrentStock();
-      const updatedStock = {
-        ...currentStock,
-        currentStock: parseFloat((currentStock?.currentStock || 0).toString()) - parseFloat(quantity),
-      };
-      const result = await storage.updateStock(updatedStock);
-      res.json(result);
-    } catch (error) {
-      console.error('Error removing stock:', error);
-      res.status(500).json({ error: 'Error al quitar stock' });
-    }
-  });
-
-  app.post("/api/stock/sell", async (req, res) => {
-    try {
-      const { quantity } = req.body;
-      const currentStock = await storage.getCurrentStock();
-      const updatedStock = {
-        ...currentStock,
-        currentStock: parseFloat((currentStock?.currentStock || 0).toString()) - parseFloat(quantity),
-      };
-      const result = await storage.updateStock(updatedStock);
-      res.json(result);
-    } catch (error) {
-      console.error('Error selling stock:', error);
-      res.status(500).json({ error: 'Error al vender stock' });
-    }
-  });
-
-  app.post("/api/stock/reset", async (_req, res) => {
-    try {
-      const today = new Date();
-      const newStock = {
-        date: today,
-        initialStock: 0,
-        currentStock: 0,
-        unreservedStock: 0,
-        reservedStock: 0,
-      };
-      const result = await storage.updateStock(newStock);
-      res.json(result);
-    } catch (error) {
-      console.error('Error resetting stock:', error);
-      res.status(500).json({ error: 'Error al resetear el stock' });
-    }
-  });
-
-  // Admin routes for database management
-  app.post("/api/admin/run-migrations", async (_req, res) => {
-    try {
-      // Execute migrations
-      await db.push(); // Assuming 'db' is defined elsewhere
-      res.json({ message: "Migraciones ejecutadas correctamente" });
-    } catch (error) {
-      console.error("Error al ejecutar las migraciones:", error);
-      res.status(500).json({ message: "Error al ejecutar las migraciones" });
-    }
-  });
-
-  app.post("/api/admin/run-seeders", async (_req, res) => {
-    try {
-      // Insert seed data
-      const categories = [
-        {
-          name: "Pollos Asados",
-          description: "Nuestros famosos pollos asados a la leña",
-          imageUrl: "/img/categories/pollos.jpg"
-        },
-        {
-          name: "Guarniciones",
-          description: "Acompañamientos perfectos para tu pollo",
-          imageUrl: "/img/categories/guarniciones.jpg"
-        }
-      ];
-
-      const products = [
-        {
-          name: "Pollo Asado Entero",
-          description: "Pollo entero asado a la leña con nuestro toque especial",
-          price: 1500,
-          imageUrl: "/img/products/pollo-entero.jpg",
-          categoryId: 1
-        },
-        {
-          name: "Medio Pollo",
-          description: "Medio pollo asado a la leña",
-          price: 800,
-          imageUrl: "/img/products/medio-pollo.jpg",
-          categoryId: 1
-        },
-        {
-          name: "Patatas Asadas",
-          description: "Patatas asadas con especias",
-          price: 400,
-          imageUrl: "/img/products/patatas.jpg",
-          categoryId: 2
-        }
-      ];
-
-      for (const category of categories) {
-        await storage.createCategory(category);
-      }
-
-      for (const product of products) {
-        await storage.createProduct(product);
-      }
-
-      res.json({ message: "Datos de prueba insertados correctamente" });
-    } catch (error) {
-      console.error("Error al ejecutar los seeders:", error);
-      res.status(500).json({ message: "Error al ejecutar los seeders" });
-    }
-  });
-
-  // Categories
-  app.get("/api/categories", async (_req, res) => {
-    try {
-      const categories = await storage.getCategories();
-      res.json(categories);
-    } catch (error) {
-      console.error('Error getting categories:', error);
-      res.status(500).json({ error: 'Error al obtener las categorías' });
-    }
-  });
-
-  app.post("/api/categories", async (req, res) => {
-    try {
-      const category = insertCategorySchema.parse(req.body);
-      const created = await storage.createCategory(category);
-      res.json(created);
-    } catch (error) {
-      console.error('Error creating category:', error);
-      res.status(500).json({ error: 'Error al crear la categoría' });
-    }
-  });
-
-  app.patch("/api/categories/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const category = insertCategorySchema.partial().parse(req.body);
-      const updated = await storage.updateCategory(id, category);
-      res.json(updated);
-    } catch (error) {
-      console.error('Error updating category:', error);
-      res.status(500).json({ error: 'Error al actualizar la categoría' });
-    }
-  });
-
-  app.delete("/api/categories/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await db.update(categories)
-        .set({ deleted: true })
-        .where(eq(categories.id, id));
-      res.status(204).end();
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      res.status(500).json({ error: 'Error al eliminar la categoría' });
-    }
-  });
-
-  // Products
-  app.get("/api/products", async (req, res) => {
-    try {
-      const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
-      const products = await storage.getProducts(categoryId);
-      res.json(products);
-    } catch (error) {
-      console.error('Error getting products:', error);
-      res.status(500).json({ error: 'Error al obtener los productos' });
-    }
-  });
-
-  app.post("/api/products", async (req, res) => {
-    try {
-      const product = insertProductSchema.parse(req.body);
-      const created = await storage.createProduct(product);
-      res.json(created);
-    } catch (error) {
-      console.error('Error creating product:', error);
-      res.status(500).json({ error: 'Error al crear el producto' });
-    }
-  });
-
-  app.patch("/api/products/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const product = insertProductSchema.partial().parse(req.body);
-      const updated = await storage.updateProduct(id, product);
-      res.json(updated);
-    } catch (error) {
-      console.error('Error updating product:', error);
-      res.status(500).json({ error: 'Error al actualizar el producto' });
-    }
-  });
-
-  app.delete("/api/products/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await db.update(products)
-        .set({ deleted: true })
-        .where(eq(products.id, id));
-      res.status(204).end();
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      res.status(500).json({ error: 'Error al eliminar el producto' });
-    }
-  });
-
-  // Orders
-  app.get("/api/orders", async (_req, res) => {
-    try {
-      const orders = await storage.getOrders();
-      res.json(orders);
-    } catch (error) {
-      console.error('Error getting orders:', error);
-      res.status(500).json({ error: 'Error al obtener los pedidos' });
-    }
-  });
-
-  app.post("/api/orders", async (req, res) => {
-    try {
-      const order = insertOrderSchema.parse(req.body);
-      const created = await storage.createOrder(order);
-      res.json(created);
-    } catch (error) {
-      console.error('Error creating order:', error);
-      res.status(500).json({ error: 'Error al crear el pedido' });
-    }
-  });
-
+  // Actualizar pedido
   app.patch("/api/orders/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const order = insertOrderSchema.partial().parse(req.body);
-      const updated = await storage.updateOrder(id, order);
+      const orderData = req.body;
+      const currentOrder = await storage.getOrder(id);
+
+      if (!currentOrder) {
+        return res.status(404).json({ error: 'Pedido no encontrado' });
+      }
+
+      // Si el estado cambia a cancelado
+      if (orderData.status === 'cancelled' && currentOrder.status !== 'cancelled') {
+        req.stockUpdate = await prepareStockUpdate(
+          'order_cancelled',
+          parseFloat(currentOrder.quantity.toString()),
+          'admin'
+        );
+
+        await new Promise((resolve, reject) => {
+          stockMiddleware(req, res, (err) => {
+            if (err) reject(err);
+            else resolve(undefined);
+          });
+        });
+      }
+
+      const updated = await storage.updateOrder(id, orderData);
       res.json(updated);
     } catch (error) {
       console.error('Error updating order:', error);

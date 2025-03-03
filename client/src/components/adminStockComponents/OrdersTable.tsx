@@ -37,6 +37,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       return acc;
     }, {} as Record<string, Order[]>);
 
+  const handleConfirm = (orderId: number) => {
+    console.log(`Pedido confirmado con ID: ${orderId}`);
+    // Aquí puedes agregar la lógica de confirmación (ej. actualización en el backend)
+  };
+
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-semibold mb-4">Pedidos Pendientes</h2>
@@ -91,6 +96,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         order={selectedOrder}
         isOpen={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}
+        onConfirm={handleConfirm}  // ✅ Se agrega la función onConfirm
       />
     </div>
   );

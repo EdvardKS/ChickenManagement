@@ -423,12 +423,13 @@ export function OrderDrawer({
 
               <div className="flex flex-col gap-4 pt-4">
                 <Button 
-                  onClick={() => onConfirm(order.id)}
+                  onClick={() => onConfirm && onConfirm(order.id)}
                   className="w-full text-2xl py-8 bg-green-300 hover:bg-green-500"
                   variant="outline"
                 >
                   ✔️ Confirmar Pedido
                 </Button>
+
 
                 <Button 
                   onClick={() => onDelete(order.id)}
@@ -459,6 +460,8 @@ export function OrderDrawer({
                     💬 Enviar WhatsApp
                   </Button>
                 )}
+              
+              
               </div>
             </>
           )}

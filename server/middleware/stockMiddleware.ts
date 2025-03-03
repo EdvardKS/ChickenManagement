@@ -13,6 +13,7 @@ type StockAction =
   | 'reset_stock';
 
 interface StockUpdate {
+  initialStock: number;
   currentStock: number;
   reservedStock: number;
   unreservedStock: number;
@@ -33,12 +34,13 @@ export async function stockMiddleware(
     const currentStock = await storage.getCurrentStock();
     if (!currentStock) throw new Error('No stock found');
 
-    // Calculate new stock values
+    // Update stock values
     const newStock: Partial<Stock> = {
-      ...currentStock,
+      initialStock: stockUpdate.initialStock.toString(),
       currentStock: stockUpdate.currentStock.toString(),
       reservedStock: stockUpdate.reservedStock.toString(),
       unreservedStock: stockUpdate.unreservedStock.toString(),
+      lastUpdated: new Date()
     };
 
     // Update stock
@@ -72,42 +74,49 @@ export async function prepareStockUpdate(
   const currentStock = await storage.getCurrentStock();
   if (!currentStock) throw new Error('No stock found');
 
+  const initial = parseFloat(currentStock.initialStock.toString());
   const current = parseFloat(currentStock.currentStock.toString());
   const reserved = parseFloat(currentStock.reservedStock.toString());
 
+  let newInitial = initial;
   let newCurrent = current;
   let newReserved = reserved;
 
   switch (action) {
     case 'order_cancelled':
+      // Solo afecta al stock reservado
+      newReserved = reserved - quantity;
+      break;
     case 'order_error':
-      // Solo registrar en log, no afecta al stock
+      // Solo afecta al stock reservado
       newReserved = reserved - quantity;
       break;
     case 'order_delivered':
-      // Reducir stock total y reservado
+      // Reduce stock total y reservado
       newCurrent = current - quantity;
       newReserved = reserved - quantity;
       break;
     case 'direct_sale':
-      // Reducir stock total
+      // Reduce stock total
       newCurrent = current - quantity;
       break;
     case 'direct_sale_correction':
-      // Aumentar stock total
+      // Aumenta stock total
       newCurrent = current + quantity;
       break;
     case 'new_order':
-      // Aumentar stock reservado
+      // Aumenta stock reservado
       newReserved = reserved + quantity;
       break;
     case 'reset_stock':
+      newInitial = 0;
       newCurrent = 0;
       newReserved = 0;
       break;
   }
 
   return {
+    initialStock: newInitial,
     currentStock: newCurrent,
     reservedStock: newReserved,
     unreservedStock: newCurrent - newReserved,

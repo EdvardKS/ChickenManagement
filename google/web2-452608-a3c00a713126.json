@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "web2-452608",
+  "private_key_id": "a3c00a71312655843b3e622dbfe51b50c30b9396",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCtxvHAgbv9rLcp\nrNL3u+j8ivtLO6OZXJ+5igAO6mq1iraz9UPhwR7dH+w7XfNOgXqg9HtyBRf7ADjX\n1nTYDMOj8a9aBaUm50lwjw39zpuJQDOE9FTrwBOMXLUyvQ2Eax9UGLSSv0E4ypNm\nPSJP44RTwU+CqzdHboDWlxM4jY05AXagxQ/FS5sdgccE0ateNBy75Dlgh4wKXpAg\nVx+054qYfAFwYT3+UpW/23J+hfaSmB8UEwYvqdbQPMLMNXRO+KSBhDW8Z2RU6Gzh\nwDot1TJw9vfYpsw0DJKcew3768qji55/HxFnr0ANcjDLH9zlrKKQ/Yz7aCIhc6nh\n3bY04W6JAgMBAAECggEAC3XNR6bGoQoc4jC1kQThbpYz0FhUh66mEfRZ4KHw+5v0\nRJXuLhswT+DlEV02yHyde7Pj2Dchx7nSBdnsxrrAxDUSHVu18oTaQQQOJijT9Q84\n1pHOb+Ww5FbQ1FHHbG4sGL2wWuUmBfrGEb4CX0Zf2a4r8jAcayeMc5pu+BHNuG6W\naRFhEV4pI5hPQ0Ku4YfrldVlS2n9zYvDl3yys/O5mRfDiXKYcsXxK0+R4Wi8/dAV\ntH1vEvrJZMFPjaCcmBBvZJlXfgvlMTpV4iOa+lV1gmc2giGwez6KQCfPDAQr5qem\noFbtW79yjkKlCActcfHqOTGqIX4wKCfLivJqxNPYCQKBgQDfI42eTyKNiOFUDOZJ\n0UXBqQv3OIQFIBzi20CZkZjm1Ie5kCZPkzOJPskhhKtym+evddEWu5hwZHoFX6jm\n6mLQaYGN2V3KAZI+L+HBCxC+VATenciaEqTYSnJHeD6+RxwP/rCHugnlKcqKGBSV\nkjUK7WNrbhpjyf/oZVZm4gnw+wKBgQDHXm2xCEWSoTdwgZPT+UcjLF/zcs6AbU2T\nA+pxuUHA+j+WG89BBmdu/eNz3WK5mFQQGji4lIkGurv4IF37pH6kSqtXuSM8b48Y\n/OMG8L/2E20ChhSnHgcXZEYv1sPqqx9H5dz2vk0zOKQFT+Cps+87DaI6AWES54HA\nnP1vWoFvSwKBgHa/l/VAzfWee7PcLY3pNgNK8Fg/llqX7Wd5IRbY2hM11YkWQp0k\njE+kvyr8TLVwbMr+myhK62QcxKcpclx5Ld8V1uFjZTtEvMwldTHjrqRrWDAUrhX4\niAunCswoHNPsSe3lL5L7mZqANA5rpEC5D0tia/9XF+o1LOBDVcjo0DuTAoGAHVpg\nygzOuXz0/aKGUlJEUABrjBteHfh50GhmLyI4dSIjFIW5qPg5aFUHFPsGWw77aXeC\n3GI6HnyFyk1xqOgaITRBL+Q5NN+z8Nji0BXIHYHUredxyP0ZzC7eSpLTO4zASUSl\nmMqB8UWomIOfLz0nvskOFn43faIKL4KtqaRopCsCgYEA05DEbQTLDQLEawJLhG0j\nTz4wGwaQivXOzKja/rzeNqr7LXZRMW67FLYfv1+Q62vICEF0w7yyGP6mqwqggfOm\n2O5YxoPeL+d3k3jWVtzm2+nU+esDF9d0T6QTLrWFIEgDR3KI4t+TXHrACPvZaQFo\ngh8rzthLoOIhDAS3tLrw+hI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "asadorlamorenicacuentaservicio@web2-452608.iam.gserviceaccount.com",
+  "client_id": "104960586762658896965",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/asadorlamorenicacuentaservicio%40web2-452608.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

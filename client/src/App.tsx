@@ -7,19 +7,22 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import FloatingContact from "@/components/floating-contact";
 
-import Home from "@/pages/home"; 
+import Home from "@/pages/home";
+import Products from "@/pages/products";
 import Order from "@/pages/order";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
-import AdminHome from "@/pages/admin/index"; 
+import AdminHome from "@/pages/admin/index";
+import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
 import AdminDatabase from "@/pages/admin/database";
+import AdminHorarios from "@/pages/admin/horarios"; // Importamos el nuevo componente
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
 import NotFound from "@/pages/not-found";
 import AdminSettings from "@/pages/admin/settings";
-import AdminSeeds from "@/pages/admin/seeds"; // Added import
+import AdminSeeds from "@/pages/admin/seeds";
 
 // Update document metadata for SEO
 document.title = "Asador La Morenica | Pollos Asados a la Leña en Villena";
@@ -64,14 +67,14 @@ function Router() {
               <AdminHome />
             </div>
           </Route>
-          <Route path="/admin/products">
-            <div className="px-6 py-8">
-              Aqui va el de horarios
-            </div>
-          </Route>
           <Route path="/admin/orders">
             <div className="px-6 py-8">
               <AdminOrders />
+            </div>
+          </Route>
+          <Route path="/admin/horarios">
+            <div className="px-6 py-8">
+              <AdminHorarios />
             </div>
           </Route>
           <Route path="/admin/database">

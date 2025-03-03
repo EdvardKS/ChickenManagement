@@ -42,8 +42,12 @@ export async function stockMiddleware(
       lastUpdated: new Date()
     };
 
+    console.log('Updating stock with:', newStock);
+
     // Update stock
     const updatedStock = await storage.updateStock(newStock);
+
+    console.log('Stock updated:', updatedStock);
 
     // Create stock history entry
     const historyEntry: Partial<StockHistory> = {
@@ -80,26 +84,34 @@ export async function prepareStockUpdate(
   let newCurrent = current;
   let newReserved = reserved;
 
+  console.log('Current values before update:', {
+    initial,
+    current,
+    reserved,
+    action,
+    quantity
+  });
+
   switch (action) {
     case 'order_cancelled':
       // Solo afecta al stock reservado
-      newReserved = reserved - quantity;
+      newReserved = Math.max(0, reserved - quantity);
       break;
     case 'order_error':
       // Solo afecta al stock reservado
-      newReserved = reserved - quantity;
+      newReserved = Math.max(0, reserved - quantity);
       break;
     case 'order_delivered':
       // Reduce stock total y reservado
-      newCurrent = current - quantity;
-      newReserved = reserved - quantity;
+      newCurrent = Math.max(0, current - quantity);
+      newReserved = Math.max(0, reserved - quantity);
       break;
     case 'direct_sale':
       // Reduce stock total
-      newCurrent = current - quantity;
+      newCurrent = Math.max(0, current - quantity);
       break;
     case 'direct_sale_correction':
-      // Aumenta stock total y inicial
+      // Aumenta stock total y inicial si es necesario
       newCurrent = current + quantity;
       if (current === 0) {
         newInitial = quantity;
@@ -116,7 +128,7 @@ export async function prepareStockUpdate(
       break;
   }
 
-  return {
+  const update = {
     initialStock: newInitial,
     currentStock: newCurrent,
     reservedStock: newReserved,
@@ -125,4 +137,8 @@ export async function prepareStockUpdate(
     quantity,
     source
   };
+
+  console.log('Prepared stock update:', update);
+
+  return update;
 }

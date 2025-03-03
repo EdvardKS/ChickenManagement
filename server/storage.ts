@@ -35,8 +35,6 @@ export interface IStorage {
   // Stock
   getCurrentStock(): Promise<Stock | undefined>;
   updateStock(stock: Partial<Stock>): Promise<Stock>;
-
-  // Stock History
   createStockHistory(history: InsertStockHistory): Promise<StockHistory>;
 
   // Business Hours
@@ -205,6 +203,22 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(stock.lastUpdated))
       .limit(1);
 
+    if (!currentStock) {
+      // If no stock exists for today, create initial stock
+      const [newStock] = await db
+        .insert(stock)
+        .values({
+          date: today,
+          initialStock: "0",
+          currentStock: "0",
+          reservedStock: "0",
+          unreservedStock: "0",
+          lastUpdated: new Date()
+        })
+        .returning();
+      return newStock;
+    }
+
     return currentStock;
   }
 
@@ -247,16 +261,6 @@ export class DatabaseStorage implements IStorage {
     }
 
     console.log('Stock update result:', updatedStock);
-    // Registrar en el historial
-    await db.insert(stockHistory).values({
-      stockId: updatedStock.id,
-      action: currentStock ? 'update' : 'create',
-      quantity: parseFloat(stockData.currentStock?.toString() || '0'),
-      previousStock: parseFloat(currentStock?.currentStock?.toString() || '0'),
-      newStock: parseFloat(updatedStock.currentStock.toString()),
-      createdBy: 'system'
-    });
-
     return updatedStock;
   }
 

@@ -2,7 +2,6 @@ import { type Request, Response, NextFunction } from 'express';
 import { storage } from '../storage';
 import { type Stock, type StockHistory } from '@shared/schema';
 
-// Tipos de acciones que afectan al stock
 type StockAction = 
   | 'order_cancelled'
   | 'order_error'
@@ -52,7 +51,7 @@ export async function stockMiddleware(
       action: stockUpdate.action,
       quantity: stockUpdate.quantity,
       previousStock: parseFloat(currentStock.currentStock.toString()),
-      newStock: stockUpdate.currentStock,
+      newStock: parseFloat(updatedStock.currentStock.toString()),
       createdBy: stockUpdate.source || 'system'
     };
 
@@ -65,7 +64,6 @@ export async function stockMiddleware(
   }
 }
 
-// Helper function to prepare stock update data
 export async function prepareStockUpdate(
   action: StockAction,
   quantity: number,
@@ -101,8 +99,11 @@ export async function prepareStockUpdate(
       newCurrent = current - quantity;
       break;
     case 'direct_sale_correction':
-      // Aumenta stock total
+      // Aumenta stock total y inicial
       newCurrent = current + quantity;
+      if (current === 0) {
+        newInitial = quantity;
+      }
       break;
     case 'new_order':
       // Aumenta stock reservado

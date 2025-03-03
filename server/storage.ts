@@ -235,7 +235,10 @@ export class DatabaseStorage implements IStorage {
       const [updated] = await db
         .update(stock)
         .set({
-          ...stockData,
+          initialStock: stockData.initialStock || currentStock.initialStock,
+          currentStock: stockData.currentStock || currentStock.currentStock,
+          reservedStock: stockData.reservedStock || currentStock.reservedStock,
+          unreservedStock: stockData.unreservedStock || currentStock.unreservedStock,
           lastUpdated: new Date()
         })
         .where(eq(stock.id, currentStock.id))

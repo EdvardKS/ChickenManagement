@@ -159,46 +159,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Categories
+  app.get("/api/categories", async (_req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error('Error getting categories:', error);
+      res.status(500).json({ error: 'Error al obtener las categorías' });
+    }
+  });
+
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const category = insertCategorySchema.parse(req.body);
+      const created = await storage.createCategory(category);
+      res.json(created);
+    } catch (error) {
+      console.error('Error creating category:', error);
+      res.status(500).json({ error: 'Error al crear la categoría' });
+    }
+  });
+
+  // Products
+  app.get("/api/products", async (req, res) => {
+    try {
+      const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
+      const products = await storage.getProducts(categoryId);
+      res.json(products);
+    } catch (error) {
+      console.error('Error getting products:', error);
+      res.status(500).json({ error: 'Error al obtener los productos' });
+    }
+  });
+
+  app.post("/api/products", async (req, res) => {
+    try {
+      const product = insertProductSchema.parse(req.body);
+      const created = await storage.createProduct(product);
+      res.json(created);
+    } catch (error) {
+      console.error('Error creating product:', error);
+      res.status(500).json({ error: 'Error al crear el producto' });
+    }
+  });
+
+  // Orders
+  app.get("/api/orders", async (_req, res) => {
+    try {
+      const orders = await storage.getOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error('Error getting orders:', error);
+      res.status(500).json({ error: 'Error al obtener los pedidos' });
+    }
+  });
+
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const order = insertOrderSchema.parse(req.body);
+      const created = await storage.createOrder(order);
+
+      // Actualizar stock reservado cuando se crea un nuevo pedido
+      req.stockUpdate = await prepareStockUpdate(
+        'new_order',
+        parseFloat(created.quantity.toString()),
+        'client'
+      );
+
+      await new Promise((resolve, reject) => {
+        stockMiddleware(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(undefined);
+        });
+      });
+
+      res.json(created);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      res.status(500).json({ error: 'Error al crear el pedido' });
+    }
+  });
+
   app.post("/api/stock/add", async (req, res) => {
     try {
       const { quantity } = req.body;
       console.log('Adding stock quantity:', quantity);
 
-      const currentStock = await storage.getCurrentStock();
-      console.log('Current stock before update:', currentStock);
+      // Preparar actualización de stock
+      req.stockUpdate = await prepareStockUpdate(
+        'direct_sale_correction',
+        parseFloat(quantity),
+        'admin'
+      );
 
-      const newStock = currentStock || {
-        date: new Date(),
-        initialStock: "0",
-        currentStock: "0",
-        reservedStock: "0",
-        unreservedStock: "0"
-      };
-
-      const updatedStock = {
-        ...newStock,
-        initialStock: currentStock ? newStock.initialStock : quantity.toString(),
-        currentStock: (parseFloat((newStock.currentStock || "0")) + parseFloat(quantity)).toString(),
-      };
-
-      console.log('Updating stock with:', updatedStock);
-      const result = await storage.updateStock(updatedStock);
-      console.log('Stock update result:', result);
-
-      // Registrar en el historial
-      await storage.createStockHistory({
-        stockId: result.id,
-        action: 'add',
-        quantity: quantity.toString(),
-        previousStock: newStock.currentStock,
-        newStock: result.currentStock,
-        createdBy: 'system'
+      // Aplicar middleware de stock
+      await new Promise((resolve, reject) => {
+        stockMiddleware(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(undefined);
+        });
       });
 
-      res.json(result);
+      res.json(await storage.getCurrentStock());
     } catch (error) {
       console.error('Error adding stock:', error);
       res.status(500).json({ error: 'Error al añadir stock' });
+    }
+  });
+
+  app.post("/api/stock/remove", async (req, res) => {
+    try {
+      const { quantity } = req.body;
+
+      // Preparar actualización de stock
+      req.stockUpdate = await prepareStockUpdate(
+        'direct_sale',
+        parseFloat(quantity),
+        'admin'
+      );
+
+      // Aplicar middleware de stock
+      await new Promise((resolve, reject) => {
+        stockMiddleware(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(undefined);
+        });
+      });
+
+      res.json(await storage.getCurrentStock());
+    } catch (error) {
+      console.error('Error removing stock:', error);
+      res.status(500).json({ error: 'Error al quitar stock' });
+    }
+  });
+
+  app.post("/api/stock/reset", async (_req, res) => {
+    try {
+      // Preparar actualización de stock
+      req.stockUpdate = await prepareStockUpdate(
+        'reset_stock',
+        0,
+        'admin'
+      );
+
+      // Aplicar middleware de stock
+      await new Promise((resolve, reject) => {
+        stockMiddleware(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(undefined);
+        });
+      });
+
+      res.json(await storage.getCurrentStock());
+    } catch (error) {
+      console.error('Error resetting stock:', error);
+      res.status(500).json({ error: 'Error al resetear el stock' });
     }
   });
 

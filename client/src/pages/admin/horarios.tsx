@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { queryClient } from "@/lib/queryClient";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateBusinessHours } from "@/lib/hours-scraper";
 import type { BusinessHours } from "@shared/schema";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,18 @@ export default function BusinessHoursPage() {
   const [editMode, setEditMode] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const [syncStatus, setSyncStatus] = useState("");
+
+  // Inicializar datos al cargar el componente
+  useEffect(() => {
+    fetch('/api/admin/initialize', { method: 'POST' })
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to initialize');
+        queryClient.invalidateQueries({ queryKey: ['/api/business-hours'] });
+      })
+      .catch(error => {
+        console.error('Error initializing:', error);
+      });
+  }, []);
 
   const { data: hours, isLoading } = useQuery<BusinessHours[]>({
     queryKey: ['/api/business-hours']

@@ -13,7 +13,6 @@ import { db } from './db';
 import { desc, sql, and, eq } from 'drizzle-orm';
 import { stockHistory, orders, categories, products, settings } from '@shared/schema';
 import multer from 'multer';
-import { handleStockUpdate } from "./middleware/stockMiddleware";
 
 // Configuración de multer para guardar imágenes
 const multerStorage = multer.diskStorage({
@@ -159,20 +158,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/stock/add", async (req, res, next) => {
+  app.post("/api/stock/add", async (req, res) => {
     try {
       const { quantity } = req.body;
-
-      res.locals.stockUpdate = {
-        action: 'add',
-        quantity: parseFloat(quantity),
-        source: 'admin'
-      };
-
-      await handleStockUpdate(req, res, next);
+      console.log('Adding stock quantity:', quantity);
 
       const currentStock = await storage.getCurrentStock();
-      res.json(currentStock);
+      console.log('Current stock before update:', currentStock);
+
+      const newStock = currentStock || {
+        date: new Date(),
+        initialStock: "0",
+        currentStock: "0",
+        reservedStock: "0",
+        unreservedStock: "0"
+      };
+
+      const updatedStock = {
+        ...newStock,
+        initialStock: currentStock ? newStock.initialStock : quantity.toString(),
+        currentStock: (parseFloat((newStock.currentStock || "0")) + parseFloat(quantity)).toString(),
+      };
+
+      console.log('Updating stock with:', updatedStock);
+      const result = await storage.updateStock(updatedStock);
+      console.log('Stock update result:', result);
+
+      // Registrar en el historial
+      await storage.createStockHistory({
+        stockId: result.id,
+        action: 'add',
+        quantity: quantity.toString(),
+        previousStock: newStock.currentStock,
+        newStock: result.currentStock,
+        createdBy: 'system'
+      });
+
+      res.json(result);
     } catch (error) {
       console.error('Error adding stock:', error);
       res.status(500).json({ error: 'Error al añadir stock' });
@@ -180,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Confirmar pedido
-  app.patch("/api/orders/:id/confirm", async (req, res, next) => {
+  app.patch("/api/orders/:id/confirm", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const order = await storage.getOrder(id);
@@ -189,19 +211,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pedido no encontrado' });
       }
 
-      res.locals.stockUpdate = {
-        action: 'complete',
-        quantity: parseFloat(order.quantity.toString()),
-        source: 'admin',
-        orderId: id
-      };
-
-      await handleStockUpdate(req, res, next);
-
+      // Actualizar el pedido
       const updatedOrder = await storage.updateOrder(id, {
         status: "completed",
         updatedAt: new Date()
       });
+
+      // Actualizar el stock
+      const currentStock = await storage.getCurrentStock();
+      if (currentStock) {
+        await storage.updateStock({
+          ...currentStock,
+          currentStock: parseFloat(currentStock.currentStock.toString()) - parseFloat(order.quantity.toString()),
+        });
+      }
 
       res.json(updatedOrder);
     } catch (error) {
@@ -211,7 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Marcar pedido como error
-  app.patch("/api/orders/:id/error", async (req, res, next) => {
+  app.patch("/api/orders/:id/error", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const order = await storage.getOrder(id);
@@ -220,18 +243,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pedido no encontrado' });
       }
 
-      res.locals.stockUpdate = {
-        action: 'error',
-        quantity: parseFloat(order.quantity.toString()),
-        source: 'admin',
-        orderId: id
-      };
-
-      await handleStockUpdate(req, res, next);
-
+      // Marcar como eliminado y error
       const updatedOrder = await storage.updateOrder(id, {
-        status: "error",
         deleted: true,
+        status: "error",
         updatedAt: new Date()
       });
 
@@ -242,52 +257,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/orders/:id/cancel", async (req, res, next) => {
-    try {
-      const id = parseInt(req.params.id);
-      const order = await storage.getOrder(id);
-
-      if (!order) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-
-      res.locals.stockUpdate = {
-        action: 'cancel',
-        quantity: parseFloat(order.quantity.toString()),
-        source: 'admin',
-        orderId: id
-      };
-
-      await handleStockUpdate(req, res, next);
-
-      const updatedOrder = await storage.updateOrder(id, {
-        status: "cancelled",
-        deleted: true,
-        updatedAt: new Date()
-      });
-
-      res.json(updatedOrder);
-    } catch (error) {
-      console.error('Error cancelling order:', error);
-      res.status(500).json({ error: 'Error al cancelar el pedido' });
-    }
-  });
-
-
-  app.post("/api/stock/remove", async (req, res, next) => {
+  app.post("/api/stock/remove", async (req, res) => {
     try {
       const { quantity } = req.body;
-
-      res.locals.stockUpdate = {
-        action: 'subtract',
-        quantity: parseFloat(quantity),
-        source: 'admin'
-      };
-
-      await handleStockUpdate(req, res, next);
-
       const currentStock = await storage.getCurrentStock();
-      res.json(currentStock);
+      const updatedStock = {
+        ...currentStock,
+        currentStock: parseFloat((currentStock?.currentStock || 0).toString()) - parseFloat(quantity),
+      };
+      const result = await storage.updateStock(updatedStock);
+      res.json(result);
     } catch (error) {
       console.error('Error removing stock:', error);
       res.status(500).json({ error: 'Error al quitar stock' });
@@ -310,18 +289,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/stock/reset", async (req, res, next) => {
+  app.post("/api/stock/reset", async (_req, res) => {
     try {
-      res.locals.stockUpdate = {
-        action: 'reset',
-        quantity: 0,
-        source: 'admin'
+      const today = new Date();
+      const newStock = {
+        date: today,
+        initialStock: 0,
+        currentStock: 0,
+        unreservedStock: 0,
+        reservedStock: 0,
       };
-
-      await handleStockUpdate(req, res, next);
-
-      const currentStock = await storage.getCurrentStock();
-      res.json(currentStock);
+      const result = await storage.updateStock(newStock);
+      res.json(result);
     } catch (error) {
       console.error('Error resetting stock:', error);
       res.status(500).json({ error: 'Error al resetear el stock' });
@@ -875,7 +854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      res.json({ message: "Configuración inicial creada correctamente" });
+      res.json({ message: 'Configuración inicial creada correctamente' });
     } catch (error) {
       console.error('Error initializing settings:', error);
       res.status(500).json({ error: 'Error al inicializar la configuración' });

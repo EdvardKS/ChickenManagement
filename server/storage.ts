@@ -204,7 +204,7 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
 
     if (!currentStock) {
-      // If no stock exists for today, create initial stock
+      console.log('No stock found for today, creating initial stock');
       const [newStock] = await db
         .insert(stock)
         .values({
@@ -228,19 +228,28 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    let updatedStock: Stock;
+    // Ensure all required fields are present
+    const updatedValues = {
+      initialStock: stockData.initialStock || currentStock?.initialStock || "0",
+      currentStock: stockData.currentStock || currentStock?.currentStock || "0",
+      reservedStock: stockData.reservedStock || currentStock?.reservedStock || "0",
+      unreservedStock: (
+        parseFloat(stockData.currentStock || currentStock?.currentStock || "0") -
+        parseFloat(stockData.reservedStock || currentStock?.reservedStock || "0")
+      ).toString(),
+      lastUpdated: new Date()
+    };
 
+    console.log('Calculated updated values:', updatedValues);
+
+    let updatedStock: Stock;
     if (!currentStock) {
-      console.log('No current stock found, creating new stock');
+      console.log('Creating new stock entry');
       const [newStock] = await db
         .insert(stock)
         .values({
           date: now,
-          initialStock: stockData.initialStock || "0",
-          currentStock: stockData.currentStock || "0",
-          reservedStock: stockData.reservedStock || "0",
-          unreservedStock: stockData.unreservedStock || "0",
-          lastUpdated: new Date()
+          ...updatedValues
         })
         .returning();
       updatedStock = newStock;
@@ -248,13 +257,7 @@ export class DatabaseStorage implements IStorage {
       console.log('Updating existing stock:', currentStock.id);
       const [updated] = await db
         .update(stock)
-        .set({
-          initialStock: stockData.initialStock || currentStock.initialStock,
-          currentStock: stockData.currentStock || currentStock.currentStock,
-          reservedStock: stockData.reservedStock || currentStock.reservedStock,
-          unreservedStock: stockData.unreservedStock || currentStock.unreservedStock,
-          lastUpdated: new Date()
-        })
+        .set(updatedValues)
         .where(eq(stock.id, currentStock.id))
         .returning();
       updatedStock = updated;
@@ -268,7 +271,10 @@ export class DatabaseStorage implements IStorage {
     console.log('Creating stock history:', history);
     const [newHistory] = await db
       .insert(stockHistory)
-      .values(history)
+      .values({
+        ...history,
+        createdAt: new Date()
+      })
       .returning();
     console.log('Created stock history:', newHistory);
     return newHistory;

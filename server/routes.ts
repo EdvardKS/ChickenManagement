@@ -80,6 +80,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stock Management Routes
+  app.get("/api/stockActually", async (_req, res) => {
+    try {
+      console.log('Getting current stock and orders');
+      const stock = await storage.getCurrentStock();
+      const orders = await storage.getOrders();
+
+      // Filtrar pedidos de hoy
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      console.log('Calculating reserved stock for today:', today);
+      // Calcular el stock reservado basado solo en los pedidos pendientes de hoy
+      const reservedStock = orders
+        .filter(order => {
+          const orderDate = new Date(order.pickupTime);
+          orderDate.setHours(0, 0, 0, 0);
+          return orderDate.getTime() === today.getTime() &&
+                 order.status === "pending" &&
+                 !order.deleted;
+        })
+        .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
+
+      const currentStock = parseFloat((stock?.currentStock || 0).toString());
+      console.log('Current stock:', currentStock, 'Reserved stock:', reservedStock);
+
+      const response = {
+        ...stock,
+        reservedStock,
+        unreservedStock: currentStock - reservedStock,
+      };
+
+      console.log('Stock response:', response);
+      res.json(response);
+    } catch (error) {
+      console.error('Error getting stock:', error);
+      res.status(500).json({ error: 'Error al obtener el stock' });
+    }
+  });
+  // Stock Management Routes
   app.get("/api/stock", async (_req, res) => {
     try {
       console.log('Getting current stock and orders');

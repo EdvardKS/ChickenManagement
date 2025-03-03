@@ -5,10 +5,10 @@ import type { Stock } from "@shared/schema";
 
 export default function Order() {
   const { data: stock } = useQuery<Stock>({ 
-    queryKey: ['/api/stock'] 
+    queryKey: ['/api/stockActually'] 
   });
 
-  return (
+  return ( 
     <div className="max-w-2xl mx-auto space-y-8">
       <h1 className="text-4xl font-bold text-center">Realizar Pedido</h1>
 

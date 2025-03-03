@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { BusinessHours } from "@shared/schema";
+import BusinessHoursDisplay from "@/components/business-hours-display";
 
 export default function Contact() {
   const { data: businessHours } = useQuery<BusinessHours[]>({ 
@@ -60,12 +61,7 @@ export default function Contact() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {businessHours?.map(hour => (
-              <div key={hour.id} className="flex justify-between">
-                <span>{getDayName(hour.dayOfWeek)}</span>
-                <span>{hour.openTime} - {hour.closeTime}</span>
-              </div>
-            ))}
+            <BusinessHoursDisplay hours={businessHours} />
           </CardContent>
         </Card>
       </div>

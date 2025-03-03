@@ -5,6 +5,7 @@ import { Clock, ChefHat, MapPin, Phone, Users, Utensils, Calendar, Star } from "
 import { motion } from "framer-motion";
 import type { BusinessHours } from "@shared/schema";
 import HeroBanner from "@/components/hero-banner/HeroBanner";
+import BusinessHoursDisplay from "@/components/business-hours-display";
 
 export default function Home() {
   const { data: businessHours } = useQuery<BusinessHours[]>({ 
@@ -330,12 +331,7 @@ export default function Home() {
               {
                 icon: Clock,
                 title: "Horario",
-                content: businessHours?.map(hour => (
-                  <div key={hour.id} className="flex justify-between items-center text-sm sm:text-base">
-                    <span>{getDayName(hour.dayOfWeek)}</span>
-                    <span>{hour.openTime} - {hour.closeTime}</span>
-                  </div>
-                ))
+                content: <BusinessHoursDisplay hours={businessHours} variant="compact" />
               },
               {
                 icon: MapPin,
@@ -365,6 +361,32 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Sobre Nosotros */}
+      <section className={sectionBaseClasses}>
+        <div className={containerBaseClasses}>
+          <motion.div 
+            className={`${maxWidthBaseClasses} text-center space-y-8`}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-[#8B4513]">Nuestra Historia</h2>
+            <div className="prose prose-lg mx-auto px-4">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-600">
+                Llevamos más de 20 años en Villena y comarca, orgullosos de ser un referente 
+                en la zona gracias a nuestro horno de leña para asar pollos, lo que les 
+                confiere un sabor inigualable y una textura distinta.
+              </p>
+              <p className="text-base sm:text-lg lg:text-xl text-gray-600">
+                En Asador La Morenica encontrarás una fusión única de cocina española y armenia, 
+                creando una experiencia gastronómica inolvidable.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </section>
     </div>

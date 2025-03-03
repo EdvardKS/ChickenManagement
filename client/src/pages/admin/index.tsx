@@ -44,16 +44,16 @@ export default function AdminHome() {
           </Card>
         </Link>
 
-        <Link href="/admin/products">
+        <Link href="/admin/horarios">
           <Card className="hover:bg-accent cursor-pointer">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Gestión de Productos
+                Gestión de Horario
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Administrar menús y productos</p>
+              <p>Gestionar los horarios de apertura</p>
             </CardContent>
           </Card>
         </Link>

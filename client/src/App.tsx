@@ -7,13 +7,11 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import FloatingContact from "@/components/floating-contact";
 
-import Home from "@/pages/home";
-import Products from "@/pages/products";
+import Home from "@/pages/home"; 
 import Order from "@/pages/order";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
-import AdminHome from "@/pages/admin/index";
-import AdminProducts from "@/pages/admin/products";
+import AdminHome from "@/pages/admin/index"; 
 import AdminOrders from "@/pages/admin/orders";
 import AdminDatabase from "@/pages/admin/database";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
@@ -68,7 +66,7 @@ function Router() {
           </Route>
           <Route path="/admin/products">
             <div className="px-6 py-8">
-              <AdminProducts />
+              Aqui va el de horarios
             </div>
           </Route>
           <Route path="/admin/orders">

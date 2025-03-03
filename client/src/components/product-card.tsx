@@ -26,7 +26,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <CardContent>
         <p className="text-gray-600">{product.description}</p>
         <p className="text-xl font-bold mt-2">
-          {(product.price / 100).toFixed(2)}€
+          {(product.price).toFixed(2)}€
         </p>
       </CardContent>
       

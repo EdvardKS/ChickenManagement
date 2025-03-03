@@ -1,0 +1,18 @@
+En client/src/pages/admin/orders.tsx tenemos el elemento stock, el cual tiene su tabla para controlar en que estado se encuentra en cada momento.
+
+Para ello tiene rutas que ya guardan lineas en la base de datos. Pero no se guardan todos los datos necesarios.
+Siempre que Un pedido se marque como cancelado, hay que gaurdar un log pero no afecta al stock
+Siempre que se marque un pedido como error, se guarda el log pero no afecta al stock
+Siempre que se entrega un pedido, hay que guardar el log y afecta al STOCK en TOTAL DE POLLOS ACTUAL restando la cantidad que tenia asignada el encargo
+Si desde stock se venden pollos sinencargo serían los botones -0.5 o -1 entonces esto se reflajará en los logs y restará en TOTAL DE POLLOS ACTUAL
+En el caso de Venta sin encargo se usan +0-5 o +1 esto es pq se está rectificando y asi se reflajará en logs y se suamará en TOTAL DE POLLOS ACTUAL
+Si se crea un nuevo encargo o entra desde la web de parte del cliente, entonces se registra el encargo con normalidad, y se sumará en la carta de "CON ENCARGO" y se registra en los logs (hay que indicar de dónde se ha registrado, si desde admin o desde cliente
+El botón resetear valores reseteará el día y los valores de total de pollos montado y total de pollos actual a cero y se gaurdará el log
+
+EN TODOS LOS CASOS HAY QUE GAURDAR EN LA TABLA STOCK EL INITIAL_STOCK QUE REPRESENTA EL TOTAL DE POLLOS MONTADO, EL CURRENT_STOCK QUE REPRESENTA TOTAL DE POLLOS ACTUAL, EL RESERVED STOCK QUE ES EL TOTAL DE POLLOS QUE HAY CON ENCARGO Y UNRESERVED_STOCK QUE ES EL TOTAL DE POLLOS SIN ENCARGO.
+
+QUIERO QUE CREES UN MIDDELWARE PARA OPTIMIZAR EL CÓDIGO Y SE LLAME EN TODOS LAS FUNCIONALIDADES EN LOS CASOS QUE SIEMPRE TODO FUNCIONE A LA PERFECCIÓN.
+
+APROVECHA Y ARREGLA LOS BOTONES DE CONFIRMAR PEDIDO, CANCELAR PEDIDO... Y AQUELLOS QUE TENGAN ERRORES AL GUARDAR DESDE LA PARTE DEL FRONTEND.
+[plugin:runtime-error-plugin] onConfirm is not a function
+[plugin:runtime-error-plugin] onDelete is not a function

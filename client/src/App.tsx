@@ -19,6 +19,7 @@ import AdminOrders from "@/pages/admin/orders";
 import AdminDatabase from "@/pages/admin/database";
 import AdminSettings from "@/pages/admin/settings";
 import AdminSeeds from "@/pages/admin/seeds";
+import AdminHorarios from "@/pages/admin/horarios";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
@@ -75,6 +76,7 @@ function AdminRoutes() {
         <Switch>
           <Route path="/admin" component={AdminHome} />
           <Route path="/admin/orders" component={AdminOrders} />
+          <Route path="/admin/horarios" component={AdminHorarios} />
           <Route path="/admin/database" component={AdminDatabase} />
           <Route path="/admin/settings" component={AdminSettings} />
           <Route path="/admin/seeds" component={AdminSeeds} />

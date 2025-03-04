@@ -36,8 +36,11 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
   }, [stock]);
 
   const updateStockMutation = useMutation({
-    mutationFn: async (data: { initialStock: number; currentStock: number }) => {
-      const res = await apiRequest("PATCH", "/api/stock", data);
+    mutationFn: async (data: { quantity: number }) => {
+      const endpoint = data.quantity >= 0 ? "/api/stock/add" : "/api/stock/remove";
+      const res = await apiRequest("POST", endpoint, { 
+        quantity: Math.abs(data.quantity) 
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -46,7 +49,6 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
         title: "Stock actualizado",
         description: "El stock se ha actualizado correctamente"
       });
-      onOpenChange(false);
     },
     onError: () => {
       toast({
@@ -57,12 +59,8 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateStockMutation.mutate({
-      initialStock: parseInt(initialStock),
-      currentStock: parseInt(currentStock)
-    });
+  const handleDirectSale = (quantity: number) => {
+    updateStockMutation.mutate({ quantity });
   };
 
   return (
@@ -81,7 +79,7 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-8">
+        <div className="space-y-6 mt-8">
           <div className="space-y-2">
             <Label htmlFor="initialStock">Stock Inicial</Label>
             <Input
@@ -90,6 +88,7 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
               onChange={(e) => setInitialStock(e.target.value)}
               type="number"
               min="0"
+              disabled
             />
           </div>
           <div className="space-y-2">
@@ -100,6 +99,7 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
               onChange={(e) => setCurrentStock(e.target.value)}
               type="number"
               min="0"
+              disabled
             />
           </div>
           {stock && (
@@ -114,14 +114,37 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
               </div>
             </div>
           )}
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={updateStockMutation.isPending}
-          >
-            {updateStockMutation.isPending ? "Actualizando..." : "Actualizar Stock"}
-          </Button>
-        </form>
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={() => handleDirectSale(-0.5)}
+              variant="outline"
+              disabled={updateStockMutation.isPending}
+            >
+              -0.5
+            </Button>
+            <Button
+              onClick={() => handleDirectSale(0.5)}
+              variant="outline"
+              disabled={updateStockMutation.isPending}
+            >
+              +0.5
+            </Button>
+            <Button
+              onClick={() => handleDirectSale(-1)}
+              variant="outline"
+              disabled={updateStockMutation.isPending}
+            >
+              -1
+            </Button>
+            <Button
+              onClick={() => handleDirectSale(1)}
+              variant="outline"
+              disabled={updateStockMutation.isPending}
+            >
+              +1
+            </Button>
+          </div>
+        </div>
       </SheetContent>
     </Sheet>
   );

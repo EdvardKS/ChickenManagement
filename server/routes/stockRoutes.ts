@@ -53,7 +53,7 @@ router.post("/add", async (req: Request & { stockUpdate?: any }, res) => {
 
     req.stockUpdate = await prepareStockUpdate(
       'direct_sale_correction',
-      parseFloat(quantity),
+      Math.abs(parseFloat(quantity)),
       'admin'
     );
 
@@ -79,7 +79,7 @@ router.post("/remove", async (req: Request & { stockUpdate?: any }, res) => {
 
     req.stockUpdate = await prepareStockUpdate(
       'direct_sale',
-      parseFloat(quantity),
+      Math.abs(parseFloat(quantity)),
       'admin'
     );
 

@@ -35,18 +35,17 @@ export async function stockMiddleware(
     const currentStock = await storage.getCurrentStock();
     if (!currentStock) throw new Error('No stock found');
 
-    // Asegurar que todos los valores sean números antes de la conversión a string
     const newStock: Partial<Stock> = {
-      initialStock: String(Math.max(0, stockUpdate.initialStock)),
-      currentStock: String(Math.max(0, stockUpdate.currentStock)),
-      reservedStock: String(Math.max(0, stockUpdate.reservedStock)),
-      unreservedStock: String(Math.max(0, stockUpdate.unreservedStock)),
+      // Asegurar que todos los valores se guarden como strings de números decimales
+      initialStock: stockUpdate.initialStock.toFixed(1),
+      currentStock: stockUpdate.currentStock.toFixed(1),
+      reservedStock: stockUpdate.reservedStock.toFixed(1),
+      unreservedStock: stockUpdate.unreservedStock.toFixed(1),
       lastUpdated: new Date()
     };
 
     console.log('Updating stock with:', newStock);
 
-    // Actualizar stock
     const updatedStock = await storage.updateStock(newStock);
     console.log('Stock updated:', updatedStock);
 
@@ -54,7 +53,7 @@ export async function stockMiddleware(
     const historyEntry: Partial<StockHistory> = {
       stockId: updatedStock.id,
       action: stockUpdate.action,
-      quantity: stockUpdate.quantity.toString(),
+      quantity: stockUpdate.quantity.toFixed(1),
       previousStock: currentStock.currentStock,
       newStock: updatedStock.currentStock,
       createdBy: stockUpdate.source || 'system'
@@ -105,7 +104,7 @@ export async function prepareStockUpdate(
       newReserved = Math.max(0, reserved - quantity);
       break;
     case 'direct_sale':
-      // Reduce stock total
+      // Reduce stock total sin afectar reservas
       newCurrent = Math.max(0, current - quantity);
       break;
     case 'direct_sale_correction':

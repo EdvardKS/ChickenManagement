@@ -5,20 +5,22 @@ import { Terminal } from "@/components/ui/terminal";
 import { Loader } from "@/components/ui/loader";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Database, Table, Download, Upload } from "lucide-react";
+import { Database, Table, Download, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function DatabaseAdmin() {
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const [logs, setLogs] = useState<string[]>([]);
   const { toast } = useToast();
+  const limit = 10;
 
   const { data: tables } = useQuery<string[]>({
     queryKey: ['/api/admin/database/tables'],
   });
 
   const { data: tableData, isLoading: isLoadingTable } = useQuery({
-    queryKey: ['/api/admin/database/table', selectedTable],
-    queryFn: () => selectedTable ? apiRequest("GET", `/api/admin/database/table/${selectedTable}`) : null,
+    queryKey: ['/api/admin/database/table', selectedTable, page, limit],
+    queryFn: () => selectedTable ? apiRequest("GET", `/api/admin/database/table/${selectedTable}?page=${page}&limit=${limit}`) : null,
     enabled: !!selectedTable,
   });
 
@@ -28,7 +30,6 @@ export default function DatabaseAdmin() {
 
   const exportMutation = useMutation({
     mutationFn: () => {
-      // Usar fetch directamente para manejar la descarga del archivo
       return fetch('/api/admin/database/export', {
         method: 'POST',
       }).then(response => {
@@ -135,7 +136,10 @@ export default function DatabaseAdmin() {
             className={`justify-start gap-2 ${
               selectedTable === table ? "bg-muted hover:bg-muted" : ""
             }`}
-            onClick={() => setSelectedTable(table)}
+            onClick={() => {
+              setSelectedTable(table);
+              setPage(1);
+            }}
           >
             <Database className="h-4 w-4" />
             {table}
@@ -148,31 +152,61 @@ export default function DatabaseAdmin() {
           <h2 className="text-lg font-semibold mb-4">Datos de {selectedTable}</h2>
           {isLoadingTable ? (
             <Loader />
-          ) : tableData && tableData.length > 0 ? (
-            <div className="border rounded-lg overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-muted">
-                    {Object.keys(tableData[0]).map((column) => (
-                      <th key={column} className="p-2 text-left font-medium">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.map((row: any, i: number) => (
-                    <tr key={i} className="border-t">
-                      {Object.values(row).map((value: any, j: number) => (
-                        <td key={j} className="p-2">
-                          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                        </td>
+          ) : tableData?.data && tableData.data.length > 0 ? (
+            <>
+              <div className="border rounded-lg overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-muted">
+                      {Object.keys(tableData.data[0]).map((column) => (
+                        <th key={column} className="p-2 text-left font-medium">
+                          {column}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {tableData.data.map((row: any, i: number) => (
+                      <tr key={i} className="border-t">
+                        {Object.values(row).map((value: any, j: number) => (
+                          <td key={j} className="p-2">
+                            {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Paginación */}
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, tableData.pagination.total)} de {tableData.pagination.total} registros
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">Página {page} de {tableData.pagination.totalPages}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(tableData.pagination.totalPages, p + 1))}
+                    disabled={page === tableData.pagination.totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
           ) : (
             <p className="text-muted-foreground">No hay datos disponibles en esta tabla</p>
           )}

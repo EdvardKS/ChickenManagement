@@ -844,6 +844,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/database/table/:name", async (req, res) => {
     try {
       const tableName = req.params.name;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
+
       // Validate table name exists
       const tableExists = await db.execute(sql`
         SELECT EXISTS (
@@ -857,13 +861,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Tabla no encontrada' });
       }
 
+      // Get total count
+      const countResult = await db.execute(sql`
+        SELECT COUNT(*) as total FROM ${sql.identifier(tableName)}
+      `);
+      const total = parseInt(countResult.rows[0].total);
+
+      // Get paginated data
       const result = await db.execute(sql`
         SELECT * FROM ${sql.identifier(tableName)}
         ORDER BY id DESC
+        LIMIT ${limit} OFFSET ${offset}
       `);
 
-      console.log(`Table ${tableName} data:`, result.rows);
-      res.json(result.rows);
+      res.json({
+        data: result.rows,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
     } catch (error) {
       console.error('Error getting table data:', error);
       res.status(500).json({ error: 'Error al obtener los datos de la tabla' });

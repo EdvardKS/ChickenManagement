@@ -77,9 +77,12 @@ router.post("/remove", async (req: Request & { stockUpdate?: any }, res) => {
     const { quantity } = req.body;
     console.log('Removing stock quantity:', quantity);
 
+    const parsedQuantity = Math.abs(parseFloat(quantity));
+    console.log('Parsed quantity for removal:', parsedQuantity);
+
     req.stockUpdate = await prepareStockUpdate(
       'direct_sale',
-      Math.abs(parseFloat(quantity)),
+      parsedQuantity,
       'admin'
     );
 

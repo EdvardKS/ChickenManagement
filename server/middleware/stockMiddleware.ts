@@ -54,9 +54,9 @@ export async function stockMiddleware(
     const historyEntry: Partial<StockHistory> = {
       stockId: updatedStock.id,
       action: stockUpdate.action,
-      quantity: stockUpdate.quantity,
-      previousStock: parseFloat(currentStock.currentStock),
-      newStock: parseFloat(updatedStock.currentStock),
+      quantity: stockUpdate.quantity.toString(),
+      previousStock: currentStock.currentStock,
+      newStock: updatedStock.currentStock,
       createdBy: stockUpdate.source || 'system'
     };
 
@@ -97,27 +97,27 @@ export async function prepareStockUpdate(
     case 'order_cancelled':
     case 'order_error':
       // Solo afecta al stock reservado
-      newReserved = Math.max(0, reserved - Math.abs(quantity));
+      newReserved = Math.max(0, reserved - quantity);
       break;
     case 'order_delivered':
       // Reduce stock total y reservado
-      newCurrent = Math.max(0, current - Math.abs(quantity));
-      newReserved = Math.max(0, reserved - Math.abs(quantity));
+      newCurrent = Math.max(0, current - quantity);
+      newReserved = Math.max(0, reserved - quantity);
       break;
     case 'direct_sale':
       // Reduce stock total
-      newCurrent = Math.max(0, current - Math.abs(quantity));
+      newCurrent = Math.max(0, current - quantity);
       break;
     case 'direct_sale_correction':
       // Aumenta stock total y si es la primera venta del día, también el inicial
-      newCurrent = current + Math.abs(quantity);
+      newCurrent = current + quantity;
       if (current === 0 && initial === 0) {
-        newInitial = Math.abs(quantity);
+        newInitial = quantity;
       }
       break;
     case 'new_order':
       // Aumenta stock reservado
-      newReserved = reserved + Math.abs(quantity);
+      newReserved = reserved + quantity;
       break;
     case 'reset_stock':
       newInitial = 0;
@@ -132,7 +132,7 @@ export async function prepareStockUpdate(
     reservedStock: newReserved,
     unreservedStock: Math.max(0, newCurrent - newReserved),
     action,
-    quantity: Math.abs(quantity),
+    quantity,
     source
   };
 

@@ -5,7 +5,7 @@ import { Terminal } from "@/components/ui/terminal";
 import { Loader } from "@/components/ui/loader";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Database, Table, Download, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Database, Download, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function DatabaseAdmin() {
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export default function DatabaseAdmin() {
   const { toast } = useToast();
   const limit = 10;
 
-  const { data: tables } = useQuery<string[]>({
+  const { data: tables, isLoading: isLoadingTables } = useQuery<string[]>({
     queryKey: ['/api/admin/database/tables'],
   });
 
@@ -128,24 +128,28 @@ export default function DatabaseAdmin() {
         />
       </div>
 
-      <div className="grid grid-cols-4 gap-6">
-        {tables?.map((table) => (
-          <Button
-            key={table}
-            variant={selectedTable === table ? "secondary" : "outline"}
-            className={`justify-start gap-2 ${
-              selectedTable === table ? "bg-muted hover:bg-muted" : ""
-            }`}
-            onClick={() => {
-              setSelectedTable(table);
-              setPage(1);
-            }}
-          >
-            <Database className="h-4 w-4" />
-            {table}
-          </Button>
-        ))}
-      </div>
+      {isLoadingTables ? (
+        <Loader />
+      ) : (
+        <div className="grid grid-cols-4 gap-6">
+          {tables?.map((table) => (
+            <Button
+              key={table}
+              variant={selectedTable === table ? "secondary" : "outline"}
+              className={`justify-start gap-2 ${
+                selectedTable === table ? "bg-muted hover:bg-muted" : ""
+              }`}
+              onClick={() => {
+                setSelectedTable(table);
+                setPage(1);
+              }}
+            >
+              <Database className="h-4 w-4" />
+              {table}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {selectedTable && (
         <div className="mt-6">

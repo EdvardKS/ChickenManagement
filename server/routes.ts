@@ -831,10 +831,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         FROM information_schema.tables 
         WHERE table_schema = 'public'
         AND table_type = 'BASE TABLE'
-        ORDER BY table_name
+        AND table_name NOT IN ('pg_stat_statements')
+        ORDER BY table_name;
       `);
-      const tables = result.rows.map((row: any) => row.table_name);
-      res.json(tables);
+
+      console.log('Tables found:', result.rows);
+      res.json(result.rows.map(row => row.table_name));
     } catch (error) {
       console.error('Error getting tables:', error);
       res.status(500).json({ error: 'Error al obtener las tablas' });

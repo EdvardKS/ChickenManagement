@@ -5,7 +5,8 @@ import { Terminal } from "@/components/ui/terminal";
 import { Loader } from "@/components/ui/loader";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Database, Download, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Database, Download, Upload } from "lucide-react";
+import { DataTable } from "@/components/ui/data-table";
 
 export default function DatabaseAdmin() {
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
@@ -156,64 +157,13 @@ export default function DatabaseAdmin() {
           <h2 className="text-lg font-semibold mb-4">Datos de {selectedTable}</h2>
           {isLoadingTable ? (
             <Loader />
-          ) : tableData?.data && tableData.data.length > 0 ? (
-            <>
-              <div className="border rounded-lg overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-muted">
-                      {Object.keys(tableData.data[0]).map((column) => (
-                        <th key={column} className="p-2 text-left font-medium">
-                          {column}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableData.data.map((row: any, i: number) => (
-                      <tr key={i} className="border-t">
-                        {Object.values(row).map((value: any, j: number) => (
-                          <td key={j} className="p-2">
-                            {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Paginación */}
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, tableData.pagination.total)} de {tableData.pagination.total} registros
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">Página {page} de {tableData.pagination.totalPages}</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(p => Math.min(tableData.pagination.totalPages, p + 1))}
-                    disabled={page === tableData.pagination.totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="text-muted-foreground">No hay datos disponibles en esta tabla</p>
-          )}
+          ) : tableData ? (
+            <DataTable
+              data={tableData.data}
+              pagination={tableData.pagination}
+              onPageChange={setPage}
+            />
+          ) : null}
         </div>
       )}
 

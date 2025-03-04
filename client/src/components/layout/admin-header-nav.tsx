@@ -3,7 +3,6 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
-  ShoppingBag, 
   ChartBar, 
   Package, 
   Settings, 
@@ -15,11 +14,6 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  {
-    title: "Panel Principal",
-    href: "/admin",
-    icon: ShoppingBag
-  },
   {
     title: "Pedidos",
     href: "/admin/orders",
@@ -72,7 +66,7 @@ export function AdminHeaderNav() {
           )}
         </Button>
       </div>
-      
+
       {isVisible && (
         <nav className="flex items-center space-x-4 px-4 py-2">
           {navItems.map((item) => {

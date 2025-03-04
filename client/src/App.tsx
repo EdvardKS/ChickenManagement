@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, useLocation, Redirect } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -74,7 +74,9 @@ function AdminRoutes() {
       <Header />
       <AdminLayout>
         <Switch>
-          <Route path="/admin" component={AdminHome} />
+          <Route path="/admin">
+            <Redirect to="/admin/orders" />
+          </Route>
           <Route path="/admin/orders" component={AdminOrders} />
           <Route path="/admin/horarios" component={AdminHorarios} />
           <Route path="/admin/database" component={AdminDatabase} />

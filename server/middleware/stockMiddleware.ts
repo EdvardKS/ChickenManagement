@@ -3,12 +3,12 @@ import { storage } from '../storage';
 import { type Stock, type StockHistory } from '@shared/schema';
 
 type StockAction = 
-  | 'order_cancelled'
-  | 'order_error'
-  | 'order_delivered'
-  | 'direct_sale'
+  | 'add_mounted'  // Para modificar stock montado (initial_stock)
+  | 'remove_mounted'
+  | 'direct_sale'  // Para ventas sin encargo (current_stock)
   | 'direct_sale_correction'
-  | 'new_order'
+  | 'new_order'    // Para pedidos (reserved_stock)
+  | 'cancel_order'
   | 'reset_stock';
 
 interface StockUpdate {
@@ -36,13 +36,16 @@ export async function stockMiddleware(
     if (!currentStock) throw new Error('No stock found');
 
     const newStock: Partial<Stock> = {
-      // Mantener initial_stock sin cambios si es una venta directa
-      ...(stockUpdate.action !== 'direct_sale' && { initialStock: stockUpdate.initialStock.toFixed(1) }),
       currentStock: stockUpdate.currentStock.toFixed(1),
       reservedStock: stockUpdate.reservedStock.toFixed(1),
       unreservedStock: stockUpdate.unreservedStock.toFixed(1),
       lastUpdated: new Date()
     };
+
+    // Solo actualizar initial_stock si la acción está relacionada con stock montado
+    if (stockUpdate.action === 'add_mounted' || stockUpdate.action === 'remove_mounted') {
+      newStock.initialStock = stockUpdate.initialStock.toFixed(1);
+    }
 
     console.log('Updating stock with:', newStock);
 
@@ -93,29 +96,31 @@ export async function prepareStockUpdate(
   });
 
   switch (action) {
-    case 'order_cancelled':
-    case 'order_error':
-      // Solo afecta al stock reservado
-      newReserved = Math.max(0, reserved - quantity);
+    case 'add_mounted':
+      // Aumenta tanto el stock montado como el actual
+      newInitial = initial + quantity;
+      newCurrent = current + quantity;
       break;
-    case 'order_delivered':
-      // Reduce stock total y reservado
+    case 'remove_mounted':
+      // Reduce tanto el stock montado como el actual
+      newInitial = Math.max(0, initial - quantity);
       newCurrent = Math.max(0, current - quantity);
-      newReserved = Math.max(0, reserved - quantity);
       break;
     case 'direct_sale':
-      // Solo reduce el stock actual, sin tocar el montado ni reservado
+      // Solo reduce el stock actual, mantiene el montado sin cambios
       newCurrent = Math.max(0, current - quantity);
-      // Initial y reserved se mantienen sin cambios
       break;
     case 'direct_sale_correction':
-      // Aumenta solo el stock actual
+      // Solo aumenta el stock actual, mantiene el montado sin cambios
       newCurrent = current + quantity;
-      // Initial se mantiene sin cambios
       break;
     case 'new_order':
-      // Aumenta stock reservado
+      // Aumenta solo el stock reservado
       newReserved = reserved + quantity;
+      break;
+    case 'cancel_order':
+      // Reduce solo el stock reservado
+      newReserved = Math.max(0, reserved - quantity);
       break;
     case 'reset_stock':
       newInitial = 0;

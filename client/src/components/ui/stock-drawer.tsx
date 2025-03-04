@@ -24,8 +24,8 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
   const [initialStock, setInitialStock] = useState("");
   const [currentStock, setCurrentStock] = useState("");
 
-  const { data: stock } = useQuery<Stock>({
-    queryKey: ['/api/stock']
+  const { data: stock } = useQuery<Stock>({ 
+    queryKey: ['/api/stock'] 
   });
 
   useEffect(() => {
@@ -37,11 +37,18 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
 
   const updateStockMutation = useMutation({
     mutationFn: async (data: { quantity: number }) => {
-      const endpoint = data.quantity >= 0 ? "/api/stock/add" : "/api/stock/remove";
-      const res = await apiRequest("POST", endpoint, { 
-        quantity: Math.abs(data.quantity) 
-      });
-      return res.json();
+      console.log("Enviando petición con cantidad:", data.quantity);
+      if (data.quantity < 0) {
+        const res = await apiRequest("POST", "/api/stock/remove", { 
+          quantity: Math.abs(data.quantity) 
+        });
+        return res.json();
+      } else {
+        const res = await apiRequest("POST", "/api/stock/add", { 
+          quantity: data.quantity 
+        });
+        return res.json();
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -50,7 +57,8 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
         description: "El stock se ha actualizado correctamente"
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error actualizando stock:", error);
       toast({
         title: "Error",
         description: "No se pudo actualizar el stock",
@@ -60,6 +68,7 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
   });
 
   const handleDirectSale = (quantity: number) => {
+    console.log("Manejando venta directa con cantidad:", quantity);
     updateStockMutation.mutate({ quantity });
   };
 
@@ -67,13 +76,7 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>
-            <img
-              src="/img/corporativa/logo-negro.png"
-              alt="Asador La Morenica"
-              className="h-16"
-            />
-          </SheetTitle>
+          <SheetTitle>Control de Stock</SheetTitle>
           <SheetDescription>
             Gestiona el stock de pollos disponibles
           </SheetDescription>
@@ -85,7 +88,6 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
             <Input
               id="initialStock"
               value={initialStock}
-              onChange={(e) => setInitialStock(e.target.value)}
               type="number"
               min="0"
               disabled
@@ -96,7 +98,6 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
             <Input
               id="currentStock"
               value={currentStock}
-              onChange={(e) => setCurrentStock(e.target.value)}
               type="number"
               min="0"
               disabled
@@ -105,12 +106,12 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
           {stock && (
             <div className="space-y-4 pt-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Stock Comprometido:</span>
-                <span className="font-medium">{stock.committed}</span>
+                <span className="text-sm text-muted-foreground">Stock Reservado:</span>
+                <span className="font-medium">{stock.reservedStock}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Stock Disponible:</span>
-                <span className="font-medium">{stock.currentStock - stock.committed}</span>
+                <span className="font-medium">{stock.unreservedStock}</span>
               </div>
             </div>
           )}

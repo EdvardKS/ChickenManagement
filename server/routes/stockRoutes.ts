@@ -122,15 +122,4 @@ router.post("/reset", async (req: Request & { stockUpdate?: any }, res) => {
   }
 });
 
-// Get stock history
-router.get("/history", async (_req, res) => {
-  try {
-    const result = await storage.getStockHistory();
-    res.json(result);
-  } catch (error) {
-    console.error('Error getting stock history:', error);
-    res.status(500).json({ error: 'Error al obtener el historial de stock' });
-  }
-});
-
 export default router;

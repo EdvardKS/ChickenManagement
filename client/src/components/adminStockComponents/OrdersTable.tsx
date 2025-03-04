@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { OrderDrawer } from "./OrderDrawer";
 import type { Order } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrdersTableProps {
   orders: Order[] | undefined;
@@ -13,6 +15,7 @@ interface OrdersTableProps {
 export function OrdersTable({ orders }: OrdersTableProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { toast } = useToast();
 
   const formatQuantity = (quantity: any) => {
     const num = Number(quantity);
@@ -27,6 +30,77 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     setIsDrawerOpen(true);
   };
 
+  const handleConfirm = async (orderId: number) => {
+    try {
+      await apiRequest("PATCH", `/api/orders/${orderId}/confirm`);
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setIsDrawerOpen(false);
+      toast({
+        title: "Pedido confirmado",
+        description: "El pedido ha sido confirmado exitosamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo confirmar el pedido",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (orderId: number) => {
+    try {
+      await apiRequest("PATCH", `/api/orders/${orderId}`, { status: 'cancelled' });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setIsDrawerOpen(false);
+      toast({
+        title: "Pedido cancelado",
+        description: "El pedido ha sido cancelado exitosamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cancelar el pedido",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleError = async (orderId: number) => {
+    try {
+      await apiRequest("PATCH", `/api/orders/${orderId}/error`);
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setIsDrawerOpen(false);
+      toast({
+        title: "Pedido marcado como error",
+        description: "El pedido ha sido marcado como error exitosamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo marcar el pedido como error",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdate = async (order: Order) => {
+    try {
+      await apiRequest("PATCH", `/api/orders/${order.id}`, order);
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: "Pedido actualizado",
+        description: "El pedido ha sido actualizado exitosamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el pedido",
+        variant: "destructive",
+      });
+    }
+  };
+
   const ordersByDate = orders?.filter(order => !order.deleted)
     .reduce((acc, order) => {
       const date = format(new Date(order.pickupTime), 'yyyy-MM-dd');
@@ -36,11 +110,6 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       acc[date].push(order);
       return acc;
     }, {} as Record<string, Order[]>);
-
-  const handleConfirm = (orderId: number) => {
-    console.log(`Pedido confirmado con ID: ${orderId}`);
-    // Aquí puedes agregar la lógica de confirmación (ej. actualización en el backend)
-  };
 
   return (
     <div className="space-y-8">
@@ -96,10 +165,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         order={selectedOrder}
         isOpen={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}
-        onConfirm={handleConfirm}  // ✅ Se agrega la función onConfirm
+        onConfirm={handleConfirm}
+        onDelete={handleDelete}
+        onError={handleError}
+        onUpdate={handleUpdate}
       />
     </div>
   );
-
-
 }

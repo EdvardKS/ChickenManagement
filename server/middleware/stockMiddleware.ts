@@ -36,8 +36,8 @@ export async function stockMiddleware(
     if (!currentStock) throw new Error('No stock found');
 
     const newStock: Partial<Stock> = {
-      // Asegurar que todos los valores se guarden como strings de números decimales
-      initialStock: stockUpdate.initialStock.toFixed(1),
+      // Mantener initial_stock sin cambios si es una venta directa
+      ...(stockUpdate.action !== 'direct_sale' && { initialStock: stockUpdate.initialStock.toFixed(1) }),
       currentStock: stockUpdate.currentStock.toFixed(1),
       reservedStock: stockUpdate.reservedStock.toFixed(1),
       unreservedStock: stockUpdate.unreservedStock.toFixed(1),
@@ -104,15 +104,14 @@ export async function prepareStockUpdate(
       newReserved = Math.max(0, reserved - quantity);
       break;
     case 'direct_sale':
-      // Reduce stock total sin afectar reservas
+      // Solo reduce el stock actual, sin tocar el montado ni reservado
       newCurrent = Math.max(0, current - quantity);
+      // Initial y reserved se mantienen sin cambios
       break;
     case 'direct_sale_correction':
-      // Aumenta stock total y si es la primera venta del día, también el inicial
+      // Aumenta solo el stock actual
       newCurrent = current + quantity;
-      if (current === 0 && initial === 0) {
-        newInitial = quantity;
-      }
+      // Initial se mantiene sin cambios
       break;
     case 'new_order':
       // Aumenta stock reservado

@@ -58,6 +58,33 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
     setShowConfirmDialog(true);
   };
 
+  const handleDirectSale = async (quantity: number) => {
+    try {
+      if (quantity < 0) {
+        await apiRequest("POST", "/api/stock/remove", { 
+          quantity: Math.abs(quantity) 
+        });
+      } else {
+        await apiRequest("POST", "/api/stock/add", { 
+          quantity 
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+      toast({
+        title: "Stock actualizado",
+        description: "El stock se ha actualizado correctamente"
+      });
+    } catch (error) {
+      console.error("Error actualizando stock:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el stock",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleConfirmAction = () => {
     if (pendingAction?.action === 'reset') {
       resetStock.mutate();
@@ -83,7 +110,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
         <DrawerHeader>
           <DrawerTitle className="  text-center text-5xl py-5">Stock Actual 🐔</DrawerTitle>
         </DrawerHeader>
-        
+
         <div className="p-4 space-y-4 flex-grow overflow-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="border p-5 rounded-lg text-center">
@@ -124,26 +151,24 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
           <div className="border p-5 rounded-lg text-center">
             <Label className="text-lg font-semibold">Venta de SIN encargo:</Label>
             <div className="grid grid-cols-2 gap-4 mt-4">
-              <Button className="bg-black text-white text-2xl p-6 py-12" onClick={() => updateStock.mutate({ action: 'sell', quantity: 0.5 })}>-0.5</Button>
-              <Button className="bg-black text-white text-2xl p-6 py-12" onClick={() => updateStock.mutate({ action: 'add', quantity: 0.5 })}>+0.5</Button>
-              <Button className="bg-blue-500 text-white text-2xl p-6 py-12" onClick={() => updateStock.mutate({ action: 'sell', quantity: 1 })}>-1</Button>
-              <Button className="text-2xl p-6 py-12" variant="outline" onClick={() => updateStock.mutate({ action: 'add', quantity: 1 })}>+1</Button>
+              <Button className="bg-black text-white text-2xl p-6 py-12" onClick={() => handleDirectSale(-0.5)}>-0.5</Button>
+              <Button className="bg-black text-white text-2xl p-6 py-12" onClick={() => handleDirectSale(0.5)}>+0.5</Button>
+              <Button className="bg-blue-500 text-white text-2xl p-6 py-12" onClick={() => handleDirectSale(-1)}>-1</Button>
+              <Button className="text-2xl p-6 py-12" variant="outline" onClick={() => handleDirectSale(1)}>+1</Button>
             </div>
           </div>
- 
-        {/* Contenedor fijo para el botón */}
-        <div className="p-4">
-          <Button
-            variant="outline"
-            className="w-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-            onClick={handleResetStock}
-          >
-            Resetear Valores
-          </Button>
-        </div>
+
+          <div className="p-4">
+            <Button
+              variant="outline"
+              className="w-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+              onClick={handleResetStock}
+            >
+              Resetear Valores
+            </Button>
+          </div>
         </div>
       </DrawerContent>
-
 
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
@@ -177,10 +202,6 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-
-
-      
     </Drawer>
   );
 }

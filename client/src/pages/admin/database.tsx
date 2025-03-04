@@ -18,6 +18,7 @@ export default function DatabaseAdmin() {
 
   const { data: tableData, isLoading: isLoadingTable } = useQuery({
     queryKey: ['/api/admin/database/table', selectedTable],
+    queryFn: () => selectedTable ? apiRequest("GET", `/api/admin/database/table/${selectedTable}`) : null,
     enabled: !!selectedTable,
   });
 
@@ -27,8 +28,22 @@ export default function DatabaseAdmin() {
 
   const exportMutation = useMutation({
     mutationFn: () => {
-      window.location.href = '/api/admin/database/export';
-      return Promise.resolve();
+      // Usar fetch directamente para manejar la descarga del archivo
+      return fetch('/api/admin/database/export', {
+        method: 'POST',
+      }).then(response => {
+        if (!response.ok) throw new Error('Error en la exportación');
+        return response.blob();
+      }).then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `database_export_${new Date().toISOString().split('T')[0]}.sql`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      });
     },
     onSuccess: () => {
       addLog("Base de datos exportada correctamente");
@@ -146,9 +161,9 @@ export default function DatabaseAdmin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tableData.map((row, i) => (
+                  {tableData.map((row: any, i: number) => (
                     <tr key={i} className="border-t">
-                      {Object.values(row).map((value, j) => (
+                      {Object.values(row).map((value: any, j: number) => (
                         <td key={j} className="p-2">
                           {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                         </td>

@@ -823,5 +823,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Database Administration Routes
+  app.get("/api/admin/database/tables", async (_req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
+      `);
+      const tables = result.rows.map(row => row.table_name);
+      res.json(tables);
+    } catch (error) {
+      console.error('Error getting tables:', error);
+      res.status(500).json({ error: 'Error al obtener las tablas' });
+    }
+  });
+
+  app.get("/api/admin/database/table/:name", async (req, res) => {
+    try {
+      const tableName = req.params.name;
+      const result = await db.execute(sql`
+        SELECT * FROM ${sql.identifier(tableName)}
+        LIMIT 100
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error getting table data:', error);
+      res.status(500).json({ error: 'Error al obtener los datos de la tabla' });
+    }
+  });
+
+  app.post("/api/admin/admin/database/export", async (_req, res) => {
+    try {
+      // Get all tables from schema
+      const tables = await db.execute(sql`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
+      `);
+
+      const exportData: Record<string, any[]> = {};
+
+      // Export data from each table
+      for (const row of tables.rows) {
+        const tableName = row.table_name;
+        const tableData = await db.execute(sql`
+          SELECT * FROM ${sql.identifier(tableName)}
+        `);
+        exportData[tableName] = tableData.rows;
+      }
+
+      // Add export metadata
+      const exportMeta = {
+        timestamp: new Date().toISOString(),
+        version: '1.0',
+        tables: Object.keys(exportData)
+      };
+
+      // Create exports directory if it doesn't exist
+      const exportsDir = path.join(process.cwd(), 'database', 'exports');
+      await fs.ensureDir(exportsDir);
+
+      // Save export file
+      const filename = `export_${format(new Date(), 'yyyyMMdd_HHmmss')}.json`;
+      const filePath = path.join(exportsDir, filename);
+      await fs.writeJson(filePath, {
+        meta: exportMeta,
+        data: exportData
+      }, { spaces: 2 });
+
+      res.json(exportData);
+    } catch (error) {
+      console.error('Error exporting database:', error);
+      res.status(500).json({ error: 'Error al exportar la base de datos' });
+    }
+  });
+
+  app.post("/api/admin/database/import", async (req, res) => {
+    try {
+      const importData = req.body;
+
+      // Validate import data structure
+      if (!importData.meta || !importData.data) {
+        return res.status(400).json({ error: 'Formato de importación inválido' });
+      }
+
+      // Create backup before import
+      await app.emit('POST', '/api/admin/database/export');
+
+      // Import data for each table
+      for (const [tableName, rows] of Object.entries(importData.data)) {
+        if (!Array.isArray(rows)) continue;
+
+        // Clear existing data
+        await db.execute(sql`TRUNCATE TABLE ${sql.identifier(tableName)} CASCADE`);
+
+        // Insert new data
+        for (const row of rows) {
+          const columns = Object.keys(row);
+          const values = Object.values(row);
+
+          const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+          const query = `
+            INSERT INTO ${tableName} (${columns.join(', ')})
+            VALUES (${placeholders})
+          `;
+
+          await db.execute(sql.raw(query), values);
+        }
+      }
+
+      res.json({ message: 'Base de datos importada correctamente' });
+    } catch (error) {
+      console.error('Error importing database:', error);
+      res.status(500).json({ error: 'Error al importar la base de datos' });
+    }
+  });
+
   return httpServer;
 }

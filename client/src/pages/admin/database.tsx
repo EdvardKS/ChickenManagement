@@ -5,54 +5,86 @@ import { Terminal } from "@/components/ui/terminal";
 import { Loader } from "@/components/ui/loader";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { Database, Table, Download, Upload } from "lucide-react";
 
 export default function DatabaseAdmin() {
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const { toast } = useToast();
+
+  const { data: tables } = useQuery<string[]>({
+    queryKey: ['/api/admin/database/tables'],
+  });
+
+  const { data: tableData } = useQuery({
+    queryKey: ['/api/admin/database/table', selectedTable],
+    enabled: !!selectedTable,
+  });
 
   const addLog = (message: string) => {
     setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
   };
 
-  const runMigrationsMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/admin/run-migrations"),
-    onSuccess: () => {
-      addLog("Migraciones completadas con éxito");
+  const exportMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/admin/database/export"),
+    onSuccess: (data) => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `database_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      addLog("Base de datos exportada correctamente");
       toast({
         title: "Éxito",
-        description: "Las migraciones de la base de datos se completaron correctamente",
+        description: "Base de datos exportada correctamente",
       });
     },
     onError: (error) => {
-      addLog(`Error al ejecutar las migraciones: ${error.message}`);
+      addLog(`Error al exportar la base de datos: ${error.message}`);
       toast({
         title: "Error",
-        description: "Error al ejecutar las migraciones",
+        description: "Error al exportar la base de datos",
         variant: "destructive",
       });
     },
   });
 
-  const runSeedersMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/admin/run-seeders"),
+  const importMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return apiRequest("POST", "/api/admin/database/import", formData);
+    },
     onSuccess: () => {
-      addLog("Seeders completados con éxito");
+      addLog("Base de datos importada correctamente");
       toast({
         title: "Éxito",
-        description: "Los seeders de la base de datos se completaron correctamente",
+        description: "Base de datos importada correctamente",
       });
     },
     onError: (error) => {
-      addLog(`Error al ejecutar los seeders: ${error.message}`);
+      addLog(`Error al importar la base de datos: ${error.message}`);
       toast({
         title: "Error",
-        description: "Error al ejecutar los seeders",
+        description: "Error al importar la base de datos",
         variant: "destructive",
       });
     },
   });
 
-  const isLoading = runMigrationsMutation.isPending || runSeedersMutation.isPending;
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      importMutation.mutate(file);
+    }
+  };
+
+  const isLoading = exportMutation.isPending || importMutation.isPending;
 
   return (
     <div className="space-y-6">
@@ -63,24 +95,75 @@ export default function DatabaseAdmin() {
 
       <div className="flex gap-4">
         <Button
-          onClick={() => {
-            addLog("Iniciando migraciones...");
-            runMigrationsMutation.mutate();
-          }}
+          onClick={() => exportMutation.mutate()}
           disabled={isLoading}
+          className="gap-2"
         >
-          Ejecutar Migraciones
+          <Download className="h-4 w-4" />
+          Exportar Base de Datos
         </Button>
         <Button
-          onClick={() => {
-            addLog("Iniciando seeders...");
-            runSeedersMutation.mutate();
-          }}
+          onClick={() => document.getElementById('fileInput')?.click()}
           disabled={isLoading}
+          className="gap-2"
         >
-          Ejecutar Seeders
+          <Upload className="h-4 w-4" />
+          Importar Base de Datos
         </Button>
+        <input
+          type="file"
+          id="fileInput"
+          accept=".json"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
       </div>
+
+      <div className="grid grid-cols-4 gap-6">
+        {tables?.map((table) => (
+          <Button
+            key={table}
+            variant={selectedTable === table ? "secondary" : "outline"}
+            className={`justify-start gap-2 ${
+              selectedTable === table ? "bg-muted hover:bg-muted" : ""
+            }`}
+            onClick={() => setSelectedTable(table)}
+          >
+            <Database className="h-4 w-4" />
+            {table}
+          </Button>
+        ))}
+      </div>
+
+      {selectedTable && tableData && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold mb-4">Datos de {selectedTable}</h2>
+          <div className="border rounded-lg overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-muted">
+                  {Object.keys(tableData[0] || {}).map((column) => (
+                    <th key={column} className="p-2 text-left font-medium">
+                      {column}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tableData.map((row, i) => (
+                  <tr key={i} className="border-t">
+                    {Object.values(row).map((value, j) => (
+                      <td key={j} className="p-2">
+                        {JSON.stringify(value)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">Log de Ejecución</h2>

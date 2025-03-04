@@ -830,6 +830,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         SELECT table_name 
         FROM information_schema.tables 
         WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+        ORDER BY table_name
       `);
       const tables = result.rows.map(row => row.table_name);
       res.json(tables);
@@ -842,10 +844,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/database/table/:name", async (req, res) => {
     try {
       const tableName = req.params.name;
+      // Validate table name exists
+      const tableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = ${tableName}
+        )
+      `);
+
+      if (!tableExists.rows[0].exists) {
+        return res.status(404).json({ error: 'Tabla no encontrada' });
+      }
+
       const result = await db.execute(sql`
         SELECT * FROM ${sql.identifier(tableName)}
         LIMIT 100
       `);
+
+      console.log(`Table ${tableName} data:`, result.rows);
       res.json(result.rows);
     } catch (error) {
       console.error('Error getting table data:', error);
@@ -853,85 +870,539 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/admin/database/export", async (_req, res) => {
+  app.post("/api/admin/database/export", async (_req, res) => {
     try {
-      // Get all tables from schema
-      const tables = await db.execute(sql`
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public'
-      `);
-
-      const exportData: Record<string, any[]> = {};
-
-      // Export data from each table
-      for (const row of tables.rows) {
-        const tableName = row.table_name;
-        const tableData = await db.execute(sql`
-          SELECT * FROM ${sql.identifier(tableName)}
-        `);
-        exportData[tableName] = tableData.rows;
-      }
-
-      // Add export metadata
-      const exportMeta = {
-        timestamp: new Date().toISOString(),
-        version: '1.0',
-        tables: Object.keys(exportData)
-      };
-
       // Create exports directory if it doesn't exist
       const exportsDir = path.join(process.cwd(), 'database', 'exports');
       await fs.ensureDir(exportsDir);
 
-      // Save export file
-      const filename = `export_${format(new Date(), 'yyyyMMdd_HHmmss')}.json`;
+      const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
+      const filename = `dump_${timestamp}.sql`;
       const filePath = path.join(exportsDir, filename);
-      await fs.writeJson(filePath, {
-        meta: exportMeta,
-        data: exportData
-      }, { spaces: 2 });
 
-      res.json(exportData);
+      // Use pg_dump to create a complete database backup
+      const { DATABASE_URL } = process.env;
+      if (!DATABASE_URL) {
+        throw new Error('DATABASE_URL not found');
+      }
+
+      const { execSync } = require('child_process');
+      execSync(`pg_dump "${DATABASE_URL}" > "${filePath}"`);
+
+      // Optional: Create a gzip version
+      execSync(`gzip -c "${filePath}" > "${filePath}.gz"`);
+
+      res.download(filePath, filename);
     } catch (error) {
       console.error('Error exporting database:', error);
       res.status(500).json({ error: 'Error al exportar la base de datos' });
     }
   });
 
-  app.post("/api/admin/database/import", async (req, res) => {
+  app.post("/api/admin/database/import", upload.single('file'), async (req, res) => {
     try {
-      const importData = req.body;
-
-      // Validate import data structure
-      if (!importData.meta || !importData.data) {
-        return res.status(400).json({ error: 'Formato de importación inválido' });
+      if (!req.file) {
+        return res.status(400).json({ error: 'No se ha proporcionado ningún archivo' });
       }
 
-      // Create backup before import
-      await app.emit('POST', '/api/admin/database/export');
+      const { DATABASE_URL } = process.env;
+      if (!DATABASE_URL) {
+        throw new Error('DATABASE_URL not found');
+      }
 
-      // Import data for each table
-      for (const [tableName, rows] of Object.entries(importData.data)) {
-        if (!Array.isArray(rows)) continue;
+      // Create a backup before import
+      const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
+      const backupDir = path.join(process.cwd(), 'database', 'backups');
+      await fs.ensureDir(backupDir);
+      const backupPath = path.join(backupDir, `backup_before_import_${timestamp}.sql`);
 
-        // Clear existing data
-        await db.execute(sql`TRUNCATE TABLE ${sql.identifier(tableName)} CASCADE`);
+      const { execSync } = require('child_process');
+      execSync(`pg_dump "${DATABASE_URL}" > "${backupPath}"`);
 
-        // Insert new data
-        for (const row of rows) {
-          const columns = Object.keys(row);
-          const values = Object.values(row);
+      // Import the new file
+      execSync(`psql "${DATABASE_URL}" < "${req.file.path}"`);
 
-          const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
-          const query = `
-            INSERT INTO ${tableName} (${columns.join(', ')})
-            VALUES (${placeholders})
-          `;
+      res.json({ message: 'Base de datos importada correctamente' });
+    } catch (error) {
+      console.error('Error importing database:', error);
+      res.status(500).json({ error: 'Error al importar la base de datos' });
+    }
+  });
 
-          await db.execute(sql.raw(query), values);
+  // Add default settings if they don't exist
+  app.post("/api/settings/initialize", async (_req, res) => {
+    try {
+      const defaultSettings = [
+        { key: 'smtp_host', value: 'smtp.gmail.com' },
+        { key: 'smtp_port', value: '587' },
+        { key: 'smtp_user', value: 'your-email@gmail.com' },
+        { key: 'smtp_pass', value: 'your-app-password' },
+        { key: 'smtp_from', value: 'Your Restaurant <your-email@gmail.com>' },
+        { key: 'dias_abierto', value: '["V","S","D"]' },
+        { key: 'horario_abertura', value: '10:00' },
+        { key: 'horario_cerrar', value: '16:00' },
+        { key: 'minimo_pedido', value: '1' },
+        { key: 'maximo_pedido', value: '10' },
+        { key: 'tiempo_preparacion', value: '30' }, // minutos
+        { key: 'intervalo_recogida', value: '15' }, // minutos
+      ];
+
+      for (const setting of defaultSettings) {
+        const existing = await storage.getSetting(setting.key);
+        if (!existing) {
+          await storage.updateSetting(setting.key, setting.value);
         }
       }
+
+      res.json({ message: 'Configuración inicial creada correctamente' });
+    } catch (error) {
+      console.error('Error initializing settings:', error);
+      res.status(500).json({ error: 'Error al inicializar la configuración' });
+    }
+  });
+
+  // Seeds Preview
+  app.get("/api/admin/seeds/:type/preview", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const seedPath = path.join(process.cwd(), 'database', 'seeds', `${type}.json`);
+
+      if (!await fs.pathExists(seedPath)) {
+        return res.status(404).json({ error: 'Archivo de semilla no encontrado' });
+      }
+
+      const seedData = await fs.readJson(seedPath);
+      return res.json({
+        count: Array.isArray(seedData) ? seedData.length : 1,
+        sample: Array.isArray(seedData) ? seedData[0] : seedData
+      });
+    } catch (error) {
+      console.error('Error previewing seed:', error);
+      res.status(500).json({ error: 'Error al obtener vista previa de la semilla' });
+    }
+  });
+
+  // Seeds Execute
+  app.post("/api/admin/seeds/:type/execute", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const seedPath = path.join(process.cwd(), 'database', 'seeds', `${type}.json`);
+
+      if (!await fs.pathExists(seedPath)) {
+        return res.status(404).json({ error: 'Archivo de semilla no encontrado' });
+      }
+
+      const seedData = await fs.readJson(seedPath);
+      let count = 0;
+
+      if (type === 'category') {
+        for (const category of Array.isArray(seedData) ? seedData : [seedData]) {
+          console.log('Procesando categoría:', category);
+          // Buscar si existe una categoría con el mismo nombre
+          const existingCategories = await db.select().from(categories).where(eq(categories.name, category.name));
+
+          if (existingCategories.length > 0) {
+            console.log('Actualizando categoría existente:', existingCategories[0].id);
+            await storage.updateCategory(existingCategories[0].id, category);
+          } else {
+            console.log('Creando nueva categoría');
+            await storage.createCategory(category);
+          }
+          count++;
+        }
+      } else if (type === 'products') {
+        for (const product of Array.isArray(seedData) ? seedData : [seedData]) {
+          console.log('Procesando producto:', product);
+          console.log('Estructura del producto:', {
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            category_id: product.category_id
+          });
+
+          try {
+            // Buscar si existe un producto con el mismo nombre
+            const existingProducts = await db.select().from(products).where(eq(products.name, product.name));
+            if (existingProducts.length > 0) {
+              console.log('Actualizando producto existente:', existingProducts[0].id);
+              await storage.updateProduct(existingProducts[0].id, {
+                name: product.name,
+                description: product.description,
+                imageUrl: product.image,
+                price: product.price,
+                categoryId: product.category_id
+              });
+            } else {
+              console.log('Creando nuevo producto');
+              await storage.createProduct({
+                name: product.name,
+                description: product.description,
+                imageUrl: product.image,
+                price: product.price,
+                categoryId: product.category_id
+              });
+            }
+            count++;
+            console.log('Producto procesado exitosamente');
+          } catch (error) {
+            console.error('Error al procesar producto:', error);
+            throw error;
+          }
+        }
+      }
+
+      // Create backup with timestamp
+      const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const backupPath = path.join(
+        process.cwd(),
+        'database',
+        'seeds',
+        'backups',
+        `${type}_${timestamp}.json`
+      );
+
+      await fs.ensureDir(path.dirname(backupPath));
+      await fs.writeJson(backupPath, seedData, { spaces: 2 });
+
+      res.json({ message: 'Semilla ejecutada correctamente', count });
+    } catch (error) {
+      console.error('Error executing seed:', error);
+      res.status(500).json({ error: 'Error al ejecutar la semilla' });
+    }
+  });
+
+  // Create directories if they don't exist
+  app.post("/api/admin/seeds/initialize", async (_req, res) => {
+    try {
+      const dirs = [
+        path.join(process.cwd(), 'database', 'seeds'),
+        path.join(process.cwd(), 'database', 'seeds', 'backups')
+      ];
+
+      for (const dir of dirs) {
+        await fs.ensureDir(dir);
+      }
+
+      // Create initial seed files if they don't exist
+      const seedFiles = {
+        'category.json': [
+          {
+            name: "Menús",
+            description: "Tenemos menús! Echa un vistazo y encárganos.",
+            image: "categoria_menu.jpg"
+          },
+          {
+            name: "Aperitivo",
+            description: "Ojea todos nuestros aperitivos! Será por variedad...",
+            image: "categoria_aperitivo.jpg"
+          },
+          {
+            name: "Rustidera",
+            description: "Tu Rustidera bajo encargo, mira lo que te ofrecemos.",
+            image: "categoria_rustidera.jpg"
+          }
+        ],
+        'products.json': [
+          {
+            name: "Kebab a Espada",
+            description: "Receta Armenia que consiste en trozos de carne marinados ensartados en una espada y directos puestos a la brasa, servido en pan de la casa.",
+            image: "brasa_kebab",
+            price: 1500,
+            category_id: 1
+          },
+          {
+            name: "Medio Pollo Asado",
+            description: "Medio pollo asado a la leña con nuestro toque especial",
+            image: "medio_pollo",
+            price: 800,
+            category_id: 1
+          },
+          {
+            name: "Patatas Bravas",
+            description: "Patatas bravas caseras con nuestra salsa especial",
+            image: "patatas_bravas",
+            price: 500,
+            category_id: 2
+          },
+          {
+            name: "Rustidera Mixta",
+            description: "Rustidera con variedad de carnes y verduras asadas",
+            image: "rustidera_mixta",
+            price: 2500,
+            category_id: 3
+          }
+        ]
+      };
+
+      for (const [filename, data] of Object.entries(seedFiles)) {
+        const filePath = path.join(process.cwd(), 'database', 'seeds', filename);
+        await fs.writeJson(filePath, data, { spaces: 2 });
+      }
+
+      res.json({ message: 'Sistema de semillas inicializado correctamente' });
+    } catch (error) {
+      console.error('Error initializing seeds:', error);
+      res.status(500).json({ error: 'Error al inicializar el sistema de semillas' });
+    }
+  });
+
+  // List available seed files
+  app.get("/api/admin/seeds/list", async (_req, res) => {
+    try {
+      const seedsDir = path.join(process.cwd(), 'database', 'seeds');
+      const files = await fs.readdir(seedsDir);
+      const jsonFiles = files
+        .filter(file => file.endsWith('.json'))
+        .map(file => file.replace('.json', ''));
+      res.json(jsonFiles);
+    } catch (error) {
+      console.error('Error listing seed files:', error);
+      res.status(500).json({ error: 'Error al listar archivos de semillas' });
+    }
+  });
+
+  // Restore category
+  app.post("/api/categories/:id/restore", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await db.update(categories)
+        .set({ deleted: false })
+        .where(eq(categories.id, id));
+      res.json({ message: 'Categoría restaurada correctamente' });
+    } catch (error) {
+      console.error('Error restoring category:', error);
+      res.status(500).json({ error: 'Error al restaurar la categoría' });
+    }
+  });
+
+  // Restore product
+  app.post("/api/products/:id/restore", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await db.update(products)
+        .set({ deleted: false })
+        .where(eq(products.id, id));
+      res.json({ message: 'Producto restaurado correctamente' });
+    } catch (error) {
+      console.error('Error restoring product:', error);
+      res.status(500).json({ error: 'Error al restaurar el producto' });
+    }
+  });
+
+  // Create table dynamically
+  app.post("/api/admin/tables", async (req, res) => {
+    try {
+      const { name, columns } = req.body;
+
+      // Generar el SQL para crear la tabla
+      const columnDefinitions = columns
+        .map(col => `${col.name} ${col.type}`)
+        .join(', ');
+
+      const sql = `CREATE TABLE IF NOT EXISTS ${name} (
+        id SERIAL PRIMARY KEY,
+        ${columnDefinitions},
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deleted BOOLEAN DEFAULT FALSE
+      )`;
+
+      await db.execute(sql);
+
+      res.json({ message: 'Tabla creada correctamente' });
+    } catch (error) {
+      console.error('Error creating table:', error);
+      res.status(500).json({ error: 'Error al crear la tabla' });
+    }
+  });
+
+  // Ruta para subir imagen de producto
+  app.post("/api/products/:id/image", upload.single('image'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No se ha subido ningún archivo' });
+      }
+
+      await storage.updateProduct(id, {
+        imageUrl: path.basename(file.path)
+      });
+
+      res.json({ message: 'Imagen actualizada correctamente' });
+    } catch (error) {
+      console.error('Error uploading product image:', error);
+      res.status(500).json({ error: 'Error al subir la imagen del producto' });
+    }
+  });
+
+  // Ruta para subir imagen de categoría
+  app.post("/api/categories/:id/image", upload.single('image'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No se ha subido ningún archivo' });
+      }
+
+      await storage.updateCategory(id, {
+        imageUrl: path.basename(file.path)
+      });
+
+      res.json({ message: 'Imagen actualizada correctamente' });
+    } catch (error) {
+      console.error('Error uploading category image:', error);
+      res.status(500).json({ error: 'Error al subir la imagen de la categoría' });
+    }
+  });
+
+  // Ruta para subir imagen durante la creación de producto
+  app.post("/api/products/upload-image", upload.single('image'), async (req, res) => {
+    try {
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No se ha subido ningún archivo' });
+      }
+
+      res.json({
+        filename: file.filename,
+        message: 'Imagen subida correctamente'
+      });
+    } catch (error) {
+      console.error('Error uploading product image:', error);
+      res.status(500).json({ error: 'Error al subir la imagen del producto' });
+    }
+  });
+
+  // Add new routes for Google Business hours synchronization
+  app.get("/api/business-hours/sync", async (_req, res) => {
+    try {
+      const hours = await scrapeGoogleBusinessHours();
+
+      // Update our database with the latest hours from Google
+      for (const hour of hours) {
+        await storage.updateBusinessHours(hour.id, hour);
+      }
+
+      res.json(hours);
+    } catch (error) {
+      console.error('Error syncing business hours:', error);
+      res.status(500).json({ error: 'Error al sincronizar horarios con Google' });
+    }
+  });
+
+  app.post("/api/business-hours/sync", async (req, res) => {
+    try {
+      const { hours } = req.body;
+      await updateGoogleBusinessHours(hours);
+      res.json({ message: 'Horarios sincronizados correctamente' });
+    } catch (error) {
+      console.error('Error updating Google business hours:', error);
+      res.status(500).json({ error: 'Error al actualizar horarios en Google' });
+    }
+  });
+
+  // Database Administration Routes
+  app.get("/api/admin/database/tables", async (_req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+        ORDER BY table_name
+      `);
+      const tables = result.rows.map(row => row.table_name);
+      res.json(tables);
+    } catch (error) {
+      console.error('Error getting tables:', error);
+      res.status(500).json({ error: 'Error al obtener las tablas' });
+    }
+  });
+
+  app.get("/api/admin/database/table/:name", async (req, res) => {
+    try {
+      const tableName = req.params.name;
+      // Validate table name exists
+      const tableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = ${tableName}
+        )
+      `);
+
+      if (!tableExists.rows[0].exists) {
+        return res.status(404).json({ error: 'Tabla no encontrada' });
+      }
+
+      const result = await db.execute(sql`
+        SELECT * FROM ${sql.identifier(tableName)}
+        LIMIT 100
+      `);
+
+      console.log(`Table ${tableName} data:`, result.rows);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error getting table data:', error);
+      res.status(500).json({ error: 'Error al obtener los datos de la tabla' });
+    }
+  });
+
+  app.post("/api/admin/database/export", async (_req, res) => {
+    try {
+      // Create exports directory if it doesn't exist
+      const exportsDir = path.join(process.cwd(), 'database', 'exports');
+      await fs.ensureDir(exportsDir);
+
+      const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
+      const filename = `dump_${timestamp}.sql`;
+      const filePath = path.join(exportsDir, filename);
+
+      // Use pg_dump to create a complete database backup
+      const { DATABASE_URL } = process.env;
+      if (!DATABASE_URL) {
+        throw new Error('DATABASE_URL not found');
+      }
+
+      const { execSync } = require('child_process');
+      execSync(`pg_dump "${DATABASE_URL}" > "${filePath}"`);
+
+      // Optional: Create a gzip version
+      execSync(`gzip -c "${filePath}" > "${filePath}.gz"`);
+
+      res.download(filePath, filename);
+    } catch (error) {
+      console.error('Error exporting database:', error);
+      res.status(500).json({ error: 'Error al exportar la base de datos' });
+    }
+  });
+
+  app.post("/api/admin/database/import", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No se ha proporcionado ningún archivo' });
+      }
+
+      const { DATABASE_URL } = process.env;
+      if (!DATABASE_URL) {
+        throw new Error('DATABASE_URL not found');
+      }
+
+      // Create a backup before import
+      const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
+      const backupDir = path.join(process.cwd(), 'database', 'backups');
+      await fs.ensureDir(backupDir);
+      const backupPath = path.join(backupDir, `backup_before_import_${timestamp}.sql`);
+
+      const { execSync } = require('child_process');
+      execSync(`pg_dump "${DATABASE_URL}" > "${backupPath}"`);
+
+      // Import the new file
+      execSync(`psql "${DATABASE_URL}" < "${req.file.path}"`);
 
       res.json({ message: 'Base de datos importada correctamente' });
     } catch (error) {

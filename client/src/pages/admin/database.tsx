@@ -16,7 +16,7 @@ export default function DatabaseAdmin() {
     queryKey: ['/api/admin/database/tables'],
   });
 
-  const { data: tableData } = useQuery({
+  const { data: tableData, isLoading: isLoadingTable } = useQuery({
     queryKey: ['/api/admin/database/table', selectedTable],
     enabled: !!selectedTable,
   });
@@ -26,18 +26,11 @@ export default function DatabaseAdmin() {
   };
 
   const exportMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/admin/database/export"),
-    onSuccess: (data) => {
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `database_export_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
+    mutationFn: () => {
+      window.location.href = '/api/admin/database/export';
+      return Promise.resolve();
+    },
+    onSuccess: () => {
       addLog("Base de datos exportada correctamente");
       toast({
         title: "Éxito",
@@ -113,7 +106,7 @@ export default function DatabaseAdmin() {
         <input
           type="file"
           id="fileInput"
-          accept=".json"
+          accept=".sql,.gz"
           className="hidden"
           onChange={handleFileUpload}
         />
@@ -135,33 +128,39 @@ export default function DatabaseAdmin() {
         ))}
       </div>
 
-      {selectedTable && tableData && (
+      {selectedTable && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold mb-4">Datos de {selectedTable}</h2>
-          <div className="border rounded-lg overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-muted">
-                  {Object.keys(tableData[0] || {}).map((column) => (
-                    <th key={column} className="p-2 text-left font-medium">
-                      {column}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {tableData.map((row, i) => (
-                  <tr key={i} className="border-t">
-                    {Object.values(row).map((value, j) => (
-                      <td key={j} className="p-2">
-                        {JSON.stringify(value)}
-                      </td>
+          {isLoadingTable ? (
+            <Loader />
+          ) : tableData && tableData.length > 0 ? (
+            <div className="border rounded-lg overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-muted">
+                    {Object.keys(tableData[0]).map((column) => (
+                      <th key={column} className="p-2 text-left font-medium">
+                        {column}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {tableData.map((row, i) => (
+                    <tr key={i} className="border-t">
+                      {Object.values(row).map((value, j) => (
+                        <td key={j} className="p-2">
+                          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No hay datos disponibles en esta tabla</p>
+          )}
         </div>
       )}
 

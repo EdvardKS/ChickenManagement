@@ -38,17 +38,10 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
   const updateStockMutation = useMutation({
     mutationFn: async (data: { quantity: number }) => {
       console.log("Enviando petición con cantidad:", data.quantity);
-      if (data.quantity < 0) {
-        const res = await apiRequest("POST", "/api/stock/remove", { 
-          quantity: Math.abs(data.quantity) 
-        });
-        return res.json();
-      } else {
-        const res = await apiRequest("POST", "/api/stock/add", { 
-          quantity: data.quantity 
-        });
-        return res.json();
-      }
+      const res = await apiRequest("POST", "/api/stock/add", { 
+        quantity: data.quantity 
+      });
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -69,7 +62,30 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
 
   const handleDirectSale = (quantity: number) => {
     console.log("Manejando venta directa con cantidad:", quantity);
-    updateStockMutation.mutate({ quantity });
+    if (quantity < 0) {
+      // Para restar, usamos la ruta remove
+      const res = apiRequest("POST", "/api/stock/remove", { 
+        quantity: Math.abs(quantity) 
+      }).then(r => r.json())
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+        toast({
+          title: "Stock actualizado",
+          description: "El stock se ha actualizado correctamente"
+        });
+      })
+      .catch((error) => {
+        console.error("Error actualizando stock:", error);
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar el stock",
+          variant: "destructive"
+        });
+      });
+    } else {
+      // Para sumar, usamos la mutación existente
+      updateStockMutation.mutate({ quantity });
+    }
   };
 
   return (

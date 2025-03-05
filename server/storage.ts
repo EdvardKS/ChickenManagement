@@ -34,7 +34,7 @@ export interface IStorage {
 
   // Stock
   getCurrentStock(): Promise<Stock | undefined>;
-  updateStock(stock: Partial<Stock>): Promise<Stock>;
+  updateStock(stockData: Partial<Stock>): Promise<Stock>;
   createStockHistory(history: InsertStockHistory): Promise<StockHistory>;
 
   // Business Hours
@@ -288,10 +288,10 @@ export class DatabaseStorage implements IStorage {
       updatedStock = updated;
     }
 
-    // Crear entrada en el historial
+    // Log en el historial según el tipo de actualización
     await this.createStockHistory({
       stockId: updatedStock.id,
-      action: "update",
+      action: stockData.updateType || "update", // Usar el tipo de actualización proporcionado
       quantity: parseFloat(updatedValues.currentStock) - parseFloat(currentStock?.currentStock || "0"),
       previousStock: parseFloat(currentStock?.currentStock || "0"),
       newStock: parseFloat(updatedValues.currentStock),

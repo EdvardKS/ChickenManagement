@@ -24,10 +24,13 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   const [pendingAction, setPendingAction] = useState<{ action: 'add' | 'remove' | 'reset', quantity?: number } | null>(null);
   const { data: stock } = useQuery<Stock>({ queryKey: ['/api/stock'] });
 
-  // Mutación para actualizar el stock montado (initial_stock)
+  // Mutación para actualizar el stock montado (initial_stock y current_stock)
   const updateMountedStock = useMutation({
     mutationFn: async ({ action, quantity }: { action: 'add' | 'remove'; quantity: number }) => {
-      const res = await apiRequest("POST", `/api/stock/${action}`, { quantity });
+      const res = await apiRequest("POST", `/api/stock/${action}`, { 
+        quantity,
+        updateType: 'mounted' // Indica que es una actualización de stock montado
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -47,28 +50,29 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
     }
   });
 
-  // Mutación para ventas directas (afecta current_stock)
+  // Mutación para ventas directas (afecta solo current_stock)
   const handleDirectSale = async (quantity: number) => {
     try {
-      // Para ventas, siempre usamos /remove con cantidad positiva
-      // Para correcciones (añadir), usamos /add con cantidad positiva
-      const endpoint = quantity < 0 ? "/api/stock/remove" : "/api/stock/add";
+      const endpoint = quantity < 0 ? "/api/stock/sell" : "/api/stock/add";
       const absoluteQuantity = Math.abs(quantity);
 
       await apiRequest("POST", endpoint, { 
-        quantity: absoluteQuantity 
+        quantity: absoluteQuantity,
+        updateType: 'sale' // Indica que es una venta directa
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
-        title: "Venta registrada",
-        description: "La venta se ha registrado correctamente"
+        title: quantity < 0 ? "Venta registrada" : "Corrección registrada",
+        description: quantity < 0 ? 
+          "La venta se ha registrado correctamente" : 
+          "La corrección se ha registrado correctamente"
       });
     } catch (error) {
-      console.error("Error registrando venta:", error);
+      console.error("Error registrando operación:", error);
       toast({
         title: "Error",
-        description: "No se pudo registrar la venta",
+        description: "No se pudo registrar la operación",
         variant: "destructive"
       });
     }
@@ -91,10 +95,8 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
     if (!pendingAction) return;
 
     if (pendingAction.action === 'reset') {
-      // Lógica de reset existente
       resetStock.mutate();
     } else if (pendingAction.quantity) {
-      // Actualizar stock montado
       updateMountedStock.mutate({ 
         action: pendingAction.action, 
         quantity: pendingAction.quantity 
@@ -128,7 +130,6 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
       });
     },
   });
-
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>

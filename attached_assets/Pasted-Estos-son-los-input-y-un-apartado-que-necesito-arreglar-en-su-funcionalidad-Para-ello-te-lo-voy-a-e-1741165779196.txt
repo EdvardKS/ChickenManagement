@@ -1,0 +1,18 @@
+Estos son los input y un apartado que necesito arreglar en su funcionalidad. Para ello te lo voy a explicar a ti que hace cada cosa y que representa y necesito.
+
+LA card Total Pollos montado representa en base de datos initial_stock Este stock se irá modificando por los botnes +-1 y +-6. Representa el stock que voy poniendo yo a lo largo del día, para al final del día saber el total que he montado en el día de hoy. No es modificable por ningun otro elemento, venta o encargo
+
+La card Total de pollos actual representa en base de datos current_stock y en esté se van sumando de igual manera los +-1 y +-6 de la card anterior, pero más aparte aquí le afecta los botones de ventas sin encargo +-0.5 y +-1. Representa los pollos que me quedan en total, con y sin encargo. Pero el valor va variando a lo largo del día con las ventas que hago sin encargo y con las ventas que hag confirmando pedidos. en este caso los +0.5 y +1 de venta representan correcciones de ventas. y la confirmación de encargo y -0.5 y -1 representan las ventas sin encargo 
+
+Con encargo son la suman total de encargos que tengo SOLO PARA EL DÍA DE HOY, esto ya está funcionando bien (columna reserved_stock)
+
+Sin encargo es la resta de Total pollos actual y Con encargo. esto también está funcionando con normalidad (columna unreserved_stock)
+
+Por ultimo al confirmar un pedido, esto debe restar el total de pollo del pedido en la card Total pollo actual. (solo se resta al confirmar, ya que hasta que no se confirma ese pollo sigue en la tienda y debe forma parte del stock)
+
+Si se cancela, simplemente desaparece de la tabla y si se marca como erro también, la normal funcionalidad de contar los pollos de la tabla con encargo de hoy dbería actualizar por si solo los pollos con encargo y esto el stock.
+
+Todos los procesos deben actualizar el stock, su tabla es stock y luego existe stock_history
+
+stock es solo una fila por día y mantiene el flujo de trabajo
+stock_history va registrando los logs de cada botón o ejecución que se hace para que los vendedores no hagan de las suyas y los pueda controlar.

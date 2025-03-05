@@ -23,19 +23,18 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
     queryKey: ['/api/stock'] 
   });
 
-
-  // Mutación para ventas directas y correcciones (solo afecta current_stock)
+  // Función para manejar ventas directas y correcciones
   const handleDirectSale = async (quantity: number) => {
     try {
-      console.log("Procesando venta directa:", quantity);
+      console.log("Procesando operación:", quantity);
 
-      // Para ventas (números negativos), usamos /remove con cantidad positiva
-      // Para correcciones (números positivos), usamos /add
+      // Determinamos el endpoint basado en si es venta o corrección
       const endpoint = quantity < 0 ? "/api/stock/remove" : "/api/stock/add";
       const absoluteQuantity = Math.abs(quantity);
 
       console.log("Endpoint:", endpoint, "Cantidad:", absoluteQuantity);
 
+      // Realizamos la petición
       const res = await apiRequest("POST", endpoint, { 
         quantity: absoluteQuantity.toString() 
       });

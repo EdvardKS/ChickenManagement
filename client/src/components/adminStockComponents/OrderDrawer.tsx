@@ -128,9 +128,11 @@ export function OrderDrawer({
     try {
       const updatedOrder = {
         ...order!,
-        ...data,
+        customerName: data.customerName,
+        quantity: parseFloat(data.quantity),
+        details: data.details,
         pickupTime: new Date(data.pickupTime).toISOString(),
-        quantity: parseFloat(data.quantity)
+        customerPhone: data.customerPhone
       };
 
       await onUpdate(updatedOrder);
@@ -140,6 +142,7 @@ export function OrderDrawer({
         description: "Pedido actualizado correctamente"
       });
     } catch (error) {
+      console.error('Error updating order:', error);
       toast({
         title: "Error",
         description: "No se pudo actualizar el pedido",

@@ -8,8 +8,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Stock } from "@shared/schema";
@@ -21,34 +19,34 @@ interface StockDrawerProps {
 
 export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
   const { toast } = useToast();
-  const [initialStock, setInitialStock] = useState("");
-  const [currentStock, setCurrentStock] = useState("");
-
   const { data: stock } = useQuery<Stock>({ 
     queryKey: ['/api/stock'] 
   });
 
-  useEffect(() => {
-    if (stock) {
-      setInitialStock(stock.initialStock.toString());
-      setCurrentStock(stock.currentStock.toString());
-    }
-  }, [stock]);
 
   // Mutación para ventas directas y correcciones (solo afecta current_stock)
   const handleDirectSale = async (quantity: number) => {
     try {
-      // Para ventas (números negativos), usamos /remove
+      console.log("Procesando venta directa:", quantity);
+
+      // Para ventas (números negativos), usamos /remove con cantidad positiva
       // Para correcciones (números positivos), usamos /add
       const endpoint = quantity < 0 ? "/api/stock/remove" : "/api/stock/add";
       const absoluteQuantity = Math.abs(quantity);
 
+      console.log("Endpoint:", endpoint, "Cantidad:", absoluteQuantity);
+
       const res = await apiRequest("POST", endpoint, { 
-        quantity: absoluteQuantity 
+        quantity: absoluteQuantity.toString() 
       });
+
+      if (!res.ok) {
+        throw new Error(`Error en la respuesta: ${res.status}`);
+      }
 
       await res.json();
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+
       toast({
         title: quantity < 0 ? "Venta registrada" : "Corrección registrada",
         description: quantity < 0 ? 

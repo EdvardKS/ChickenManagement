@@ -8,14 +8,13 @@ const router = Router();
 
 // Schema para validar actualizaciones de stock
 const stockUpdateSchema = z.object({
-  initialStock: z.string(),
-  updateType: z.enum(['mounted', 'sale', 'order', 'correction']).optional()
+  quantity: z.string(),
+  updateType: z.enum(['mounted', 'direct_sale', 'direct_sale_correction', 'order']).optional()
 });
 
 // Get current stock status
 router.get("/", async (_req, res) => {
   try {
-    console.log('Getting current stock and orders');
     const stock = await storage.getCurrentStock();
     const orders = await storage.getOrders();
 
@@ -23,7 +22,7 @@ router.get("/", async (_req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    console.log('Calculating reserved stock for today:', today);
+    console.log('[Stock Route] Calculando stock reservado para hoy:', today);
     const reservedStock = orders
       .filter(order => {
         const orderDate = new Date(order.pickupTime);
@@ -35,18 +34,17 @@ router.get("/", async (_req, res) => {
       .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
 
     const currentStock = parseFloat((stock?.currentStock || 0).toString());
-    console.log('Current stock:', currentStock, 'Reserved stock:', reservedStock);
+    console.log('[Stock Route] Stock actual:', currentStock, 'Stock reservado:', reservedStock);
 
     const response = {
       ...stock,
       reservedStock: reservedStock.toString(),
-      unreservedStock: (currentStock - reservedStock).toString(),
+      unreservedStock: (currentStock - reservedStock).toString()
     };
 
-    console.log('Stock response:', response);
     res.json(response);
   } catch (error) {
-    console.error('Error getting stock:', error);
+    console.error('[Stock Route] Error obteniendo stock:', error);
     res.status(500).json({ error: 'Error al obtener el stock' });
   }
 });
@@ -55,12 +53,12 @@ router.get("/", async (_req, res) => {
 router.post("/update", async (req: Request & { stockUpdate?: any }, res) => {
   try {
     console.log('Updating stock with data:', req.body);
-    const data = stockUpdateSchema.parse(req.body);
+    const data = stockUpdateSchema.parse(req.body); // Use the updated schema
 
     const current = await storage.getCurrentStock();
     if (!current) throw new Error('No stock found');
 
-    const initialStock = parseFloat(data.initialStock);
+    const initialStock = parseFloat(data.quantity); // Use quantity from the schema
     const currentInitialStock = parseFloat(current.initialStock);
 
     req.stockUpdate = await prepareStockUpdate(
@@ -83,40 +81,15 @@ router.post("/update", async (req: Request & { stockUpdate?: any }, res) => {
   }
 });
 
-// Add stock (direct sale correction)
-router.post("/add", async (req: Request & { stockUpdate?: any }, res) => {
-  try {
-    const { quantity } = req.body;
-    console.log('Adding stock quantity:', quantity);
 
-    req.stockUpdate = await prepareStockUpdate(
-      'direct_sale_correction',
-      parseFloat(quantity),
-      'admin'
-    );
-
-    await new Promise((resolve, reject) => {
-      stockMiddleware(req, res, (err) => {
-        if (err) reject(err);
-        else resolve(undefined);
-      });
-    });
-
-    res.json(await storage.getCurrentStock());
-  } catch (error) {
-    console.error('Error adding stock:', error);
-    res.status(500).json({ error: 'Error al añadir stock' });
-  }
-});
-
-// Remove stock (direct sale)
+// Remover stock (venta directa)
 router.post("/remove", async (req: Request & { stockUpdate?: any }, res) => {
   try {
-    const { quantity } = req.body;
-    console.log('Removing stock quantity:', quantity);
+    console.log('[Stock Route] Procesando venta directa. Body:', req.body);
+    const { quantity } = stockUpdateSchema.parse(req.body);
 
     const parsedQuantity = parseFloat(quantity);
-    console.log('Parsed quantity for removal:', parsedQuantity);
+    console.log('[Stock Route] Cantidad para venta:', parsedQuantity);
 
     req.stockUpdate = await prepareStockUpdate(
       'direct_sale',
@@ -124,6 +97,8 @@ router.post("/remove", async (req: Request & { stockUpdate?: any }, res) => {
       'admin'
     );
 
+    console.log('[Stock Route] Stock update preparado:', req.stockUpdate);
+
     await new Promise((resolve, reject) => {
       stockMiddleware(req, res, (err) => {
         if (err) reject(err);
@@ -131,10 +106,47 @@ router.post("/remove", async (req: Request & { stockUpdate?: any }, res) => {
       });
     });
 
-    res.json(await storage.getCurrentStock());
+    const updatedStock = await storage.getCurrentStock();
+    console.log('[Stock Route] Stock actualizado después de venta:', updatedStock);
+
+    res.json(updatedStock);
   } catch (error) {
-    console.error('Error removing stock:', error);
-    res.status(500).json({ error: 'Error al quitar stock' });
+    console.error('[Stock Route] Error en venta directa:', error);
+    res.status(500).json({ error: 'Error al procesar la venta' });
+  }
+});
+
+// Añadir stock (corrección de venta)
+router.post("/add", async (req: Request & { stockUpdate?: any }, res) => {
+  try {
+    console.log('[Stock Route] Procesando corrección. Body:', req.body);
+    const { quantity } = stockUpdateSchema.parse(req.body);
+
+    const parsedQuantity = parseFloat(quantity);
+    console.log('[Stock Route] Cantidad para corrección:', parsedQuantity);
+
+    req.stockUpdate = await prepareStockUpdate(
+      'direct_sale_correction',
+      parsedQuantity,
+      'admin'
+    );
+
+    console.log('[Stock Route] Stock update preparado:', req.stockUpdate);
+
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
+    });
+
+    const updatedStock = await storage.getCurrentStock();
+    console.log('[Stock Route] Stock actualizado después de corrección:', updatedStock);
+
+    res.json(updatedStock);
+  } catch (error) {
+    console.error('[Stock Route] Error en corrección:', error);
+    res.status(500).json({ error: 'Error al procesar la corrección' });
   }
 });
 

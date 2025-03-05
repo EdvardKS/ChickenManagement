@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sheet,
@@ -26,24 +26,30 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
   // Función para manejar ventas directas y correcciones
   const handleDirectSale = async (quantity: number) => {
     try {
-      console.log("Procesando operación:", quantity);
+      console.log("[StockDrawer] Iniciando operación con cantidad:", quantity);
 
       // Determinamos el endpoint basado en si es venta o corrección
       const endpoint = quantity < 0 ? "/api/stock/remove" : "/api/stock/add";
       const absoluteQuantity = Math.abs(quantity);
 
-      console.log("Endpoint:", endpoint, "Cantidad:", absoluteQuantity);
+      console.log("[StockDrawer] Preparando petición:", {
+        endpoint,
+        quantity: absoluteQuantity.toString()
+      });
 
       // Realizamos la petición
       const res = await apiRequest("POST", endpoint, { 
-        quantity: absoluteQuantity.toString() 
+        quantity: absoluteQuantity.toString(),
+        updateType: quantity < 0 ? 'direct_sale' : 'direct_sale_correction'
       });
 
       if (!res.ok) {
         throw new Error(`Error en la respuesta: ${res.status}`);
       }
 
-      await res.json();
+      const data = await res.json();
+      console.log("[StockDrawer] Respuesta recibida:", data);
+
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
 
       toast({
@@ -53,7 +59,7 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
           "La corrección se ha registrado correctamente"
       });
     } catch (error) {
-      console.error("Error en operación de stock:", error);
+      console.error("[StockDrawer] Error en operación:", error);
       toast({
         title: "Error",
         description: "No se pudo realizar la operación",

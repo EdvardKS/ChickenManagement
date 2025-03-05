@@ -35,17 +35,20 @@ export async function stockMiddleware(
     const currentStock = await storage.getCurrentStock();
     if (!currentStock) throw new Error('No stock found');
 
-    const newStock: Partial<Stock> = {
-      currentStock: stockUpdate.currentStock.toFixed(1),
-      reservedStock: stockUpdate.reservedStock.toFixed(1),
-      unreservedStock: stockUpdate.unreservedStock.toFixed(1),
+    let newStock: Partial<Stock> = {
       lastUpdated: new Date()
     };
 
-    // Para actualizaciones de stock montado, actualizamos tanto initial_stock como current_stock
+    // Para actualizaciones de stock montado
     if (stockUpdate.action === 'add_mounted' || stockUpdate.action === 'remove_mounted') {
       newStock.initialStock = stockUpdate.initialStock.toFixed(1);
-      newStock.currentStock = stockUpdate.initialStock.toFixed(1); // El current_stock se iguala al initial_stock
+      newStock.currentStock = stockUpdate.initialStock.toFixed(1);
+    } 
+    // Para ventas directas y correcciones
+    else if (stockUpdate.action === 'direct_sale' || stockUpdate.action === 'direct_sale_correction') {
+      newStock.currentStock = stockUpdate.currentStock.toFixed(1);
+      // Mantener el initial_stock sin cambios
+      newStock.initialStock = currentStock.initialStock;
     }
 
     console.log('Updating stock with:', newStock);
@@ -54,6 +57,7 @@ export async function stockMiddleware(
       ...newStock,
       updateType: stockUpdate.action
     });
+
     console.log('Stock updated:', updatedStock);
 
     // Crear entrada en el historial
@@ -61,8 +65,8 @@ export async function stockMiddleware(
       stockId: updatedStock.id,
       action: stockUpdate.action,
       quantity: stockUpdate.quantity.toFixed(1),
-      previousStock: currentStock.initialStock,
-      newStock: updatedStock.initialStock,
+      previousStock: stockUpdate.action.includes('mounted') ? currentStock.initialStock : currentStock.currentStock,
+      newStock: stockUpdate.action.includes('mounted') ? updatedStock.initialStock : updatedStock.currentStock,
       createdBy: stockUpdate.source || 'system'
     };
 
@@ -101,29 +105,23 @@ export async function prepareStockUpdate(
 
   switch (action) {
     case 'add_mounted':
-      // Aumenta tanto el stock montado como el actual
       newInitial = initial + quantity;
-      newCurrent = newInitial; // El current_stock se iguala al initial_stock
+      newCurrent = newInitial;
       break;
     case 'remove_mounted':
-      // Reduce tanto el stock montado como el actual
       newInitial = Math.max(0, initial - quantity);
-      newCurrent = newInitial; // El current_stock se iguala al initial_stock
+      newCurrent = newInitial;
       break;
     case 'direct_sale':
-      // Solo reduce el stock actual
       newCurrent = Math.max(0, current - quantity);
       break;
     case 'direct_sale_correction':
-      // Solo aumenta el stock actual
       newCurrent = current + quantity;
       break;
     case 'new_order':
-      // Aumenta solo el stock reservado
       newReserved = reserved + quantity;
       break;
     case 'cancel_order':
-      // Reduce solo el stock reservado
       newReserved = Math.max(0, reserved - quantity);
       break;
     case 'reset_stock':
@@ -133,7 +131,17 @@ export async function prepareStockUpdate(
       break;
   }
 
-  const update = {
+  console.log('Prepared stock update:', {
+    initialStock: newInitial,
+    currentStock: newCurrent,
+    reservedStock: newReserved,
+    unreservedStock: Math.max(0, newCurrent - newReserved),
+    action,
+    quantity,
+    source
+  });
+
+  return {
     initialStock: newInitial,
     currentStock: newCurrent,
     reservedStock: newReserved,
@@ -142,7 +150,4 @@ export async function prepareStockUpdate(
     quantity,
     source
   };
-
-  console.log('Prepared stock update:', update);
-  return update;
 }

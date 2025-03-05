@@ -255,16 +255,31 @@ export class DatabaseStorage implements IStorage {
 
     let updatedValues;
     if (stockData.updateType === 'mounted') {
-      // Si es una actualización de stock montado, solo actualizamos initial_stock
+      // Si es una actualización de stock montado, actualizamos initial_stock y current_stock
       updatedValues = {
         initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
-        currentStock: currentStock?.currentStock || "0",
+        currentStock: String(stockData.initialStock || currentStock?.initialStock || 0),
         reservedStock: currentStock?.reservedStock || "0",
-        unreservedStock: currentStock?.unreservedStock || "0",
+        unreservedStock: String(
+          parseFloat(String(stockData.initialStock || currentStock?.initialStock || 0)) -
+          parseFloat(currentStock?.reservedStock || "0")
+        ),
+        lastUpdated: new Date()
+      };
+    } else if (stockData.updateType === 'direct_sale' || stockData.updateType === 'direct_sale_correction') {
+      // Para ventas directas o correcciones, solo actualizamos current_stock
+      updatedValues = {
+        initialStock: currentStock?.initialStock || "0",
+        currentStock: String(stockData.currentStock || currentStock?.currentStock || 0),
+        reservedStock: currentStock?.reservedStock || "0",
+        unreservedStock: String(
+          parseFloat(String(stockData.currentStock || currentStock?.currentStock || 0)) -
+          parseFloat(currentStock?.reservedStock || "0")
+        ),
         lastUpdated: new Date()
       };
     } else {
-      // Para otros tipos de actualizaciones, calculamos todos los valores
+      // Para otros tipos de actualizaciones
       updatedValues = {
         initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
         currentStock: String(stockData.currentStock || currentStock?.currentStock || 0),
@@ -304,13 +319,18 @@ export class DatabaseStorage implements IStorage {
     await this.createStockHistory({
       stockId: updatedStock.id,
       action: stockData.updateType || "update",
-      quantity: parseFloat(stockData.initialStock || "0") - parseFloat(currentStock?.initialStock || "0"),
-      previousStock: parseFloat(currentStock?.initialStock || "0"),
-      newStock: parseFloat(stockData.initialStock || "0"),
+      quantity: stockData.updateType?.includes('mounted')
+        ? parseFloat(updatedValues.initialStock) - parseFloat(currentStock?.initialStock || "0")
+        : parseFloat(updatedValues.currentStock) - parseFloat(currentStock?.currentStock || "0"),
+      previousStock: stockData.updateType?.includes('mounted')
+        ? currentStock?.initialStock || "0"
+        : currentStock?.currentStock || "0",
+      newStock: stockData.updateType?.includes('mounted')
+        ? updatedValues.initialStock
+        : updatedValues.currentStock,
       createdBy: "system"
     });
 
-    console.log('Stock update result:', updatedStock);
     return updatedStock;
   }
 

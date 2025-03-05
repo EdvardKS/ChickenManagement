@@ -83,7 +83,7 @@ router.post("/update", async (req: Request & { stockUpdate?: any }, res) => {
   }
 });
 
-// Add stock
+// Add stock (direct sale correction)
 router.post("/add", async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const { quantity } = req.body;
@@ -91,7 +91,7 @@ router.post("/add", async (req: Request & { stockUpdate?: any }, res) => {
 
     req.stockUpdate = await prepareStockUpdate(
       'direct_sale_correction',
-      Math.abs(parseFloat(quantity)),
+      parseFloat(quantity),
       'admin'
     );
 
@@ -115,7 +115,7 @@ router.post("/remove", async (req: Request & { stockUpdate?: any }, res) => {
     const { quantity } = req.body;
     console.log('Removing stock quantity:', quantity);
 
-    const parsedQuantity = Math.abs(parseFloat(quantity));
+    const parsedQuantity = parseFloat(quantity);
     console.log('Parsed quantity for removal:', parsedQuantity);
 
     req.stockUpdate = await prepareStockUpdate(

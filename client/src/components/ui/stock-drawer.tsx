@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Sheet,
   SheetContent,
@@ -35,56 +35,33 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
     }
   }, [stock]);
 
-  const updateStockMutation = useMutation({
-    mutationFn: async (data: { quantity: number }) => {
-      console.log("Enviando petición con cantidad:", data.quantity);
-      const res = await apiRequest("POST", "/api/stock/add", { 
-        quantity: data.quantity 
+  // Mutación para ventas directas y correcciones (solo afecta current_stock)
+  const handleDirectSale = async (quantity: number) => {
+    try {
+      // Para ventas (números negativos), usamos /remove
+      // Para correcciones (números positivos), usamos /add
+      const endpoint = quantity < 0 ? "/api/stock/remove" : "/api/stock/add";
+      const absoluteQuantity = Math.abs(quantity);
+
+      const res = await apiRequest("POST", endpoint, { 
+        quantity: absoluteQuantity 
       });
-      return res.json();
-    },
-    onSuccess: () => {
+
+      await res.json();
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
-        title: "Stock actualizado",
-        description: "El stock se ha actualizado correctamente"
+        title: quantity < 0 ? "Venta registrada" : "Corrección registrada",
+        description: quantity < 0 ? 
+          "La venta se ha registrado correctamente" : 
+          "La corrección se ha registrado correctamente"
       });
-    },
-    onError: (error) => {
-      console.error("Error actualizando stock:", error);
+    } catch (error) {
+      console.error("Error en operación de stock:", error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el stock",
+        description: "No se pudo realizar la operación",
         variant: "destructive"
       });
-    }
-  });
-
-  const handleDirectSale = (quantity: number) => {
-    console.log("Manejando venta directa con cantidad:", quantity);
-    if (quantity < 0) {
-      // Para restar, usamos la ruta remove
-      const res = apiRequest("POST", "/api/stock/remove", { 
-        quantity: Math.abs(quantity) 
-      }).then(r => r.json())
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
-        toast({
-          title: "Stock actualizado",
-          description: "El stock se ha actualizado correctamente"
-        });
-      })
-      .catch((error) => {
-        console.error("Error actualizando stock:", error);
-        toast({
-          title: "Error",
-          description: "No se pudo actualizar el stock",
-          variant: "destructive"
-        });
-      });
-    } else {
-      // Para sumar, usamos la mutación existente
-      updateStockMutation.mutate({ quantity });
     }
   };
 
@@ -92,71 +69,35 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Control de Stock</SheetTitle>
+          <SheetTitle>Venta SIN encargo</SheetTitle>
           <SheetDescription>
-            Gestiona el stock de pollos disponibles
+            Gestiona ventas directas y correcciones
           </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 mt-8">
-          <div className="space-y-2">
-            <Label htmlFor="initialStock">Stock Inicial</Label>
-            <Input
-              id="initialStock"
-              value={initialStock}
-              type="number"
-              min="0"
-              disabled
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="currentStock">Stock Actual</Label>
-            <Input
-              id="currentStock"
-              value={currentStock}
-              type="number"
-              min="0"
-              disabled
-            />
-          </div>
-          {stock && (
-            <div className="space-y-4 pt-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Stock Reservado:</span>
-                <span className="font-medium">{stock.reservedStock}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Stock Disponible:</span>
-                <span className="font-medium">{stock.unreservedStock}</span>
-              </div>
-            </div>
-          )}
           <div className="grid grid-cols-2 gap-4">
             <Button
               onClick={() => handleDirectSale(-0.5)}
               variant="outline"
-              disabled={updateStockMutation.isPending}
             >
               -0.5
             </Button>
             <Button
               onClick={() => handleDirectSale(0.5)}
               variant="outline"
-              disabled={updateStockMutation.isPending}
             >
               +0.5
             </Button>
             <Button
               onClick={() => handleDirectSale(-1)}
               variant="outline"
-              disabled={updateStockMutation.isPending}
             >
               -1
             </Button>
             <Button
               onClick={() => handleDirectSale(1)}
               variant="outline"
-              disabled={updateStockMutation.isPending}
             >
               +1
             </Button>

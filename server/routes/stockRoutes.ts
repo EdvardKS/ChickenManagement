@@ -6,8 +6,8 @@ import { z } from 'zod';
 const router = Router();
 
 // Schema para validar cantidad
-const sellSchema = z.object({
-  quantity: z.string()
+const directSaleSchema = z.object({
+  amount: z.string()
 });
 
 // Get current stock status
@@ -30,7 +30,7 @@ router.get("/", async (_req, res) => {
       })
       .reduce((total, order) => total + parseFloat(order.quantity.toString()), 0);
 
-    const currentStock = parseFloat((stock?.currentStock || "0").toString());
+    const currentStock = parseFloat(stock?.currentStock || "0");
 
     const response = {
       ...stock,
@@ -45,29 +45,36 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// Venta directa o corrección
-router.post("/sell", async (req, res) => {
+// Procesar venta directa
+router.post("/direct-sale", async (req, res) => {
   try {
-    const { quantity } = sellSchema.parse(req.body);
+    console.log("📦 Procesando venta directa:", req.body);
+
+    const { amount } = directSaleSchema.parse(req.body);
+    console.log("✅ Cantidad validada:", amount);
 
     const currentStock = await storage.getCurrentStock();
     if (!currentStock) throw new Error('No stock found');
 
-    // Calcular nuevo current_stock
     const current = parseFloat(currentStock.currentStock);
-    const change = parseFloat(quantity);
-    const newCurrentStock = (current + change).toString();
+    const change = parseFloat(amount);
+    const newStock = (current + change).toString();
 
-    // Actualizar stock
+    console.log("🔄 Actualizando stock:", {
+      current,
+      change,
+      newStock
+    });
+
     const updatedStock = await storage.updateStock({
-      currentStock: newCurrentStock,
-      updateType: 'direct_sale'
+      currentStock: newStock,
+      updateType: change < 0 ? 'venta_directa' : 'correccion_venta'
     });
 
     res.json(updatedStock);
   } catch (error) {
-    console.error('Error updating stock:', error);
-    res.status(500).json({ error: 'Error al actualizar el stock' });
+    console.error('❌ Error en venta directa:', error);
+    res.status(500).json({ error: 'Error al procesar la venta' });
   }
 });
 

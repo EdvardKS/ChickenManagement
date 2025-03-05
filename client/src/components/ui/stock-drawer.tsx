@@ -22,10 +22,12 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
     queryKey: ['/api/stock'] 
   });
 
-  const handleDirectSale = async (quantity: number) => {
+  const handleDirectSale = async (amount: number) => {
     try {
-      const res = await apiRequest("POST", "/api/stock/sell", { 
-        quantity: quantity.toString()
+      console.log("⚡ Enviando venta directa:", { amount });
+
+      const res = await apiRequest("POST", "/api/stock/direct-sale", { 
+        amount: amount.toString() // Enviamos como string
       });
 
       if (!res.ok) {
@@ -33,13 +35,12 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
       }
 
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
-
       toast({
-        title: "Operación registrada",
+        title: "Venta registrada",
         description: "La operación se ha registrado correctamente"
       });
     } catch (error) {
-      console.error("Error en operación:", error);
+      console.error("❌ Error en venta directa:", error);
       toast({
         title: "Error",
         description: "No se pudo realizar la operación",
@@ -58,33 +59,31 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-6 mt-8">
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              onClick={() => handleDirectSale(-0.5)}
-              variant="outline"
-            >
-              -0.5
-            </Button>
-            <Button
-              onClick={() => handleDirectSale(0.5)}
-              variant="outline"
-            >
-              +0.5
-            </Button>
-            <Button
-              onClick={() => handleDirectSale(-1)}
-              variant="outline"
-            >
-              -1
-            </Button>
-            <Button
-              onClick={() => handleDirectSale(1)}
-              variant="outline"
-            >
-              +1
-            </Button>
-          </div>
+        <div className="grid grid-cols-2 gap-4 mt-8">
+          <Button
+            onClick={() => handleDirectSale(-0.5)}
+            variant="outline"
+          >
+            -0.5
+          </Button>
+          <Button
+            onClick={() => handleDirectSale(0.5)}
+            variant="outline"
+          >
+            +0.5
+          </Button>
+          <Button
+            onClick={() => handleDirectSale(-1)}
+            variant="outline"
+          >
+            -1
+          </Button>
+          <Button
+            onClick={() => handleDirectSale(1)}
+            variant="outline"
+          >
+            +1
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

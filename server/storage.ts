@@ -248,41 +248,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateStock(stockData: Partial<Stock>): Promise<Stock> {
+    console.log("📦 Storage - Actualizando stock:", stockData);
+
     const currentStock = await this.getCurrentStock();
     if (!currentStock) throw new Error('No stock found');
 
-    // Preparar valores actualizados
+    // Mantener valores actuales excepto los que se actualizan
     const updatedValues = {
       initialStock: currentStock.initialStock,
       currentStock: stockData.currentStock || currentStock.currentStock,
+      reservedStock: currentStock.reservedStock,
+      unreservedStock: (
+        parseFloat(stockData.currentStock || currentStock.currentStock) -
+        parseFloat(currentStock.reservedStock)
+      ).toString(),
       lastUpdated: new Date()
     };
 
+    console.log("✅ Storage - Valores actualizados:", updatedValues);
+
     // Actualizar stock
-    let updatedStock: Stock;
-    if (!currentStock) {
-      const [newStock] = await db
-        .insert(stock)
-        .values({
-          date: new Date(),
-          ...updatedValues
-        })
-        .returning();
-      updatedStock = newStock;
-    } else {
-      const [updated] = await db
-        .update(stock)
-        .set(updatedValues)
-        .where(eq(stock.id, currentStock.id))
-        .returning();
-      updatedStock = updated;
-    }
+    const [updatedStock] = await db
+      .update(stock)
+      .set(updatedValues)
+      .where(eq(stock.id, currentStock.id))
+      .returning();
 
     // Registrar en historial
+    const change = parseFloat(updatedValues.currentStock) - parseFloat(currentStock.currentStock);
     await this.createStockHistory({
       stockId: updatedStock.id,
-      action: stockData.updateType || "direct_sale",
-      quantity: (parseFloat(updatedValues.currentStock) - parseFloat(currentStock.currentStock)).toString(),
+      action: stockData.updateType || "actualizacion_stock",
+      quantity: change.toString(),
       previousStock: currentStock.currentStock,
       newStock: updatedValues.currentStock,
       createdBy: "system"

@@ -42,13 +42,10 @@ export async function stockMiddleware(
       lastUpdated: new Date()
     };
 
-    // Solo actualizar initial_stock si la acción está relacionada con stock montado
+    // Para actualizaciones de stock montado, actualizamos tanto initial_stock como current_stock
     if (stockUpdate.action === 'add_mounted' || stockUpdate.action === 'remove_mounted') {
       newStock.initialStock = stockUpdate.initialStock.toFixed(1);
-      // Para actualizaciones de stock montado, no modificamos current_stock
-      delete newStock.currentStock;
-      delete newStock.reservedStock;
-      delete newStock.unreservedStock;
+      newStock.currentStock = stockUpdate.initialStock.toFixed(1); // El current_stock se iguala al initial_stock
     }
 
     console.log('Updating stock with:', newStock);
@@ -104,12 +101,14 @@ export async function prepareStockUpdate(
 
   switch (action) {
     case 'add_mounted':
-      // Aumenta solo el stock montado
+      // Aumenta tanto el stock montado como el actual
       newInitial = initial + quantity;
+      newCurrent = newInitial; // El current_stock se iguala al initial_stock
       break;
     case 'remove_mounted':
-      // Reduce solo el stock montado
+      // Reduce tanto el stock montado como el actual
       newInitial = Math.max(0, initial - quantity);
+      newCurrent = newInitial; // El current_stock se iguala al initial_stock
       break;
     case 'direct_sale':
       // Solo reduce el stock actual

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,14 +37,14 @@ interface OrderDrawerProps {
   onUpdate: (order: Order) => void;
 }
 
-export function OrderDrawer({ 
-  order, 
-  isOpen, 
-  onOpenChange, 
-  onConfirm, 
-  onDelete, 
+export function OrderDrawer({
+  order,
+  isOpen,
+  onOpenChange,
+  onConfirm,
+  onDelete,
   onError,
-  onUpdate 
+  onUpdate
 }: OrderDrawerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
@@ -54,11 +54,11 @@ export function OrderDrawer({
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-      customerEmail: order?.customerEmail || 'cliente@ejemplo.com',
-      customerPhone: order?.customerPhone || '666777888',
-      customerDNI: order?.customerDNI || '12345678A',
-      customerAddress: order?.customerAddress || 'Calle Ejemplo 123, 28001 Madrid',
-      totalAmount: order?.totalAmount ? parseFloat(order.totalAmount.toString()) : 15.90,
+      customerEmail: order?.customerEmail || '',
+      customerPhone: order?.customerPhone || '',
+      customerDNI: order?.customerDNI || '',
+      customerAddress: order?.customerAddress || '',
+      totalAmount: order?.totalAmount ? parseFloat(order.totalAmount.toString()) : 0,
     }
   });
 
@@ -66,13 +66,25 @@ export function OrderDrawer({
 
   const editForm = useForm({
     defaultValues: {
-      customerName: order?.customerName || '',
-      quantity: order?.quantity || '',
-      details: order?.details || '',
-      pickupTime: order?.pickupTime ? format(new Date(order.pickupTime), "yyyy-MM-dd'T'HH:mm") : '',
-      customerPhone: order?.customerPhone || ''
+      customerName: '',
+      quantity: '',
+      details: '',
+      pickupTime: '',
+      customerPhone: ''
     }
   });
+
+  useEffect(() => {
+    if (order) {
+      editForm.reset({
+        customerName: order.customerName || '',
+        quantity: order.quantity?.toString() || '',
+        details: order.details || '',
+        pickupTime: format(new Date(order.pickupTime), "yyyy-MM-dd'T'HH:mm"),
+        customerPhone: order.customerPhone || ''
+      });
+    }
+  }, [order]);
 
   const generateInvoiceNumber = (id: number) => {
     return id.toString().padStart(6, '0');
@@ -112,13 +124,28 @@ export function OrderDrawer({
     }
   };
 
-  const onEditSubmit = (data: any) => {
-    onUpdate({
-      ...order!,
-      ...data,
-      pickupTime: new Date(data.pickupTime)
-    });
-    setIsEditing(false);
+  const onEditSubmit = async (data: any) => {
+    try {
+      const updatedOrder = {
+        ...order!,
+        ...data,
+        pickupTime: new Date(data.pickupTime).toISOString(),
+        quantity: parseFloat(data.quantity)
+      };
+
+      await onUpdate(updatedOrder);
+      setIsEditing(false);
+      toast({
+        title: "Éxito",
+        description: "Pedido actualizado correctamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el pedido",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -136,9 +163,9 @@ export function OrderDrawer({
   const renderInvoicePreview = () => (
     <div className="p-6 border rounded-lg bg-white space-y-4">
       <div className="text-center border-b pb-4">
-        <img 
-          src="/img/corporativa/slogan-negro.png" 
-          alt="Slogan" 
+        <img
+          src="/img/corporativa/slogan-negro.png"
+          alt="Slogan"
           className="mx-auto h-16 mb-4"
         />
         <h2 className="text-3xl font-bold">Factura #{invoiceNumber}</h2>
@@ -202,17 +229,17 @@ export function OrderDrawer({
         <DrawerHeader className="text-center border-b pb-4">
           <div className="flex justify-between items-center px-4">
             <div className="flex-1"></div>
-            <img 
-              src="/img/corporativa/slogan-negro.png" 
-              alt="Slogan" 
+            <img
+              src="/img/corporativa/slogan-negro.png"
+              alt="Slogan"
               className="h-36"
             />
             <div className="flex-1 flex justify-end">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="lg" 
+                  <Button
+                    variant="ghost"
+                    size="lg"
                     className="border border-grey p-2 rounded-md"
                   >
                     <MoreVertical className="h-12 w-12" />
@@ -220,22 +247,22 @@ export function OrderDrawer({
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent align="end" className="text-xl">
-                  <DropdownMenuItem 
-                    onClick={() => setIsEditing(true)} 
+                  <DropdownMenuItem
+                    onClick={() => setIsEditing(true)}
                     className="text-xl py-4 px-6"
                   >
                     ✏️ Editar Pedido
                   </DropdownMenuItem>
                   {!order.invoicePDF && (
-                    <DropdownMenuItem 
-                      onClick={() => setIsGeneratingInvoice(true)} 
+                    <DropdownMenuItem
+                      onClick={() => setIsGeneratingInvoice(true)}
                       className="text-xl py-4 px-6"
                     >
                       🧾 Generar Factura
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem 
-                    onClick={() => onError(order.id)} 
+                  <DropdownMenuItem
+                    onClick={() => onError(order.id)}
                     className="text-xl py-4 px-6"
                   >
                     ⚠️ Marcar como Error
@@ -284,11 +311,11 @@ export function OrderDrawer({
                 </div>
                 <div>
                   <Label className="text-lg">Total (con IVA)</Label>
-                  <Input 
-                    type="number" 
-                    step="0.01" 
-                    {...register('totalAmount')} 
-                    className="mt-2" 
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...register('totalAmount')}
+                    className="mt-2"
                   />
                   {errors.totalAmount && (
                     <p className="text-red-500">{errors.totalAmount.message}</p>
@@ -334,10 +361,10 @@ export function OrderDrawer({
               </div>
               <div>
                 <Label className="text-lg">Fecha y hora</Label>
-                <Input 
-                  type="datetime-local" 
-                  {...editForm.register('pickupTime')} 
-                  className="mt-2" 
+                <Input
+                  type="datetime-local"
+                  {...editForm.register('pickupTime')}
+                  className="mt-2"
                 />
               </div>
               <div>
@@ -348,7 +375,18 @@ export function OrderDrawer({
                 <Button type="submit" className="flex-1">
                   Guardar
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
+                <Button type="button" variant="outline" onClick={() => {
+                  setIsEditing(false);
+                  if (order) {
+                    editForm.reset({
+                      customerName: order.customerName || '',
+                      quantity: order.quantity?.toString() || '',
+                      details: order.details || '',
+                      pickupTime: format(new Date(order.pickupTime), "yyyy-MM-dd'T'HH:mm"),
+                      customerPhone: order.customerPhone || ''
+                    });
+                  }
+                }} className="flex-1">
                   Cancelar
                 </Button>
               </div>
@@ -422,7 +460,7 @@ export function OrderDrawer({
               </div>
 
               <div className="flex flex-col gap-4 pt-4">
-                <Button 
+                <Button
                   onClick={() => onConfirm(order.id)}
                   className="w-full text-2xl py-8 bg-green-300 hover:bg-green-500"
                   variant="outline"
@@ -431,7 +469,7 @@ export function OrderDrawer({
                 </Button>
 
 
-                <Button 
+                <Button
                   onClick={() => onDelete(order.id)}
                   className="w-full text-2xl py-8"
                   variant="outline"

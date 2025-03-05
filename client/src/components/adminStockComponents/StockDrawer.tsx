@@ -24,11 +24,16 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   const [pendingAction, setPendingAction] = useState<{ action: 'add' | 'remove' | 'reset', quantity?: number } | null>(null);
   const { data: stock } = useQuery<Stock>({ queryKey: ['/api/stock'] });
 
-  // Mutación para actualizar el stock montado (initial_stock y current_stock)
+  // Mutación para actualizar el stock montado (initial_stock)
   const updateMountedStock = useMutation({
     mutationFn: async ({ action, quantity }: { action: 'add' | 'remove'; quantity: number }) => {
-      const res = await apiRequest("POST", `/api/stock/${action}`, { 
-        quantity,
+      const currentInitialStock = parseFloat(stock?.initialStock || "0");
+      const newInitialStock = action === 'add' ? 
+        currentInitialStock + quantity : 
+        currentInitialStock - quantity;
+
+      const res = await apiRequest("POST", `/api/stock/update`, { 
+        initialStock: newInitialStock.toString(),
         updateType: 'mounted' // Indica que es una actualización de stock montado
       });
       return res.json();
@@ -36,7 +41,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
-        title: "Stock actualizado",
+        title: "Stock montado actualizado",
         description: "El stock montado se ha actualizado correctamente"
       });
     },
@@ -178,7 +183,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
                 </Button>
               </div>
               <div className="mt-4 font-semibold">
-                {calculateBars(parseInt(stock?.initialStock || "0", 10))}
+                {calculateBars(parseFloat(stock?.initialStock || "0"))}
               </div>
             </div>
 

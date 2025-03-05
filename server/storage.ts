@@ -253,17 +253,29 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    // Asegurar que todos los campos se conviertan a string
-    const updatedValues = {
-      initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
-      currentStock: String(stockData.currentStock || currentStock?.currentStock || 0),
-      reservedStock: String(stockData.reservedStock || currentStock?.reservedStock || 0),
-      unreservedStock: String(
-        parseFloat(String(stockData.currentStock || currentStock?.currentStock || 0)) -
-        parseFloat(String(stockData.reservedStock || currentStock?.reservedStock || 0))
-      ),
-      lastUpdated: new Date()
-    };
+    let updatedValues;
+    if (stockData.updateType === 'mounted') {
+      // Si es una actualización de stock montado, solo actualizamos initial_stock
+      updatedValues = {
+        initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
+        currentStock: currentStock?.currentStock || "0",
+        reservedStock: currentStock?.reservedStock || "0",
+        unreservedStock: currentStock?.unreservedStock || "0",
+        lastUpdated: new Date()
+      };
+    } else {
+      // Para otros tipos de actualizaciones, calculamos todos los valores
+      updatedValues = {
+        initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
+        currentStock: String(stockData.currentStock || currentStock?.currentStock || 0),
+        reservedStock: String(stockData.reservedStock || currentStock?.reservedStock || 0),
+        unreservedStock: String(
+          parseFloat(String(stockData.currentStock || currentStock?.currentStock || 0)) -
+          parseFloat(String(stockData.reservedStock || currentStock?.reservedStock || 0))
+        ),
+        lastUpdated: new Date()
+      };
+    }
 
     console.log('Calculated updated values:', updatedValues);
 
@@ -291,10 +303,10 @@ export class DatabaseStorage implements IStorage {
     // Log en el historial según el tipo de actualización
     await this.createStockHistory({
       stockId: updatedStock.id,
-      action: stockData.updateType || "update", // Usar el tipo de actualización proporcionado
-      quantity: parseFloat(updatedValues.currentStock) - parseFloat(currentStock?.currentStock || "0"),
-      previousStock: parseFloat(currentStock?.currentStock || "0"),
-      newStock: parseFloat(updatedValues.currentStock),
+      action: stockData.updateType || "update",
+      quantity: parseFloat(stockData.initialStock || "0") - parseFloat(currentStock?.initialStock || "0"),
+      previousStock: parseFloat(currentStock?.initialStock || "0"),
+      newStock: parseFloat(stockData.initialStock || "0"),
       createdBy: "system"
     });
 

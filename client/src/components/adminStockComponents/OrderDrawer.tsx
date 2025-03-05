@@ -134,24 +134,29 @@ export function OrderDrawer({
 
   const onEditSubmit = async (data: any) => {
     try {
-      console.log('Form data before submission:', {
-        ...data,
-        quantity: selectedQuantity,
-        pickupTime: new Date(data.pickupTime).toISOString()
-      });
+      const pickupTime = new Date(data.pickupTime);
+
+      if (isNaN(pickupTime.getTime())) {
+        toast({
+          title: "Error",
+          description: "La fecha de recogida no es válida",
+          variant: "destructive"
+        });
+        return;
+      }
 
       const updatedOrder = {
         ...order!,
         customerName: data.customerName,
-        quantity: selectedQuantity, // Keep as string to match DB schema
+        quantity: selectedQuantity,
         details: data.details,
-        pickupTime: new Date(data.pickupTime).toISOString(),
-        customerPhone: data.customerPhone,
+        pickupTime: pickupTime.toISOString(),
+        customerPhone: data.customerPhone || null,
         status: order!.status,
         deleted: order!.deleted
       };
 
-      console.log('Sending updated order:', updatedOrder);
+      console.log('Enviando orden actualizada:', updatedOrder);
       await onUpdate(updatedOrder);
       setIsEditing(false);
       toast({
@@ -159,7 +164,7 @@ export function OrderDrawer({
         description: "Pedido actualizado correctamente"
       });
     } catch (error) {
-      console.error('Error updating order:', error);
+      console.error('Error actualizando pedido:', error);
       toast({
         title: "Error",
         description: "No se pudo actualizar el pedido",
@@ -174,7 +179,7 @@ export function OrderDrawer({
     setIsPreviewingInvoice(false);
     reset();
     editForm.reset();
-    setSelectedQuantity(""); //added to reset the select
+    setSelectedQuantity(""); 
   };
 
   if (!order) return null;

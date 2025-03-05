@@ -29,7 +29,7 @@ export interface IStorage {
   getOrders(): Promise<Order[]>;
   getOrder(id: number): Promise<Order | undefined>;
   createOrder(order: InsertOrder): Promise<Order>;
-  updateOrder(id: number, order: Partial<Order>): Promise<Order>;
+  updateOrder(id: number, orderData: Partial<Order>): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
 
   // Stock
@@ -156,9 +156,16 @@ export class DatabaseStorage implements IStorage {
     const oldOrder = await this.getOrder(id);
     const now = new Date();
 
+    // Ensure pickupTime is a Date object
+    const updatedData = {
+      ...orderData,
+      pickupTime: orderData.pickupTime ? new Date(orderData.pickupTime) : undefined,
+      updatedAt: now
+    };
+
     const [updated] = await db
       .update(orders)
-      .set({ ...orderData, updatedAt: now })
+      .set(updatedData)
       .where(eq(orders.id, id))
       .returning();
 

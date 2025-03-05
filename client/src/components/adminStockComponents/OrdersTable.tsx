@@ -32,17 +32,20 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleConfirm = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}/confirm`);
+      await apiRequest("PATCH", `/api/orders/${orderId}`, { 
+        status: 'delivered',
+        deleted: true 
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setIsDrawerOpen(false);
       toast({
-        title: "Pedido confirmado",
-        description: "El pedido ha sido confirmado exitosamente",
+        title: "Pedido entregado",
+        description: "El pedido ha sido marcado como entregado exitosamente",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo confirmar el pedido",
+        description: "No se pudo marcar el pedido como entregado",
         variant: "destructive",
       });
     }
@@ -50,7 +53,10 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleDelete = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}`, { status: 'cancelled' });
+      await apiRequest("PATCH", `/api/orders/${orderId}`, { 
+        status: 'cancelled',
+        deleted: true 
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setIsDrawerOpen(false);
       toast({

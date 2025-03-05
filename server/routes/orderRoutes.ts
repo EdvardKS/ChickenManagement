@@ -14,6 +14,7 @@ const updateOrderSchema = z.object({
   details: z.string().nullable(),
   pickupTime: z.string(),
   customerPhone: z.string().nullable(),
+  customerEmail: z.string().nullable(),
   status: z.string().nullable(),
   deleted: z.boolean().nullable()
 });
@@ -54,7 +55,7 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
 
       if (req.body.status === 'cancelled' && currentOrder.status !== 'cancelled') {
         req.stockUpdate = await prepareStockUpdate(
-          'cancelled',
+          'cancel_order',
           parseFloat(currentOrder.quantity.toString()),
           'admin'
         );
@@ -189,19 +190,6 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
   } catch (error) {
     console.error('Error marking order as error:', error);
     res.status(500).json({ error: 'Error al marcar el pedido como error' });
-  }
-});
-
-
-// Delete order
-router.delete("/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    await storage.deleteOrder(id);
-    res.status(204).end();
-  } catch (error) {
-    console.error('Error deleting order:', error);
-    res.status(500).json({ error: 'Error al eliminar el pedido' });
   }
 });
 

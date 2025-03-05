@@ -35,7 +35,7 @@ export interface IStorage {
   // Stock
   getCurrentStock(): Promise<Stock | undefined>;
   updateStock(stockData: Partial<Stock>): Promise<Stock>;
-  createStockHistory(history: InsertStockHistory): Promise<StockHistory>;
+  createStockHistory(history: StockHistory): Promise<StockHistory>;
 
   // Business Hours
   getBusinessHours(): Promise<BusinessHours[]>;
@@ -255,48 +255,45 @@ export class DatabaseStorage implements IStorage {
 
     // Mantener valores actuales excepto los que se actualizan
     const updatedValues = {
-      initialStock: currentStock.initialStock,
+      initialStock: stockData.initialStock || currentStock.initialStock,
       currentStock: stockData.currentStock || currentStock.currentStock,
-      reservedStock: currentStock.reservedStock,
-      unreservedStock: (
+      reservedStock: stockData.reservedStock || currentStock.reservedStock,
+      unreservedStock: stockData.unreservedStock || (
         parseFloat(stockData.currentStock || currentStock.currentStock) -
-        parseFloat(currentStock.reservedStock)
+        parseFloat(stockData.reservedStock || currentStock.reservedStock)
       ).toString(),
       lastUpdated: new Date()
     };
 
     console.log("✅ Storage - Valores actualizados:", updatedValues);
 
-    // Actualizar stock
     const [updatedStock] = await db
       .update(stock)
       .set(updatedValues)
       .where(eq(stock.id, currentStock.id))
       .returning();
 
-    // Registrar en historial
-    const change = parseFloat(updatedValues.currentStock) - parseFloat(currentStock.currentStock);
-    await this.createStockHistory({
-      stockId: updatedStock.id,
-      action: stockData.updateType || "actualizacion_stock",
-      quantity: change.toString(),
-      previousStock: currentStock.currentStock,
-      newStock: updatedValues.currentStock,
-      createdBy: "system"
-    });
-
     return updatedStock;
   }
 
-  async createStockHistory(history: InsertStockHistory): Promise<StockHistory> {
+  async createStockHistory(history: StockHistory): Promise<StockHistory> {
     console.log('Creating stock history:', history);
+    // Extraer solo los campos necesarios para la inserción
+    const historyToInsert = {
+      stockId: history.stockId,
+      action: history.action,
+      quantity: history.quantity,
+      previousStock: history.previousStock,
+      newStock: history.newStock,
+      createdBy: history.createdBy,
+      createdAt: history.createdAt
+    };
+
     const [newHistory] = await db
       .insert(stockHistory)
-      .values({
-        ...history,
-        createdAt: new Date()
-      })
+      .values(historyToInsert)
       .returning();
+
     console.log('Created stock history:', newHistory);
     return newHistory;
   }

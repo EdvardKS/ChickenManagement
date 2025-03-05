@@ -9,6 +9,9 @@ type StockAction =
   | 'direct_sale_correction'
   | 'new_order'    // Para pedidos (reserved_stock)
   | 'cancel_order'
+  | 'order_delivered'
+  | 'order_error'
+  | 'order_update'
   | 'reset_stock';
 
 interface StockUpdate {
@@ -35,44 +38,34 @@ export async function stockMiddleware(
     const currentStock = await storage.getCurrentStock();
     if (!currentStock) throw new Error('No stock found');
 
-    let newStock: Partial<Stock> = {
+    // Extraer solo los campos permitidos para la actualización del stock
+    const { initialStock, currentStock: newCurrentStock, reservedStock, unreservedStock } = stockUpdate;
+
+    const newStock: Partial<Stock> = {
+      initialStock: initialStock.toString(),
+      currentStock: newCurrentStock.toString(),
+      reservedStock: reservedStock.toString(),
+      unreservedStock: unreservedStock.toString(),
       lastUpdated: new Date()
     };
 
-    // Para ventas directas y correcciones
-    if (stockUpdate.action === 'direct_sale' || stockUpdate.action === 'direct_sale_correction') {
-      console.log('[Stock Middleware] Procesando venta/corrección:', {
-        action: stockUpdate.action,
-        currentStock: stockUpdate.currentStock,
-        quantity: stockUpdate.quantity
-      });
-
-      newStock.currentStock = stockUpdate.currentStock.toFixed(1);
-      // Mantener el initial_stock sin cambios
-      newStock.initialStock = currentStock.initialStock;
-    }
-
     console.log('[Stock Middleware] Actualizando stock con:', newStock);
 
-    const updatedStock = await storage.updateStock({
-      ...newStock,
-      updateType: stockUpdate.action
-    });
+    const updatedStock = await storage.updateStock(newStock);
 
     console.log('[Stock Middleware] Stock actualizado:', updatedStock);
 
     // Crear entrada en el historial
-    const historyEntry: Partial<StockHistory> = {
+    await storage.createStockHistory({
+      id: 0, // La base de datos generará el ID real
       stockId: updatedStock.id,
       action: stockUpdate.action,
-      quantity: stockUpdate.quantity.toFixed(1),
+      quantity: stockUpdate.quantity.toString(),
       previousStock: currentStock.currentStock,
       newStock: updatedStock.currentStock,
-      createdBy: stockUpdate.source || 'system'
-    };
-
-    await storage.createStockHistory(historyEntry);
-    console.log('[Stock Middleware] Historial creado:', historyEntry);
+      createdBy: stockUpdate.source || 'system',
+      createdAt: new Date()
+    });
 
     next();
   } catch (error) {
@@ -136,6 +129,17 @@ export async function prepareStockUpdate(
       break;
     case 'cancel_order':
       newReserved = Math.max(0, reserved - quantity);
+      break;
+    case 'order_delivered':
+      newCurrent = Math.max(0, current - quantity);
+      newReserved = Math.max(0, reserved - quantity);
+      break;
+    case 'order_error':
+      newReserved = Math.max(0, reserved - quantity);
+      break;
+    case 'order_update':
+      // quantity aquí representa la diferencia (nuevo - antiguo)
+      newReserved = Math.max(0, reserved + quantity);
       break;
     case 'reset_stock':
       newInitial = 0;

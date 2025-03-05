@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { type Request, Response } from 'express';
 import { storage } from '../storage';
 import { z } from 'zod';
+import { stockMiddleware, prepareStockUpdate } from '../middleware/stockMiddleware';
 
 const router = Router();
 
 // Schema para validar cantidad
-const directSaleSchema = z.object({
+const stockUpdateSchema = z.object({
   amount: z.string()
 });
 
@@ -46,32 +47,27 @@ router.get("/", async (_req, res) => {
 });
 
 // Procesar venta directa
-router.post("/direct-sale", async (req, res) => {
+router.post("/direct-sale", async (req: Request & { stockUpdate?: any }, res) => {
   try {
     console.log("📦 Procesando venta directa:", req.body);
 
-    const { amount } = directSaleSchema.parse(req.body);
+    const { amount } = stockUpdateSchema.parse(req.body);
     console.log("✅ Cantidad validada:", amount);
 
-    const currentStock = await storage.getCurrentStock();
-    if (!currentStock) throw new Error('No stock found');
+    req.stockUpdate = await prepareStockUpdate(
+      'direct_sale',
+      parseFloat(amount),
+      'admin'
+    );
 
-    const current = parseFloat(currentStock.currentStock);
-    const change = parseFloat(amount);
-    const newStock = (current + change).toString();
-
-    console.log("🔄 Actualizando stock:", {
-      current,
-      change,
-      newStock
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
     });
 
-    const updatedStock = await storage.updateStock({
-      currentStock: newStock,
-      updateType: change < 0 ? 'venta_directa' : 'correccion_venta'
-    });
-
-    res.json(updatedStock);
+    res.json({ success: true });
   } catch (error) {
     console.error('❌ Error en venta directa:', error);
     res.status(500).json({ error: 'Error al procesar la venta' });

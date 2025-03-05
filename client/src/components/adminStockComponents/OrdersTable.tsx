@@ -32,13 +32,24 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleConfirm = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}/delivered`, {});
+      // Get the order before confirming to have access to the quantity
+      const order = orders?.find(o => o.id === orderId);
+      if (!order) {
+        throw new Error('Pedido no encontrado');
+      }
+
+      await apiRequest("PATCH", `/api/orders/${orderId}/confirm`, {
+        quantity: order.quantity,
+        status: "completed",
+        updateType: "order_delivered"
+      });
+
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido entregado",
-        description: "El pedido ha sido marcado como entregado exitosamente",
+        description: "El pedido ha sido marcado como entregado y el stock ha sido actualizado",
       });
     } catch (error) {
       console.error('Error al confirmar pedido:', error);
@@ -52,13 +63,23 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleDelete = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}/canceled`, {});
+      const order = orders?.find(o => o.id === orderId);
+      if (!order) {
+        throw new Error('Pedido no encontrado');
+      }
+
+      await apiRequest("PATCH", `/api/orders/${orderId}/cancel`, {
+        quantity: order.quantity,
+        status: "cancelled",
+        updateType: "cancel_order"
+      });
+
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido cancelado",
-        description: "El pedido ha sido cancelado exitosamente",
+        description: "El pedido ha sido cancelado y el stock ha sido actualizado",
       });
     } catch (error) {
       console.error('Error al cancelar pedido:', error);
@@ -72,13 +93,23 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleError = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}/error`, {});
+      const order = orders?.find(o => o.id === orderId);
+      if (!order) {
+        throw new Error('Pedido no encontrado');
+      }
+
+      await apiRequest("PATCH", `/api/orders/${orderId}/error`, {
+        quantity: order.quantity,
+        status: "error",
+        updateType: "order_error"
+      });
+
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido marcado como error",
-        description: "El pedido ha sido marcado como error exitosamente",
+        description: "El pedido ha sido marcado como error y el stock ha sido actualizado",
       });
     } catch (error) {
       console.error('Error al marcar pedido como error:', error);
@@ -92,12 +123,25 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleUpdate = async (order: Order) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${order.id}`, order);
+      const originalOrder = orders?.find(o => o.id === order.id);
+      if (!originalOrder) {
+        throw new Error('Pedido original no encontrado');
+      }
+
+      // Calculate stock difference for update
+      const quantityDiff = parseFloat(order.quantity) - parseFloat(originalOrder.quantity);
+
+      await apiRequest("PATCH", `/api/orders/${order.id}`, {
+        ...order,
+        quantityDiff,
+        updateType: "order_update"
+      });
+
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Pedido actualizado",
-        description: "El pedido ha sido actualizado exitosamente",
+        description: "El pedido ha sido actualizado y el stock ha sido ajustado",
       });
     } catch (error) {
       console.error('Error al actualizar pedido:', error);

@@ -125,6 +125,18 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
+    // Validate required fields
+    if (!orderData.customerName || !orderData.quantity || !orderData.pickupTime) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+
+    // Ensure quantity is stored as string
+    const updatedOrderData = {
+      ...orderData,
+      quantity: orderData.quantity.toString(),
+      updatedAt: new Date()
+    };
+
     if (orderData.status === 'cancelled' && currentOrder.status !== 'cancelled') {
       req.stockUpdate = await prepareStockUpdate(
         'order_cancelled',
@@ -140,7 +152,10 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
       });
     }
 
-    const updated = await storage.updateOrder(id, orderData);
+    const updated = await storage.updateOrder(id, updatedOrderData);
+    if (!updated) {
+      return res.status(500).json({ error: 'Error al actualizar el pedido' });
+    }
     res.json(updated);
   } catch (error) {
     console.error('Error updating order:', error);

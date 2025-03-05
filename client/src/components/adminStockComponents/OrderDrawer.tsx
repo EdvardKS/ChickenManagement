@@ -143,7 +143,7 @@ export function OrderDrawer({
       const updatedOrder = {
         ...order!,
         customerName: data.customerName,
-        quantity: parseFloat(selectedQuantity),
+        quantity: selectedQuantity, // Keep as string to match DB schema
         details: data.details,
         pickupTime: new Date(data.pickupTime).toISOString(),
         customerPhone: data.customerPhone,

@@ -3,8 +3,86 @@ import { type Request, Response } from 'express';
 import { storage } from '../storage';
 import { stockMiddleware, prepareStockUpdate } from '../middleware/stockMiddleware';
 import { insertOrderSchema } from '@shared/schema';
+import { z } from 'zod';
 
 const router = Router();
+
+// Update order schema for PATCH requests
+const updateOrderSchema = z.object({
+  customerName: z.string(),
+  quantity: z.string(),
+  details: z.string().nullable(),
+  pickupTime: z.string(),
+  customerPhone: z.string().nullable(),
+  status: z.string().nullable(),
+  deleted: z.boolean().nullable()
+});
+
+// Update order status
+router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    console.log('🔄 Update Order - Request received for order:', id);
+    console.log('📝 Update Order - Request body:', req.body);
+
+    const currentOrder = await storage.getOrder(id);
+    console.log('📌 Update Order - Current order state:', currentOrder);
+
+    if (!currentOrder) {
+      console.log('❌ Update Order - Order not found:', id);
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    try {
+      // Validate the request body
+      const validatedData = updateOrderSchema.parse(req.body);
+      console.log('✅ Update Order - Validated data:', validatedData);
+
+      // Convert pickupTime string to Date
+      const pickupTime = new Date(validatedData.pickupTime);
+      if (isNaN(pickupTime.getTime())) {
+        throw new Error('Invalid pickup time');
+      }
+
+      const updatedOrderData = {
+        ...validatedData,
+        pickupTime,
+        updatedAt: new Date()
+      };
+
+      console.log('📤 Update Order - Preparing to update with data:', updatedOrderData);
+
+      if (req.body.status === 'cancelled' && currentOrder.status !== 'cancelled') {
+        req.stockUpdate = await prepareStockUpdate(
+          'cancelled',
+          parseFloat(currentOrder.quantity.toString()),
+          'admin'
+        );
+
+        await new Promise((resolve, reject) => {
+          stockMiddleware(req, res, (err) => {
+            if (err) reject(err);
+            else resolve(undefined);
+          });
+        });
+      }
+
+      const updated = await storage.updateOrder(id, updatedOrderData);
+      console.log('✨ Update Order - Successfully updated:', updated);
+
+      res.json(updated);
+    } catch (validationError) {
+      console.error('❌ Update Order - Validation error:', validationError);
+      return res.status(400).json({ 
+        error: 'Datos inválidos', 
+        details: validationError instanceof Error ? validationError.message : 'Error de validación'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Update Order - Server error:', error);
+    res.status(500).json({ error: 'Error al actualizar el pedido' });
+  }
+});
 
 // Get all orders
 router.get("/", async (_req, res) => {
@@ -114,54 +192,6 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
   }
 });
 
-// Update order status (including cancellation)
-router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const orderData = req.body;
-    const currentOrder = await storage.getOrder(id);
-
-    if (!currentOrder) {
-      return res.status(404).json({ error: 'Pedido no encontrado' });
-    }
-
-    // Validate required fields
-    if (!orderData.customerName || !orderData.quantity || !orderData.pickupTime) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
-    }
-
-    // Ensure quantity is stored as string
-    const updatedOrderData = {
-      ...orderData,
-      quantity: orderData.quantity.toString(),
-      updatedAt: new Date()
-    };
-
-    if (orderData.status === 'cancelled' && currentOrder.status !== 'cancelled') {
-      req.stockUpdate = await prepareStockUpdate(
-        'order_cancelled',
-        parseFloat(currentOrder.quantity.toString()),
-        'admin'
-      );
-
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(undefined);
-        });
-      });
-    }
-
-    const updated = await storage.updateOrder(id, updatedOrderData);
-    if (!updated) {
-      return res.status(500).json({ error: 'Error al actualizar el pedido' });
-    }
-    res.json(updated);
-  } catch (error) {
-    console.error('Error updating order:', error);
-    res.status(500).json({ error: 'Error al actualizar el pedido' });
-  }
-});
 
 // Delete order
 router.delete("/:id", async (req, res) => {

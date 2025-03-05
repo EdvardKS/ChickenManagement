@@ -134,8 +134,9 @@ export function OrderDrawer({
 
   const onEditSubmit = async (data: any) => {
     try {
-      const pickupTime = new Date(data.pickupTime);
+      console.log('🔄 OrderDrawer - Edit Submit - Starting with data:', data);
 
+      const pickupTime = new Date(data.pickupTime);
       if (isNaN(pickupTime.getTime())) {
         toast({
           title: "Error",
@@ -149,22 +150,23 @@ export function OrderDrawer({
         ...order!,
         customerName: data.customerName,
         quantity: selectedQuantity,
-        details: data.details,
+        details: data.details || null,
         pickupTime: pickupTime.toISOString(),
         customerPhone: data.customerPhone || null,
         status: order!.status,
         deleted: order!.deleted
       };
 
-      console.log('Enviando orden actualizada:', updatedOrder);
+      console.log('📤 OrderDrawer - Edit Submit - Sending updated order:', updatedOrder);
       await onUpdate(updatedOrder);
+
       setIsEditing(false);
       toast({
         title: "Éxito",
         description: "Pedido actualizado correctamente"
       });
     } catch (error) {
-      console.error('Error actualizando pedido:', error);
+      console.error('❌ OrderDrawer - Edit Submit - Error:', error);
       toast({
         title: "Error",
         description: "No se pudo actualizar el pedido",

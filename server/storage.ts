@@ -153,32 +153,50 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrder(id: number, orderData: Partial<Order>): Promise<Order> {
-    const oldOrder = await this.getOrder(id);
-    const now = new Date();
+    console.log('📝 Storage - Update Order - Starting update for order:', id);
+    console.log('📦 Storage - Update Order - Input data:', orderData);
 
-    // Ensure pickupTime is a Date object
+    const oldOrder = await this.getOrder(id);
+    console.log('📌 Storage - Update Order - Old order state:', oldOrder);
+
+    if (!oldOrder) {
+      console.log('❌ Storage - Update Order - Order not found:', id);
+      throw new Error('Order not found');
+    }
+
+    // Ensure data types match the schema
     const updatedData = {
       ...orderData,
-      pickupTime: orderData.pickupTime ? new Date(orderData.pickupTime) : undefined,
-      updatedAt: now
+      quantity: orderData.quantity?.toString(),
+      pickupTime: orderData.pickupTime instanceof Date ? orderData.pickupTime : new Date(orderData.pickupTime as string),
+      updatedAt: new Date()
     };
 
-    const [updated] = await db
-      .update(orders)
-      .set(updatedData)
-      .where(eq(orders.id, id))
-      .returning();
+    console.log('🔄 Storage - Update Order - Processed data for update:', updatedData);
 
-    // Registrar en el log
-    await db.insert(orderLogs).values({
-      orderId: id,
-      action: 'update',
-      previousState: JSON.stringify(oldOrder),
-      newState: JSON.stringify(updated),
-      createdBy: 'system'
-    });
+    try {
+      const [updated] = await db
+        .update(orders)
+        .set(updatedData)
+        .where(eq(orders.id, id))
+        .returning();
 
-    return updated;
+      console.log('✅ Storage - Update Order - Successfully updated order:', updated);
+
+      // Log the change
+      await db.insert(orderLogs).values({
+        orderId: id,
+        action: 'update',
+        previousState: JSON.stringify(oldOrder),
+        newState: JSON.stringify(updated),
+        createdBy: 'system'
+      });
+
+      return updated;
+    } catch (error) {
+      console.error('❌ Storage - Update Order - Database error:', error);
+      throw error;
+    }
   }
 
   async deleteOrder(id: number): Promise<void> {

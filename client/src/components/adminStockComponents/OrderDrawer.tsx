@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -49,6 +56,7 @@ export function OrderDrawer({
   const [isEditing, setIsEditing] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [isPreviewingInvoice, setIsPreviewingInvoice] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState<string>("");
   const { toast } = useToast();
 
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm({
@@ -67,7 +75,6 @@ export function OrderDrawer({
   const editForm = useForm({
     defaultValues: {
       customerName: '',
-      quantity: '',
       details: '',
       pickupTime: '',
       customerPhone: ''
@@ -76,13 +83,14 @@ export function OrderDrawer({
 
   useEffect(() => {
     if (order) {
+      console.log('Setting form values:', order);
       editForm.reset({
         customerName: order.customerName || '',
-        quantity: order.quantity?.toString() || '',
         details: order.details || '',
         pickupTime: format(new Date(order.pickupTime), "yyyy-MM-dd'T'HH:mm"),
         customerPhone: order.customerPhone || ''
       });
+      setSelectedQuantity(order.quantity?.toString() || "1");
     }
   }, [order]);
 
@@ -126,15 +134,24 @@ export function OrderDrawer({
 
   const onEditSubmit = async (data: any) => {
     try {
+      console.log('Form data before submission:', {
+        ...data,
+        quantity: selectedQuantity,
+        pickupTime: new Date(data.pickupTime).toISOString()
+      });
+
       const updatedOrder = {
         ...order!,
         customerName: data.customerName,
-        quantity: parseFloat(data.quantity),
+        quantity: parseFloat(selectedQuantity),
         details: data.details,
         pickupTime: new Date(data.pickupTime).toISOString(),
-        customerPhone: data.customerPhone
+        customerPhone: data.customerPhone,
+        status: order!.status,
+        deleted: order!.deleted
       };
 
+      console.log('Sending updated order:', updatedOrder);
       await onUpdate(updatedOrder);
       setIsEditing(false);
       toast({
@@ -157,6 +174,7 @@ export function OrderDrawer({
     setIsPreviewingInvoice(false);
     reset();
     editForm.reset();
+    setSelectedQuantity(""); //added to reset the select
   };
 
   if (!order) return null;
@@ -225,6 +243,11 @@ export function OrderDrawer({
       </div>
     </div>
   );
+
+  const quantityOptions = [
+    "0.5", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5",
+    "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10"
+  ];
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -355,8 +378,22 @@ export function OrderDrawer({
                 <Input {...editForm.register('customerName')} className="mt-2" />
               </div>
               <div>
-                <Label className="text-lg">Cantidad</Label>
-                <Input {...editForm.register('quantity')} className="mt-2" />
+                <Label className="text-lg">Cantidad de Pollos</Label>
+                <Select
+                  value={selectedQuantity}
+                  onValueChange={setSelectedQuantity}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Seleccionar cantidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {quantityOptions.map((qty) => (
+                      <SelectItem key={qty} value={qty}>
+                        {qty} {qty === "1" ? "pollo" : "pollos"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-lg">Detalles</Label>
@@ -383,11 +420,11 @@ export function OrderDrawer({
                   if (order) {
                     editForm.reset({
                       customerName: order.customerName || '',
-                      quantity: order.quantity?.toString() || '',
                       details: order.details || '',
                       pickupTime: format(new Date(order.pickupTime), "yyyy-MM-dd'T'HH:mm"),
                       customerPhone: order.customerPhone || ''
                     });
+                    setSelectedQuantity(order.quantity?.toString() || "1");
                   }
                 }} className="flex-1">
                   Cancelar

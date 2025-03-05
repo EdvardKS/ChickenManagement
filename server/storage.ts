@@ -248,65 +248,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateStock(stockData: Partial<Stock>): Promise<Stock> {
-    console.log('Updating stock with data:', stockData);
     const currentStock = await this.getCurrentStock();
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+    if (!currentStock) throw new Error('No stock found');
 
-    let updatedValues;
-    if (stockData.updateType === 'mounted') {
-      // Si es una actualización de stock montado, actualizamos initial_stock y current_stock
-      updatedValues = {
-        initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
-        currentStock: String(stockData.initialStock || currentStock?.initialStock || 0),
-        reservedStock: currentStock?.reservedStock || "0",
-        unreservedStock: String(
-          parseFloat(String(stockData.initialStock || currentStock?.initialStock || 0)) -
-          parseFloat(currentStock?.reservedStock || "0")
-        ),
-        lastUpdated: new Date()
-      };
-    } else if (stockData.updateType === 'direct_sale' || stockData.updateType === 'direct_sale_correction') {
-      // Para ventas directas o correcciones, solo actualizamos current_stock
-      updatedValues = {
-        initialStock: currentStock?.initialStock || "0",
-        currentStock: String(stockData.currentStock || currentStock?.currentStock || 0),
-        reservedStock: currentStock?.reservedStock || "0",
-        unreservedStock: String(
-          parseFloat(String(stockData.currentStock || currentStock?.currentStock || 0)) -
-          parseFloat(currentStock?.reservedStock || "0")
-        ),
-        lastUpdated: new Date()
-      };
-    } else {
-      // Para otros tipos de actualizaciones
-      updatedValues = {
-        initialStock: String(stockData.initialStock || currentStock?.initialStock || 0),
-        currentStock: String(stockData.currentStock || currentStock?.currentStock || 0),
-        reservedStock: String(stockData.reservedStock || currentStock?.reservedStock || 0),
-        unreservedStock: String(
-          parseFloat(String(stockData.currentStock || currentStock?.currentStock || 0)) -
-          parseFloat(String(stockData.reservedStock || currentStock?.reservedStock || 0))
-        ),
-        lastUpdated: new Date()
-      };
-    }
+    // Preparar valores actualizados
+    const updatedValues = {
+      initialStock: currentStock.initialStock,
+      currentStock: stockData.currentStock || currentStock.currentStock,
+      lastUpdated: new Date()
+    };
 
-    console.log('Calculated updated values:', updatedValues);
-
+    // Actualizar stock
     let updatedStock: Stock;
     if (!currentStock) {
-      console.log('Creating new stock entry');
       const [newStock] = await db
         .insert(stock)
         .values({
-          date: now,
+          date: new Date(),
           ...updatedValues
         })
         .returning();
       updatedStock = newStock;
     } else {
-      console.log('Updating existing stock:', currentStock.id);
       const [updated] = await db
         .update(stock)
         .set(updatedValues)
@@ -315,19 +278,13 @@ export class DatabaseStorage implements IStorage {
       updatedStock = updated;
     }
 
-    // Log en el historial según el tipo de actualización
+    // Registrar en historial
     await this.createStockHistory({
       stockId: updatedStock.id,
-      action: stockData.updateType || "update",
-      quantity: stockData.updateType?.includes('mounted')
-        ? parseFloat(updatedValues.initialStock) - parseFloat(currentStock?.initialStock || "0")
-        : parseFloat(updatedValues.currentStock) - parseFloat(currentStock?.currentStock || "0"),
-      previousStock: stockData.updateType?.includes('mounted')
-        ? currentStock?.initialStock || "0"
-        : currentStock?.currentStock || "0",
-      newStock: stockData.updateType?.includes('mounted')
-        ? updatedValues.initialStock
-        : updatedValues.currentStock,
+      action: stockData.updateType || "direct_sale",
+      quantity: (parseFloat(updatedValues.currentStock) - parseFloat(currentStock.currentStock)).toString(),
+      previousStock: currentStock.currentStock,
+      newStock: updatedValues.currentStock,
       createdBy: "system"
     });
 

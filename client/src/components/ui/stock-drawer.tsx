@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sheet,
@@ -23,43 +22,24 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
     queryKey: ['/api/stock'] 
   });
 
-  // Función para manejar ventas directas y correcciones
   const handleDirectSale = async (quantity: number) => {
     try {
-      console.log("[StockDrawer] Iniciando operación con cantidad:", quantity);
-
-      // Determinamos el endpoint basado en si es venta o corrección
-      const endpoint = quantity < 0 ? "/api/stock/remove" : "/api/stock/add";
-      const absoluteQuantity = Math.abs(quantity);
-
-      console.log("[StockDrawer] Preparando petición:", {
-        endpoint,
-        quantity: absoluteQuantity.toString()
-      });
-
-      // Realizamos la petición
-      const res = await apiRequest("POST", endpoint, { 
-        quantity: absoluteQuantity.toString(),
-        updateType: quantity < 0 ? 'direct_sale' : 'direct_sale_correction'
+      const res = await apiRequest("POST", "/api/stock/sell", { 
+        quantity: quantity.toString()
       });
 
       if (!res.ok) {
         throw new Error(`Error en la respuesta: ${res.status}`);
       }
 
-      const data = await res.json();
-      console.log("[StockDrawer] Respuesta recibida:", data);
-
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
 
       toast({
-        title: quantity < 0 ? "Venta registrada" : "Corrección registrada",
-        description: quantity < 0 ? 
-          "La venta se ha registrado correctamente" : 
-          "La corrección se ha registrado correctamente"
+        title: "Operación registrada",
+        description: "La operación se ha registrado correctamente"
       });
     } catch (error) {
-      console.error("[StockDrawer] Error en operación:", error);
+      console.error("Error en operación:", error);
       toast({
         title: "Error",
         description: "No se pudo realizar la operación",
@@ -74,7 +54,7 @@ export function StockDrawer({ open, onOpenChange }: StockDrawerProps) {
         <SheetHeader>
           <SheetTitle>Venta SIN encargo</SheetTitle>
           <SheetDescription>
-            Gestiona ventas directas y correcciones
+            Gestiona ventas directas
           </SheetDescription>
         </SheetHeader>
 

@@ -32,17 +32,16 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleConfirm = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}`, { 
-        status: 'delivered',
-        deleted: true 
-      });
+      await apiRequest("PATCH", `/api/orders/${orderId}/delivered`, {});
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido entregado",
         description: "El pedido ha sido marcado como entregado exitosamente",
       });
     } catch (error) {
+      console.error('Error al confirmar pedido:', error);
       toast({
         title: "Error",
         description: "No se pudo marcar el pedido como entregado",
@@ -53,17 +52,16 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleDelete = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}`, { 
-        status: 'cancelled',
-        deleted: true 
-      });
+      await apiRequest("PATCH", `/api/orders/${orderId}/canceled`, {});
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido cancelado",
         description: "El pedido ha sido cancelado exitosamente",
       });
     } catch (error) {
+      console.error('Error al cancelar pedido:', error);
       toast({
         title: "Error",
         description: "No se pudo cancelar el pedido",
@@ -74,14 +72,16 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleError = async (orderId: number) => {
     try {
-      await apiRequest("PATCH", `/api/orders/${orderId}/error`);
+      await apiRequest("PATCH", `/api/orders/${orderId}/error`, {});
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido marcado como error",
         description: "El pedido ha sido marcado como error exitosamente",
       });
     } catch (error) {
+      console.error('Error al marcar pedido como error:', error);
       toast({
         title: "Error",
         description: "No se pudo marcar el pedido como error",
@@ -94,17 +94,28 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     try {
       await apiRequest("PATCH", `/api/orders/${order.id}`, order);
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Pedido actualizado",
         description: "El pedido ha sido actualizado exitosamente",
       });
     } catch (error) {
+      console.error('Error al actualizar pedido:', error);
       toast({
         title: "Error",
         description: "No se pudo actualizar el pedido",
         variant: "destructive",
       });
     }
+  };
+
+  const handleWhatsApp = (order: Order) => {
+    if (!order.customerPhone) return;
+
+    const message = `Hola ${order.customerName}, tu pedido de ${formatQuantity(order.quantity)} pollos está listo.`;
+    const encodedMessage = encodeURIComponent(message);
+    const phone = order.customerPhone.replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
   };
 
   const ordersByDate = orders?.filter(order => !order.deleted)
@@ -139,7 +150,18 @@ export function OrdersTable({ orders }: OrdersTableProps) {
             <TableBody>
               {dateOrders.map((order, index) => (
                 <TableRow key={order.id} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
-                  <TableCell className="w-3/12 text-lg font-medium">{order.customerName}</TableCell>
+                  <TableCell className="w-3/12 text-lg font-medium">
+                    {order.customerName}
+                    {order.customerPhone && (
+                      <Button
+                        variant="ghost"
+                        className="ml-2 p-1"
+                        onClick={() => handleWhatsApp(order)}
+                      >
+                        📱
+                      </Button>
+                    )}
+                  </TableCell>
                   <TableCell className="w-2/12 text-lg text-center">{formatQuantity(order.quantity)}</TableCell>
                   <TableCell className="w-2/12 text-lg text-center">
                     {format(new Date(order.pickupTime), 'HH:mm')}

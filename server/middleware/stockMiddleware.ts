@@ -45,11 +45,18 @@ export async function stockMiddleware(
     // Solo actualizar initial_stock si la acción está relacionada con stock montado
     if (stockUpdate.action === 'add_mounted' || stockUpdate.action === 'remove_mounted') {
       newStock.initialStock = stockUpdate.initialStock.toFixed(1);
+      // Para actualizaciones de stock montado, no modificamos current_stock
+      delete newStock.currentStock;
+      delete newStock.reservedStock;
+      delete newStock.unreservedStock;
     }
 
     console.log('Updating stock with:', newStock);
 
-    const updatedStock = await storage.updateStock(newStock);
+    const updatedStock = await storage.updateStock({
+      ...newStock,
+      updateType: stockUpdate.action
+    });
     console.log('Stock updated:', updatedStock);
 
     // Crear entrada en el historial
@@ -57,8 +64,8 @@ export async function stockMiddleware(
       stockId: updatedStock.id,
       action: stockUpdate.action,
       quantity: stockUpdate.quantity.toFixed(1),
-      previousStock: currentStock.currentStock,
-      newStock: updatedStock.currentStock,
+      previousStock: currentStock.initialStock,
+      newStock: updatedStock.initialStock,
       createdBy: stockUpdate.source || 'system'
     };
 
@@ -97,21 +104,19 @@ export async function prepareStockUpdate(
 
   switch (action) {
     case 'add_mounted':
-      // Aumenta tanto el stock montado como el actual
+      // Aumenta solo el stock montado
       newInitial = initial + quantity;
-      newCurrent = current + quantity;
       break;
     case 'remove_mounted':
-      // Reduce tanto el stock montado como el actual
+      // Reduce solo el stock montado
       newInitial = Math.max(0, initial - quantity);
-      newCurrent = Math.max(0, current - quantity);
       break;
     case 'direct_sale':
-      // Solo reduce el stock actual, mantiene el montado sin cambios
+      // Solo reduce el stock actual
       newCurrent = Math.max(0, current - quantity);
       break;
     case 'direct_sale_correction':
-      // Solo aumenta el stock actual, mantiene el montado sin cambios
+      // Solo aumenta el stock actual
       newCurrent = current + quantity;
       break;
     case 'new_order':

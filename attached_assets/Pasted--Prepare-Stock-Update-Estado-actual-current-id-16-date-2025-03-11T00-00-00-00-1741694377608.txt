@@ -1,0 +1,149 @@
+[Prepare Stock Update] Estado actual: {
+  current: {
+    id: 16,
+    date: 2025-03-11T00:00:00.000Z,
+    initialStock: '0.0',
+    currentStock: '0.0',
+    reservedStock: '0.0',
+    unreservedStock: '0.0',
+    lastUpdated: 2025-03-11T11:58:34.233Z
+  },
+  action: 'order_error',
+  quantity: 2.5
+}
+[Prepare Stock Update] Actualización preparada: {
+  initialStock: 0,
+  currentStock: 0,
+  reservedStock: 0,
+  unreservedStock: 0,
+  action: 'order_error',
+  quantity: 2.5,
+  source: 'admin'
+}
+[Stock Middleware] Procesando actualización: {
+  initialStock: 0,
+  currentStock: 0,
+  reservedStock: 0,
+  unreservedStock: 0,
+  action: 'order_error',
+  quantity: 2.5,
+  source: 'admin'
+}
+[Stock Middleware] Actualizando stock con: {
+  initialStock: '0',
+  currentStock: '0',
+  reservedStock: '0',
+  unreservedStock: '0',
+  lastUpdated: 2025-03-11T11:59:27.401Z
+}
+📦 Storage - Actualizando stock: {
+  initialStock: '0',
+  currentStock: '0',
+  reservedStock: '0',
+  unreservedStock: '0',
+  lastUpdated: 2025-03-11T11:59:27.401Z
+}
+✅ Storage - Valores actualizados: {
+  initialStock: '0',
+  currentStock: '0',
+  reservedStock: '0',
+  unreservedStock: '0',
+  lastUpdated: 2025-03-11T11:59:27.451Z
+}
+[Stock Middleware] Stock actualizado: {
+  id: 16,
+  date: 2025-03-11T00:00:00.000Z,
+  initialStock: '0.0',
+  currentStock: '0.0',
+  reservedStock: '0.0',
+  unreservedStock: '0.0',
+  lastUpdated: 2025-03-11T11:59:27.451Z
+}
+Creating stock history: {
+  id: 0,
+  stockId: 16,
+  action: 'order_error',
+  quantity: '2.5',
+  previousStock: '0.0',
+  newStock: '0.0',
+  createdBy: 'admin',
+  createdAt: 2025-03-11T11:59:27.502Z
+}
+Created stock history: {
+  id: 159,
+  stockId: 16,
+  action: 'order_error',
+  quantity: '2.5',
+  previousStock: '0.0',
+  newStock: '0.0',
+  createdAt: 2025-03-11T11:59:27.502Z,
+  createdBy: 'admin'
+}
+📝 Storage - Update Order - Starting update for order: 5
+📦 Storage - Update Order - Input data: { deleted: true, status: 'error', updatedAt: 2025-03-11T11:59:27.562Z }
+📌 Storage - Update Order - Old order state: {
+  id: 5,
+  customerName: 'Edvard',
+  customerPhone: null,
+  customerEmail: null,
+  customerDNI: null,
+  customerAddress: null,
+  quantity: '2.5',
+  details: null,
+  pickupTime: 2025-03-05T12:30:00.000Z,
+  status: 'pending',
+  totalAmount: '0.00',
+  invoicePDF: null,
+  invoiceNumber: null,
+  deleted: false,
+  createdAt: 2025-03-03T17:19:34.699Z,
+  updatedAt: 2025-03-05T07:56:57.896Z
+}
+🔄 Storage - Update Order - Processed data for update: {
+  deleted: true,
+  status: 'error',
+  updatedAt: 2025-03-11T11:59:27.623Z,
+  quantity: undefined,
+  pickupTime: Invalid Date
+}
+❌ Storage - Update Order - Database error: RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at PgTimestamp.mapToDriverValue (/home/runner/workspace/node_modules/src/pg-core/columns/timestamp.ts:66:16)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:223:69)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:174:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:174:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:124:23)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at SQL.toQuery (/home/runner/workspace/node_modules/src/sql/sql.ts:123:17)
+    at PgDialect.sqlToQuery (/home/runner/workspace/node_modules/src/pg-core/dialect.ts:591:14)
+    at QueryPromise._prepare (/home/runner/workspace/node_modules/src/pg-core/query-builders/update.ts:579:18)
+    at QueryPromise.execute (/home/runner/workspace/node_modules/src/pg-core/query-builders/update.ts:596:15)
+    at QueryPromise.then (/home/runner/workspace/node_modules/src/query-promise.ts:31:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Error marking order as error: RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at PgTimestamp.mapToDriverValue (/home/runner/workspace/node_modules/src/pg-core/columns/timestamp.ts:66:16)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:223:69)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:174:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:174:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:124:23)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at SQL.toQuery (/home/runner/workspace/node_modules/src/sql/sql.ts:123:17)
+    at PgDialect.sqlToQuery (/home/runner/workspace/node_modules/src/pg-core/dialect.ts:591:14)
+    at QueryPromise._prepare (/home/runner/workspace/node_modules/src/pg-core/query-builders/update.ts:579:18)
+    at QueryPromise.execute (/home/runner/workspace/node_modules/src/pg-core/query-builders/update.ts:596:15)
+    at QueryPromise.then (/home/runner/workspace/node_modules/src/query-promise.ts:31:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+11:59:27 AM [express] PATCH /api/orders/5/error 500 in 372ms :: {"error":"Error al marcar el pedido c…

@@ -41,7 +41,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         quantity: order.quantity,
         status: "completed",
         updateType: "order_delivered",
-        pickupTime: order.pickupTime // Mantener la fecha original
+        pickupTime: new Date(order.pickupTime).toISOString()
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -72,7 +72,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         quantity: order.quantity,
         status: "cancelled",
         updateType: "cancel_order",
-        pickupTime: order.pickupTime // Mantener la fecha original
+        pickupTime: new Date(order.pickupTime).toISOString(),
+        deleted: true
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -103,7 +104,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         quantity: order.quantity,
         status: "error",
         updateType: "order_error",
-        pickupTime: order.pickupTime // Mantener la fecha original
+        pickupTime: new Date(order.pickupTime).toISOString(),
+        deleted: true
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -136,7 +138,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       await apiRequest("PATCH", `/api/orders/${order.id}`, {
         ...order,
         quantityDiff,
-        updateType: "order_update"
+        updateType: "order_update",
+        pickupTime: new Date(order.pickupTime).toISOString()
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -164,7 +167,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
   };
 
-  const ordersByDate = orders?.filter(order => !order.deleted)
+  // Filter out deleted orders and group remaining ones by date
+  const ordersByDate = orders?.filter(order => !order.deleted && order.status !== 'cancelled' && order.status !== 'error')
     .reduce((acc, order) => {
       const date = format(new Date(order.pickupTime), 'yyyy-MM-dd');
       if (!acc[date]) {

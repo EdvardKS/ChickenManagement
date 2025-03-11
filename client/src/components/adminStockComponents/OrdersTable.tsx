@@ -32,7 +32,6 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleConfirm = async (orderId: number) => {
     try {
-      // Get the order before confirming to have access to the quantity
       const order = orders?.find(o => o.id === orderId);
       if (!order) {
         throw new Error('Pedido no encontrado');
@@ -41,7 +40,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       await apiRequest("PATCH", `/api/orders/${orderId}/confirm`, {
         quantity: order.quantity,
         status: "completed",
-        updateType: "order_delivered"
+        updateType: "order_delivered",
+        pickupTime: order.pickupTime // Mantener la fecha original
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -71,7 +71,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       await apiRequest("PATCH", `/api/orders/${orderId}/cancel`, {
         quantity: order.quantity,
         status: "cancelled",
-        updateType: "cancel_order"
+        updateType: "cancel_order",
+        pickupTime: order.pickupTime // Mantener la fecha original
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -101,7 +102,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       await apiRequest("PATCH", `/api/orders/${orderId}/error`, {
         quantity: order.quantity,
         status: "error",
-        updateType: "order_error"
+        updateType: "order_error",
+        pickupTime: order.pickupTime // Mantener la fecha original
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });

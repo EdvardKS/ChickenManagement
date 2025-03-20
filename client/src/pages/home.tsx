@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Clock, ChefHat, MapPin, Phone, Users, Utensils, Calendar, Star } from "lucide-react";
+import { Clock, ChefHat, MapPin, Phone, Users, Utensils, Calendar, Star, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import type { BusinessHours, Product } from "@shared/schema";
 import HeroBanner from "@/components/hero-banner/HeroBanner";
@@ -57,8 +57,8 @@ export default function Home() {
             </div>
             <div className="flex-1 max-w-xl w-full px-4 lg:px-0">
               <img 
-                src="/img/products/1702127812-20231209_134517-min.jpg" 
-                alt="Nuestro horno de leña tradicional" 
+                src="/img/products/categoria_paella.jpg" 
+                alt="Nuestra paella tradicional" 
                 className="rounded-xl shadow-2xl w-full h-auto object-cover"
               /> 
             </div>
@@ -76,7 +76,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-center">Nuestras Especialidades</h2>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-center">Nuestros Menús</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
               {featuredMenus.map((menu, index) => (
                 <div key={menu.id} className="text-center space-y-6">
@@ -139,7 +139,9 @@ export default function Home() {
                 >
                   <div className="overflow-hidden aspect-video">
                     <img 
-                      src={`/img/products/menu_${index === 0 ? 'uno' : index === 1 ? 'dos' : 'tres'}.jpg`}
+                      src={index === 0 ? '/img/products/hamegh-haykakan-tolma.png' : 
+                           index === 1 ? '/img/products/cochinillo.jpg' : 
+                           '/img/products/categoria_aperitivo.jpg'}
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                     />
@@ -195,7 +197,7 @@ export default function Home() {
             </div>
             <div className="relative order-1 lg:order-2">
               <img 
-                src="/img/products/1702127812-20231209_134517-min.jpg" 
+                src="/img/corporativa/maxtor/nosotros/la_fachada.jpg" 
                 alt="Nuestro salón de eventos"
                 className="rounded-xl shadow-2xl w-full h-auto aspect-video object-cover"
               />
@@ -280,6 +282,76 @@ export default function Home() {
                   <p className="text-sm sm:text-base text-gray-400 text-center">{service.description}</p>
                 </div>
               ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Fiestas de Moros y Cristianos */}
+      <section className={sectionBaseClasses}>
+        <div className={containerBaseClasses}>
+          <motion.div 
+            className={`${maxWidthBaseClasses} space-y-12`}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="text-center space-y-6 max-w-3xl mx-auto">
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-[#8B4513]">Villena Fiestas de Moros y Cristianos</h2>
+              <p className="text-base sm:text-lg lg:text-xl text-gray-600">
+                Servimos con encargos especiales para las fiestas de Moros y Cristianos de Villena. Repartimos a escuadras especiales
+                y ofrecemos menús personalizados para grupos y comparsas.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
+              <motion.div 
+                className="overflow-hidden rounded-xl shadow-xl"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <img 
+                  src="/img/festeros/caballerosAlada.jpg" 
+                  alt="Escuadra de Moros y Cristianos" 
+                  className="w-full h-auto aspect-video object-cover"
+                />
+              </motion.div>
+              
+              <motion.div 
+                className="space-y-6"
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-dancing text-[#8B4513]">Encargos para Festeros</h3>
+                <p className="text-base sm:text-lg text-gray-600">
+                  Durante las fiestas patronales, ofrecemos un servicio especial para comparsas y grupos de festeros. 
+                  Prepara tu pedido con antelación y disfruta de nuestros deliciosos platos en tu escuadra.
+                </p>
+                <ul className="space-y-4">
+                  <li className="flex items-center gap-3">
+                    <Check className="h-6 w-6 text-green-500" />
+                    <span className="text-base sm:text-lg">Raciones para grupos grandes</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Check className="h-6 w-6 text-green-500" />
+                    <span className="text-base sm:text-lg">Reparto a escuadras y kábilas</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Check className="h-6 w-6 text-green-500" />
+                    <span className="text-base sm:text-lg">Menús especiales para fiestas</span>
+                  </li>
+                </ul>
+                <Link href="/contact">
+                  <Button size="lg" className="mt-2 bg-[#8B4513] hover:bg-[#6F3710]">
+                    Consultar Disponibilidad
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
           </motion.div>
         </div>

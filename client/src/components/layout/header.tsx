@@ -217,10 +217,10 @@ export default function Header() {
                 <Link href="/products">
                   <div className="text-lg cursor-pointer">Productos</div>
                 </Link>
-                <Link href="/about">
+                <Link href="/nosotros">
                   <div className="text-lg cursor-pointer">Nosotros</div>
                 </Link>
-                <Link href="/contact">
+                <Link href="/contacto">
                   <div className="text-lg cursor-pointer">Contacto</div>
                 </Link>
                 <Link href="/admin">

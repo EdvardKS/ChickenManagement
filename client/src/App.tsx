@@ -11,8 +11,8 @@ import AdminLayout from "@/components/layout/admin-layout";
 import Home from "@/pages/home";
 import Products from "@/pages/products";
 import Order from "@/pages/order";
-import About from "@/pages/about";
-import Contact from "@/pages/contact";
+import Nosotros from "@/pages/nosotros";
+import Contacto from "@/pages/contacto";
 import AdminHome from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
@@ -50,15 +50,22 @@ function PublicRoutes() {
               <Order />
             </div>
           </Route>
-          <Route path="/about">
+          <Route path="/nosotros">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <About />
+              <Nosotros />
             </div>
           </Route>
-          <Route path="/contact">
+          <Route path="/contacto">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <Contact />
+              <Contacto />
             </div>
+          </Route>
+          {/* Mantener rutas anteriores para compatibilidad */}
+          <Route path="/about">
+            <Redirect to="/nosotros" />
+          </Route>
+          <Route path="/contact">
+            <Redirect to="/contacto" />
           </Route>
           <Route component={NotFound} />
         </Switch>

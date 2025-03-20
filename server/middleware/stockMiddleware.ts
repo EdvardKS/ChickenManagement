@@ -5,6 +5,7 @@ import { type Stock, type StockHistory } from '@shared/schema';
 type StockAction = 
   | 'add_mounted'  // Para modificar stock montado (initial_stock)
   | 'remove_mounted'
+  | 'mounted_correction' // Para correcciones de stock montado
   | 'direct_sale'  // Para ventas sin encargo (current_stock)
   | 'direct_sale_correction'
   | 'new_order'    // Para pedidos (reserved_stock)
@@ -99,7 +100,7 @@ export async function prepareStockUpdate(
 
   switch (action) {
     case 'direct_sale':
-      // Solo reduce el stock actual
+      // Solo reduce el stock actual para ventas sin encargo
       newCurrent = Math.max(0, current - quantity);
       console.log('[Prepare Stock Update] Venta directa:', {
         oldCurrent: current,
@@ -108,7 +109,7 @@ export async function prepareStockUpdate(
       });
       break;
     case 'direct_sale_correction':
-      // Solo aumenta el stock actual
+      // Solo aumenta el stock actual (corrección)
       newCurrent = current + quantity;
       console.log('[Prepare Stock Update] Corrección de venta:', {
         oldCurrent: current,
@@ -117,34 +118,64 @@ export async function prepareStockUpdate(
       });
       break;
     case 'add_mounted':
+      // Actualiza initial_stock (pollos montados) y current_stock
       newInitial = initial + quantity;
-      newCurrent = newInitial;
+      newCurrent = current + quantity; // También incrementamos current_stock
+      console.log('[Prepare Stock Update] Pollos montados añadidos:', {
+        oldInitial: initial,
+        oldCurrent: current,
+        quantity,
+        newInitial,
+        newCurrent
+      });
       break;
     case 'remove_mounted':
+      // Actualiza initial_stock (corrección de pollos montados) y current_stock
       newInitial = Math.max(0, initial - quantity);
-      newCurrent = newInitial;
+      newCurrent = Math.max(0, current - quantity); // También decrementamos current_stock
+      console.log('[Prepare Stock Update] Corrección de pollos montados:', {
+        oldInitial: initial,
+        oldCurrent: current,
+        quantity,
+        newInitial,
+        newCurrent
+      });
       break;
     case 'new_order':
+      // Solo aumenta el stock reservado (pedidos)
       newReserved = reserved + quantity;
       break;
     case 'cancel_order':
+      // Solo reduce el stock reservado (cancelación de pedidos)
       newReserved = Math.max(0, reserved - quantity);
       break;
     case 'order_delivered':
+      // Reduce el stock actual y reservado (entrega de pedidos)
       newCurrent = Math.max(0, current - quantity);
       newReserved = Math.max(0, reserved - quantity);
       break;
     case 'order_error':
+      // Solo reduce el stock reservado (pedido con error)
       newReserved = Math.max(0, reserved - quantity);
       break;
     case 'order_update':
+      // Actualiza el stock reservado (modificación de pedido)
       // quantity aquí representa la diferencia (nuevo - antiguo)
       newReserved = Math.max(0, reserved + quantity);
       break;
     case 'reset_stock':
+      // Resetea todos los valores a 0
       newInitial = 0;
       newCurrent = 0;
       newReserved = 0;
+      console.log('[Prepare Stock Update] Reseteando stock:', {
+        oldInitial: initial,
+        oldCurrent: current,
+        oldReserved: reserved,
+        newInitial,
+        newCurrent,
+        newReserved
+      });
       break;
   }
 

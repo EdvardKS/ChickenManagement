@@ -221,11 +221,13 @@ export class DatabaseStorage implements IStorage {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Obtener el stock más reciente para el día actual, ordenado por id descendente
+    // para obtener siempre la última entrada
     const [currentStock] = await db
       .select()
       .from(stock)
       .where(eq(stock.date, today))
-      .orderBy(desc(stock.lastUpdated))
+      .orderBy(desc(stock.id))
       .limit(1);
 
     if (!currentStock) {

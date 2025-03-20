@@ -8,7 +8,8 @@ const router = Router();
 
 // Schema para validar cantidad
 const stockUpdateSchema = z.object({
-  amount: z.string()
+  quantity: z.number(),
+  updateType: z.enum(['mounted', 'sale', 'reset']).optional()
 });
 
 // Get current stock status
@@ -46,17 +47,67 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// Procesar venta directa
+// Actualizar pollos montados (agregar)
+router.post("/mounted/add", async (req: Request & { stockUpdate?: any }, res) => {
+  try {
+    const { quantity } = stockUpdateSchema.parse(req.body);
+    console.log("📦 Agregando pollos montados:", quantity);
+
+    req.stockUpdate = await prepareStockUpdate(
+      'add_mounted',
+      quantity,
+      'admin'
+    );
+
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error al agregar pollos montados:', error);
+    res.status(500).json({ error: 'Error al agregar pollos montados' });
+  }
+});
+
+// Actualizar pollos montados (quitar - corrección)
+router.post("/mounted/remove", async (req: Request & { stockUpdate?: any }, res) => {
+  try {
+    const { quantity } = stockUpdateSchema.parse(req.body);
+    console.log("📦 Quitando pollos montados (corrección):", quantity);
+
+    req.stockUpdate = await prepareStockUpdate(
+      'remove_mounted',
+      quantity,
+      'admin'
+    );
+
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error al quitar pollos montados:', error);
+    res.status(500).json({ error: 'Error al quitar pollos montados' });
+  }
+});
+
+// Procesar venta directa sin encargo
 router.post("/direct-sale", async (req: Request & { stockUpdate?: any }, res) => {
   try {
-    console.log("📦 Procesando venta directa:", req.body);
-
-    const { amount } = stockUpdateSchema.parse(req.body);
-    console.log("✅ Cantidad validada:", amount);
+    const { quantity } = stockUpdateSchema.parse(req.body);
+    console.log("📦 Procesando venta directa sin encargo:", quantity);
 
     req.stockUpdate = await prepareStockUpdate(
       'direct_sale',
-      parseFloat(amount),
+      quantity,
       'admin'
     );
 
@@ -70,7 +121,62 @@ router.post("/direct-sale", async (req: Request & { stockUpdate?: any }, res) =>
     res.json({ success: true });
   } catch (error) {
     console.error('❌ Error en venta directa:', error);
-    res.status(500).json({ error: 'Error al procesar la venta' });
+    res.status(500).json({ error: 'Error al procesar la venta directa' });
+  }
+});
+
+// Corrección de venta directa
+router.post("/direct-sale/correct", async (req: Request & { stockUpdate?: any }, res) => {
+  try {
+    const { quantity } = stockUpdateSchema.parse(req.body);
+    console.log("📦 Procesando corrección de venta directa:", quantity);
+
+    req.stockUpdate = await prepareStockUpdate(
+      'direct_sale_correction',
+      quantity,
+      'admin'
+    );
+
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error en corrección de venta directa:', error);
+    res.status(500).json({ error: 'Error al procesar la corrección de venta' });
+  }
+});
+
+// Resetear stock para el día actual
+router.post("/reset", async (req: Request & { stockUpdate?: any }, res) => {
+  try {
+    console.log("📦 Reseteando stock para el día actual");
+
+    // Crear una nueva entrada en la base de datos para el día actual
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    req.stockUpdate = await prepareStockUpdate(
+      'reset_stock',
+      0, // La cantidad no importa en este caso
+      'admin'
+    );
+
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error al resetear stock:', error);
+    res.status(500).json({ error: 'Error al resetear el stock del día' });
   }
 });
 

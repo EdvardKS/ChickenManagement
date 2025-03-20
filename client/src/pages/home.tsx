@@ -82,7 +82,7 @@ export default function Home() {
                 <div key={menu.id} className="text-center space-y-6">
                   <div className="overflow-hidden rounded-xl aspect-video">
                     <img 
-                      src={menu.imageUrl || "/img/aburrido.svg"} 
+                      src={menu.imageUrl ? `/img/products/${menu.imageUrl}` : "/img/products/image-not-found.svg"} 
                       alt={menu.name} 
                       className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                     />
@@ -139,7 +139,7 @@ export default function Home() {
                 >
                   <div className="overflow-hidden aspect-video">
                     <img 
-                      src="/img/aburrido.svg" 
+                      src={`/img/products/menu_${index === 0 ? 'uno' : index === 1 ? 'dos' : 'tres'}.jpg`}
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                     />

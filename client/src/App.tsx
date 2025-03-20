@@ -7,6 +7,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import FloatingContact from "@/components/floating-contact";
 import AdminLayout from "@/components/layout/admin-layout";
+import { AuthProvider, ProtectedRoute, HaykakanRoute } from "@/components/auth/auth-provider";
 
 import Home from "@/pages/home";
 import Products from "@/pages/products"; 
@@ -14,6 +15,7 @@ import Productos from "@/pages/productos";
 import Order from "@/pages/order";
 import Nosotros from "@/pages/nosotros";
 import Contacto from "@/pages/contacto";
+import Login from "@/pages/auth/login";
 import AdminHome from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import AdminOrders from "@/pages/admin/orders";
@@ -25,6 +27,7 @@ import FeaturedMenus from "@/pages/admin/featured-menus";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
+import AdminUsers from "@/pages/admin/users";
 import NotFound from "@/pages/not-found";
 
 // SEO metadata
@@ -67,6 +70,7 @@ function PublicRoutes() {
               <Contacto />
             </div>
           </Route>
+          <Route path="/login" component={Login} />
           {/* Mantener rutas anteriores para compatibilidad */}
           <Route path="/about">
             <Redirect to="/nosotros" />
@@ -85,31 +89,72 @@ function PublicRoutes() {
 
 function AdminRoutes() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <AdminLayout>
-        <Switch>
-          <Route path="/admin">
-            <Redirect to="/admin/orders" />
-          </Route>
-          <Route path="/admin/orders" component={AdminOrders} />
-          <Route path="/admin/horarios" component={AdminHorarios} />
-          <Route path="/admin/database" component={AdminDatabase} />
-          <Route path="/admin/settings" component={AdminSettings} />
-          <Route path="/admin/seeds" component={AdminSeeds} />
-          <Route path="/admin/featured-menus" component={FeaturedMenus} />
-          <Route path="/admin/dashboards/:dashboard*">
-            <DashboardLayout>
-              <Switch>
-                <Route path="/admin/dashboards/orders-overview" component={OrdersOverview} />
-                <Route path="/admin/dashboards/stock-levels" component={StockLevels} />
-              </Switch>
-            </DashboardLayout>
-          </Route>
-          <Route component={NotFound} />
-        </Switch>
-      </AdminLayout>
-    </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <AdminLayout>
+          <Switch>
+            <Route path="/admin">
+              <Redirect to="/admin/orders" />
+            </Route>
+            <Route path="/admin/orders">
+              <ProtectedRoute>
+                <AdminOrders />
+              </ProtectedRoute>
+            </Route>
+            <Route path="/admin/horarios">
+              <ProtectedRoute>
+                <AdminHorarios />
+              </ProtectedRoute>
+            </Route>
+            <Route path="/admin/database">
+              <HaykakanRoute>
+                <AdminDatabase />
+              </HaykakanRoute>
+            </Route>
+            <Route path="/admin/settings">
+              <HaykakanRoute>
+                <AdminSettings />
+              </HaykakanRoute>
+            </Route>
+            <Route path="/admin/seeds">
+              <HaykakanRoute>
+                <AdminSeeds />
+              </HaykakanRoute>
+            </Route>
+            <Route path="/admin/featured-menus">
+              <ProtectedRoute>
+                <FeaturedMenus />
+              </ProtectedRoute>
+            </Route>
+            <Route path="/admin/users">
+              <HaykakanRoute>
+                <AdminUsers />
+              </HaykakanRoute>
+            </Route>
+            <Route path="/admin/dashboards/:dashboard*">
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Switch>
+                    <Route path="/admin/dashboards/orders-overview">
+                      <ProtectedRoute>
+                        <OrdersOverview />
+                      </ProtectedRoute>
+                    </Route>
+                    <Route path="/admin/dashboards/stock-levels">
+                      <ProtectedRoute>
+                        <StockLevels />
+                      </ProtectedRoute>
+                    </Route>
+                  </Switch>
+                </DashboardLayout>
+              </ProtectedRoute>
+            </Route>
+            <Route component={NotFound} />
+          </Switch>
+        </AdminLayout>
+      </div>
+    </ProtectedRoute>
   );
 }
 
@@ -123,8 +168,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

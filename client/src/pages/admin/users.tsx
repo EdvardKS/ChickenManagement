@@ -35,9 +35,16 @@ const userFormSchema = z.object({
 });
 
 // Esquema para la actualización de usuario (password opcional)
-const userUpdateSchema = userFormSchema.partial({
-  password: true,
-  confirmPassword: true,
+const userUpdateSchema = z.object({
+  username: z.string().min(1, "El nombre de usuario es obligatorio"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
+  confirmPassword: z.string().min(6, "Confirme la contraseña").optional(),
+  role: z.enum(["haykakan", "festero"]).default("festero"),
+  name: z.string().optional(),
+  email: z.string().email("Email inválido").optional().nullable(),
+  phone: z.string().optional().nullable(),
+  comparsaName: z.string().optional().nullable(),
+  details: z.string().optional().nullable(),
 }).refine((data) => {
   // Si se proporciona contraseña, también se debe proporcionar confirmación
   if (data.password) {
@@ -185,7 +192,7 @@ export default function UsersPage() {
     setIsDialogOpen(true);
   };
 
-  const onSubmit = (data: z.infer<typeof userFormSchema>) => {
+  const onSubmit = (data: any) => {
     if (isEditMode && selectedUser) {
       // Si no hay contraseña, eliminarla del objeto a enviar
       const updateData = { ...data };

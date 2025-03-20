@@ -67,9 +67,9 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <img 
-            src="/images/moros-cristianos.jpg" 
+            src="/images/moros-cristianos.svg" 
             alt="Moros y Cristianos" 
-            className="h-40 mx-auto rounded-lg object-cover shadow-md" 
+            className="h-40 mx-auto rounded-lg object-contain shadow-md" 
           />
         </div>
         

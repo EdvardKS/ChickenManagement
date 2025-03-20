@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradiente de fondo festivo -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e63946" />
+      <stop offset="100%" stop-color="#1d3557" />
+    </linearGradient>
+    
+    <!-- Patrón festivo para el banner -->
+    <pattern id="festivePattern" patternUnits="userSpaceOnUse" width="60" height="60" patternTransform="rotate(45)">
+      <rect width="30" height="30" fill="#f1faee" opacity="0.1" />
+    </pattern>
+  </defs>
+  
+  <!-- Fondo con gradiente -->
+  <rect width="800" height="500" fill="url(#bgGradient)" />
+  <rect width="800" height="500" fill="url(#festivePattern)" />
+  
+  <!-- Formas decorativas para representar las fiestas -->
+  <g transform="translate(400, 250)">
+    <!-- Símbolos festivos estilizados -->
+    <g transform="rotate(0)">
+      <path d="M0,-180 L40,-120 L-40,-120 Z" fill="#f1faee" opacity="0.9" />
+      <path d="M0,-120 L80,-40 L-80,-40 Z" fill="#a8dadc" opacity="0.9" />
+      <path d="M0,-40 L120,40 L-120,40 Z" fill="#457b9d" opacity="0.9" />
+      <path d="M0,40 L160,140 L-160,140 Z" fill="#1d3557" opacity="0.9" />
+    </g>
+    
+    <!-- Elementos circulares decorativos -->
+    <circle cx="0" cy="-140" r="15" fill="#e63946" />
+    <circle cx="0" cy="-140" r="10" fill="#f1faee" />
+    <circle cx="0" cy="-140" r="5" fill="#e63946" />
+    
+    <!-- Estrellas decorativas -->
+    <g fill="#f1faee" opacity="0.7">
+      <circle cx="100" cy="-100" r="3" />
+      <circle cx="-120" cy="-80" r="4" />
+      <circle cx="140" cy="0" r="5" />
+      <circle cx="-150" cy="20" r="3" />
+      <circle cx="80" cy="130" r="4" />
+      <circle cx="-60" cy="110" r="5" />
+    </g>
+  </g>
+  
+  <!-- Texto decorativo sobre las fiestas -->
+  <g transform="translate(400, 400)">
+    <text text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#f1faee">
+      Moros y Cristianos
+    </text>
+    <text text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#a8dadc" y="35">
+      Fiestas Tradicionales
+    </text>
+  </g>
+  
+  <!-- Elementos adicionales que representan símbolos de las fiestas -->
+  <g transform="translate(150, 130)">
+    <path d="M0,0 C20,-40 40,-30 50,0 C60,30 80,40 100,0" stroke="#f1faee" stroke-width="5" fill="none" />
+    <path d="M20,10 C30,-20 40,-15 45,5 C50,25 60,30 70,5" stroke="#a8dadc" stroke-width="3" fill="none" />
+  </g>
+  
+  <g transform="translate(550, 130) scale(-1, 1)">
+    <path d="M0,0 C20,-40 40,-30 50,0 C60,30 80,40 100,0" stroke="#f1faee" stroke-width="5" fill="none" />
+    <path d="M20,10 C30,-20 40,-15 45,5 C50,25 60,30 70,5" stroke="#a8dadc" stroke-width="3" fill="none" />
+  </g>
+</svg>

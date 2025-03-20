@@ -3,24 +3,29 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    const error = new Error(`${res.status}: ${text}`);
+    (error as any).status = res.status;
+    throw error;
   }
 }
 
 export async function apiRequest(
-  method: string,
   url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
+  options?: RequestInit,
+): Promise<any> {
   const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
+    ...options
   });
 
   await throwIfResNotOk(res);
-  return res;
+  
+  try {
+    return await res.json();
+  } catch (e) {
+    // Si no se puede parsear como JSON, devuelve la respuesta directa
+    return res;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

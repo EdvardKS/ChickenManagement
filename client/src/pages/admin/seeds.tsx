@@ -8,7 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
-
+import { Loader } from "@/components/ui/loader";
+import { Save, Pencil, RefreshCcw, Trash2, Plus, Search, Upload } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Plus, Trash2, RefreshCcw, Search, Upload } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -998,7 +998,7 @@ export default function AdminSeeds() {
                               step="0.01"
                               min="0"
                               defaultValue={product.price}
-                              onBlur={(e) => handleProductEdit(product.id, 'price', parseFloat(e.target.value))}
+                              onBlur={(e) => handleProductChange(product.id, 'price', parseFloat(e.target.value))}
                               placeholder="Ej: 2.50"
                             />
                           </TooltipTrigger>
@@ -1016,7 +1016,7 @@ export default function AdminSeeds() {
                     {editingProduct === product.id ? (
                       <Select
                         defaultValue={product.categoryId.toString()}
-                        onValueChange={(value) => handleProductEdit(product.id, 'categoryId', parseInt(value))}
+                        onValueChange={(value) => handleProductChange(product.id, 'categoryId', parseInt(value))}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -1036,14 +1036,33 @@ export default function AdminSeeds() {
                   <TableCell>
                     <div className="flex gap-2">
                       {!showDeletedProducts && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setEditingProduct(editingProduct === product.id ? null : product.id)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingProduct(editingProduct === product.id ? null : product.id)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          
+                          {/* Botón de guardar con spinner (solo visible cuando hay cambios) */}
+                          {modifiedProducts[product.id] && modifiedProducts[product.id].length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => saveProductChanges(product.id)}
+                              disabled={savingProduct === product.id}
+                            >
+                              {savingProduct === product.id ? (
+                                <Loader size="sm" />
+                              ) : (
+                                <Save className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </>
                       )}
+                      
                       {showDeletedProducts ? (
                         <Button
                           variant="ghost"

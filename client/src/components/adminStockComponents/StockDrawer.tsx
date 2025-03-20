@@ -310,19 +310,19 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
             <Label className="text-lg font-semibold">Venta de SIN encargo:</Label>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <Button 
-                className="bg-black text-white text-2xl p-6 py-12" 
+                className="bg-slate-700 text-white text-2xl p-6 py-12" 
                 onClick={() => handleDirectSale(-0.5)}
               >
                 -0.5
               </Button>
               <Button 
-                className="bg-black text-white text-2xl p-6 py-12" 
+                className="bg-slate-700 text-white text-2xl p-6 py-12" 
                 onClick={() => handleDirectSale(0.5)}
               >
                 +0.5
               </Button>
               <Button 
-                className="bg-blue-500 text-white text-2xl p-6 py-12" 
+                className="bg-blue-600 text-white text-2xl p-6 py-12" 
                 onClick={() => handleDirectSale(-1)}
               >
                 -1
@@ -341,7 +341,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
           <div className="p-4">
             <Button
               variant="outline"
-              className="w-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+              className="w-full border border-slate-700 text-slate-700 hover:bg-slate-700 hover:text-white"
               onClick={handleResetStock}
             >
               Resetear Valores

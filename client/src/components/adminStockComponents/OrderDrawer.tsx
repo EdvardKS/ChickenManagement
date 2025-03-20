@@ -521,8 +521,8 @@ export function OrderDrawer({
                   className="w-full text-2xl py-8"
                   variant="outline"
                   style={{
-                    borderColor: 'rgb(239 68 68)',
-                    color: 'rgb(239 68 68)',
+                    borderColor: 'rgb(71 85 105)',
+                    color: 'rgb(71 85 105)',
                   }}
                 >
                   ❌ Cancelar Pedido

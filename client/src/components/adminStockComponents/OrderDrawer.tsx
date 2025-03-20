@@ -57,6 +57,7 @@ export function OrderDrawer({
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [isPreviewingInvoice, setIsPreviewingInvoice] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState<string>("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toast } = useToast();
 
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm({

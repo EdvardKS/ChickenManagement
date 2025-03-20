@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Clock, ChefHat, MapPin, Phone, Users, Utensils, Calendar, Star } from "lucide-react";
 import { motion } from "framer-motion";
-import type { BusinessHours } from "@shared/schema";
+import type { BusinessHours, Product } from "@shared/schema";
 import HeroBanner from "@/components/hero-banner/HeroBanner";
 import BusinessHoursDisplay from "@/components/business-hours-display";
 
@@ -11,6 +11,13 @@ export default function Home() {
   const { data: businessHours } = useQuery<BusinessHours[]>({ 
     queryKey: ['/api/business-hours'] 
   });
+  
+  const { data: featuredMenusData = [] } = useQuery<(Product | null)[]>({ 
+    queryKey: ['/api/menus/featured'] 
+  });
+  
+  // Filtrar valores null de los menús destacados
+  const featuredMenus = featuredMenusData.filter((menu): menu is Product => menu !== null);
 
   const sectionBaseClasses = "w-full py-16 sm:py-20 lg:py-24";
   const containerBaseClasses = "container mx-auto px-4 sm:px-6 lg:px-8";
@@ -69,36 +76,54 @@ export default function Home() {
           >
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-center">Nuestras Especialidades</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
-              {[
-                {
-                  title: "Menú 1",
-                  description: "Medio pollo con una ración de patatas y 4 Croquetas",
-                  price: "8€"
-                },
-                {
-                  title: "Menú 2",
-                  description: "Un pollo con una ración de patatas y 4 Croquetas",
-                  price: "12€"
-                },
-                {
-                  title: "Menú 3",
-                  description: "Un pollo y medio con tres raciones de patatas y 6 Croquetas",
-                  price: "20€"
-                }
-              ].map((menu, index) => (
-                <div key={index} className="text-center space-y-6">
-                  <div className="overflow-hidden rounded-xl aspect-video">
-                    <img 
-                      src="/img/aburrido.svg" 
-                      alt={menu.title} 
-                      className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                    />
+              {featuredMenus.length > 0 ? (
+                featuredMenus.map((menu, index) => (
+                  <div key={menu.id} className="text-center space-y-6">
+                    <div className="overflow-hidden rounded-xl aspect-video">
+                      <img 
+                        src={menu.imageUrl || "/img/aburrido.svg"} 
+                        alt={menu.name} 
+                        className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+                      />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-dancing text-[#D4AF37]">{menu.name}</h3>
+                    <p className="text-sm sm:text-base lg:text-lg text-gray-300">{menu.description || "Sin descripción"}</p>
+                    <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#D4AF37]">{menu.price}€</p>
                   </div>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-dancing text-[#D4AF37]">{menu.title}</h3>
-                  <p className="text-sm sm:text-base lg:text-lg text-gray-300">{menu.description}</p>
-                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#D4AF37]">{menu.price}</p>
-                </div>
-              ))}
+                ))
+              ) : (
+                // Contenido de respaldo si no hay menús destacados
+                [
+                  {
+                    title: "Menú 1",
+                    description: "Medio pollo con una ración de patatas y 4 Croquetas",
+                    price: "8€"
+                  },
+                  {
+                    title: "Menú 2",
+                    description: "Un pollo con una ración de patatas y 4 Croquetas",
+                    price: "12€"
+                  },
+                  {
+                    title: "Menú 3",
+                    description: "Un pollo y medio con tres raciones de patatas y 6 Croquetas",
+                    price: "20€"
+                  }
+                ].map((menu, index) => (
+                  <div key={index} className="text-center space-y-6">
+                    <div className="overflow-hidden rounded-xl aspect-video">
+                      <img 
+                        src="/img/aburrido.svg" 
+                        alt={menu.title} 
+                        className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+                      />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-dancing text-[#D4AF37]">{menu.title}</h3>
+                    <p className="text-sm sm:text-base lg:text-lg text-gray-300">{menu.description}</p>
+                    <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#D4AF37]">{menu.price}</p>
+                  </div>
+                ))
+              )}
             </div>
           </motion.div>
         </div>

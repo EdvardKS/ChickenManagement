@@ -51,6 +51,14 @@ export interface IStorage {
   getSetting(key: string): Promise<string | null>;
   getSettingsByKeys(keys: string[]): Promise<Record<string, string>>;
   updateSetting(key: string, value: string): Promise<void>;
+  
+  // Users
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserById(id: number): Promise<User | undefined>;
+  createUser(userData: Omit<InsertUser, 'confirmPassword'>): Promise<User>;
+  updateUser(id: number, userData: Partial<Omit<InsertUser, 'confirmPassword'>>): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  getFesteroUsers(): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -404,6 +412,60 @@ export class DatabaseStorage implements IStorage {
         .set({ value, updatedAt: new Date() })
         .where(eq(settings.key, key));
     }
+  }
+
+  // Users
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username))
+      .where(eq(users.active, true));
+    return user;
+  }
+
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .where(eq(users.active, true));
+    return user;
+  }
+
+  async createUser(userData: Omit<InsertUser, 'confirmPassword'>): Promise<User> {
+    const [newUser] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
+    return newUser;
+  }
+
+  async updateUser(id: number, userData: Partial<Omit<InsertUser, 'confirmPassword'>>): Promise<User> {
+    const [updated] = await db
+      .update(users)
+      .set({
+        ...userData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.active, true));
+  }
+
+  async getFesteroUsers(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.role, 'festero'))
+      .where(eq(users.active, true));
   }
 }
 

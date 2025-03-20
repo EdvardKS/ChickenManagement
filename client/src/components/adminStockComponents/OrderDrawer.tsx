@@ -509,7 +509,7 @@ export function OrderDrawer({
               <div className="flex flex-col gap-4 pt-4">
                 <Button
                   onClick={() => onConfirm(order.id)}
-                  className="w-full text-2xl py-8 bg-green-300 hover:bg-green-500"
+                  className="w-full text-2xl py-8 bg-blue-600 hover:bg-blue-700 text-white"
                   variant="outline"
                 >
                   ✔️ Confirmar Pedido

@@ -207,7 +207,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                     <Button
                       variant="outline"
                       onClick={() => handleOrderClick(order)}
-                      className="relative w-20 p-4 text-lg hover:bg-[#a35118]"
+                      className="relative w-20 p-4 text-lg hover:bg-gray-200"
                     >
                       🔘
                       {order.customerPhone && (

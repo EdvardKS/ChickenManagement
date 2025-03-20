@@ -1010,5 +1010,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API para verificar si una imagen existe
+  app.get('/api/file-exists', async (req: Request, res: Response) => {
+    const { path: filePath } = req.query;
+    if (!filePath) {
+      return res.status(400).json({ exists: false, error: 'No path provided' });
+    }
+    
+    try {
+      // Normalizar la ruta para evitar acceso a directorios superiores
+      const normalizedPath = filePath.toString().replace(/\.\./g, '');
+      // Construir ruta completa
+      const fullPath = path.join(process.cwd(), 'client', 'public', normalizedPath);
+      
+      // Verificar existencia del archivo
+      const exists = await fs.pathExists(fullPath);
+      res.status(200).json({ exists });
+    } catch (error: any) {
+      console.error(`Error al verificar archivo: ${error.message}`);
+      res.status(500).json({ exists: false, error: `Error al verificar archivo: ${error.message}` });
+    }
+  });
+
   return httpServer;
 }

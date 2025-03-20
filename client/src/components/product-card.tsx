@@ -2,21 +2,28 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { Product } from "@shared/schema";
+import { useFileExists } from "@/hooks/use-file-exists";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  // Verificar si la imagen existe
+  const imagePath = product.imageUrl ? `/img/products/${product.imageUrl}` : null;
+  const { exists } = useFileExists(imagePath);
+  
+  // Solo mostrar la imagen si existe
+  const showImage = imagePath && exists;
+  
   return (
     <Card>
-      {product.imageUrl && (
-      <img 
-        src={`/img/products/${product.imageUrl}`} 
-        alt={product.name}
-        className="w-full h-48 object-cover"
-      />
-
+      {showImage && (
+        <img 
+          src={imagePath} 
+          alt={product.name}
+          className="w-full h-48 object-cover"
+        />
       )}
       
       <CardHeader>

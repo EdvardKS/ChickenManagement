@@ -17,17 +17,31 @@ const router = Router();
 // Login
 router.post('/login', async (req: Request, res: Response) => {
   try {
+    console.log('Intento de inicio de sesión:', req.body);
+    
     // Validar datos de entrada
     const validatedData = loginSchema.parse(req.body);
+    console.log('Datos validados:', validatedData);
     
     // Buscar usuario por nombre de usuario
     const user = await storage.getUserByUsername(validatedData.username);
     if (!user) {
+      console.log('Usuario no encontrado:', validatedData.username);
       return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+    }
+    console.log('Usuario encontrado:', user.username, 'Rol:', user.role, 'Active:', user.active);
+    
+    // Verificar si el usuario está activo
+    if (!user.active) {
+      console.log('Usuario inactivo:', user.username);
+      return res.status(401).json({ message: 'Usuario inactivo. Contacte al administrador.' });
     }
     
     // Verificar contraseña
+    console.log('Intentando verificar contraseña para usuario:', user.username);
     const passwordMatch = await bcrypt.compare(validatedData.password, user.password);
+    console.log('Resultado de verificación de contraseña:', passwordMatch);
+    
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
     }
@@ -37,6 +51,8 @@ router.post('/login', async (req: Request, res: Response) => {
     req.session.username = user.username;
     req.session.role = user.role;
     
+    console.log('Sesión guardada:', req.session);
+    
     // Enviar info de usuario sin contraseña
     const { password, ...userInfo } = user;
     res.json({ 
@@ -45,6 +61,7 @@ router.post('/login', async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
+      console.log('Error de validación Zod:', error.errors);
       return res.status(400).json({ 
         message: 'Datos de entrada inválidos',
         errors: error.errors 

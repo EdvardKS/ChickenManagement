@@ -145,15 +145,52 @@ router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) =
       });
     });
 
+    // Actualizar estado y marcar como eliminado
     const updatedOrder = await storage.updateOrder(id, {
-      status: "completed",
-      updatedAt: new Date()
+      status: "delivered",
+      deleted: true
     });
 
     res.json(updatedOrder);
   } catch (error) {
     console.error('Error confirming order:', error);
     res.status(500).json({ error: 'Error al confirmar el pedido' });
+  }
+});
+
+// Cancel order
+router.patch("/:id/cancel", async (req: Request & { stockUpdate?: any }, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const order = await storage.getOrder(id);
+
+    if (!order) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    req.stockUpdate = await prepareStockUpdate(
+      'cancel_order',
+      parseFloat(order.quantity.toString()),
+      'admin'
+    );
+
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
+    });
+
+    // Actualizar estado y marcar como eliminado
+    const updatedOrder = await storage.updateOrder(id, {
+      status: "cancelled",
+      deleted: true
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    res.status(500).json({ error: 'Error al cancelar el pedido' });
   }
 });
 
@@ -180,10 +217,10 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
       });
     });
 
+    // Actualizar estado y marcar como eliminado
     const updatedOrder = await storage.updateOrder(id, {
-      deleted: true,
       status: "error",
-      updatedAt: new Date()
+      deleted: true
     });
 
     res.json(updatedOrder);

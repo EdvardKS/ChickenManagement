@@ -37,12 +37,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         throw new Error('Pedido no encontrado');
       }
 
-      await apiRequest("PATCH", `/api/orders/${orderId}/confirm`, {
-        quantity: order.quantity,
-        status: "completed",
-        updateType: "order_delivered",
-        pickupTime: new Date(order.pickupTime).toISOString()
-      });
+      // Simplificamos la llamada para evitar errores de fecha
+      await apiRequest("PATCH", `/api/orders/${orderId}/confirm`, {});
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -68,13 +64,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         throw new Error('Pedido no encontrado');
       }
 
-      await apiRequest("PATCH", `/api/orders/${orderId}/cancel`, {
-        quantity: order.quantity,
-        status: "cancelled",
-        updateType: "cancel_order",
-        pickupTime: new Date(order.pickupTime).toISOString(),
-        deleted: true
-      });
+      // Simplificamos la llamada para evitar errores de fecha
+      await apiRequest("PATCH", `/api/orders/${orderId}/cancel`, {});
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -100,13 +91,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         throw new Error('Pedido no encontrado');
       }
 
-      await apiRequest("PATCH", `/api/orders/${orderId}/error`, {
-        quantity: order.quantity,
-        status: "error",
-        updateType: "order_error",
-        pickupTime: new Date(order.pickupTime).toISOString(),
-        deleted: true
-      });
+      // Simplificamos la llamada para evitar errores de fecha
+      await apiRequest("PATCH", `/api/orders/${orderId}/error`, {});
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });

@@ -164,11 +164,27 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Order not found');
     }
 
-    // Ensure data types match the schema
+    // Preparar datos para actualización y asegurar compatibilidad de tipos
+    // Eliminar los campos de fecha que no son proporcionados para evitar errores
+    const sanitizedData = { ...orderData };
+    
+    // Solo procesar pickupTime si existe en los datos de entrada
+    if (sanitizedData.pickupTime !== undefined) {
+      sanitizedData.pickupTime = sanitizedData.pickupTime instanceof Date 
+        ? sanitizedData.pickupTime 
+        : new Date(sanitizedData.pickupTime as string);
+    } else {
+      delete sanitizedData.pickupTime;
+    }
+
+    // Convertir quantity a string si existe
+    if (sanitizedData.quantity !== undefined) {
+      sanitizedData.quantity = sanitizedData.quantity.toString();
+    }
+
+    // Siempre incluir la fecha de actualización
     const updatedData = {
-      ...orderData,
-      quantity: orderData.quantity?.toString(),
-      pickupTime: orderData.pickupTime instanceof Date ? orderData.pickupTime : new Date(orderData.pickupTime as string),
+      ...sanitizedData,
       updatedAt: new Date()
     };
 

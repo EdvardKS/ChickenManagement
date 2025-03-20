@@ -9,7 +9,8 @@ import FloatingContact from "@/components/floating-contact";
 import AdminLayout from "@/components/layout/admin-layout";
 
 import Home from "@/pages/home";
-import Products from "@/pages/products";
+import Products from "@/pages/products"; 
+import Productos from "@/pages/productos";
 import Order from "@/pages/order";
 import Nosotros from "@/pages/nosotros";
 import Contacto from "@/pages/contacto";
@@ -42,13 +43,19 @@ function PublicRoutes() {
           <Route path="/" component={Home} />
           <Route path="/productos">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <Products />
+              <Productos />
             </div>
           </Route>
-          <Route path="/order">
+          <Route path="/products">
+            <Redirect to="/productos" />
+          </Route>
+          <Route path="/encargar">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <Order />
             </div>
+          </Route>
+          <Route path="/order">
+            <Redirect to="/encargar" />
           </Route>
           <Route path="/nosotros">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

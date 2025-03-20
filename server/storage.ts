@@ -5,7 +5,8 @@ import {
   type Stock, type InsertStock,
   type BusinessHours, type InsertBusinessHours,
   type StockHistory, type InsertStockHistory,
-  categories, products, orders, stock, stockHistory, orderLogs, businessHours, settings
+  type User, type InsertUser,
+  categories, products, orders, stock, stockHistory, orderLogs, businessHours, settings, users
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";

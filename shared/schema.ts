@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -89,6 +89,23 @@ export const businessHours = pgTable("business_hours", {
   autoUpdate: boolean("auto_update").default(true),
 });
 
+export const userRoles = pgEnum('user_role', ['haykakan', 'festero']);
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  role: userRoles("role").notNull().default('festero'),
+  email: text("email"),
+  name: text("name"),
+  phone: text("phone"),
+  comparsaName: text("comparsa_name"),
+  details: text("details"),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, deleted: true });
 export const insertProductSchema = createInsertSchema(products)
   .omit({ id: true, deleted: true })
@@ -130,6 +147,26 @@ export const insertOrderLogSchema = createInsertSchema(orderLogs)
 
 export const insertBusinessHoursSchema = createInsertSchema(businessHours).omit({ id: true });
 
+export const insertUserSchema = createInsertSchema(users)
+  .omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true 
+  })
+  .extend({
+    password: z.string().min(6),
+    confirmPassword: z.string()
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+export const loginSchema = z.object({
+  username: z.string().min(1, "Usuario es requerido"),
+  password: z.string().min(1, "Contraseña es requerida"),
+});
+
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Product = typeof products.$inferSelect;
@@ -146,3 +183,6 @@ export type BusinessHours = typeof businessHours.$inferSelect;
 export type InsertBusinessHours = z.infer<typeof insertBusinessHoursSchema>;
 export type Settings = typeof settings.$inferSelect;
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type LoginCredentials = z.infer<typeof loginSchema>;

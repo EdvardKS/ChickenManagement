@@ -13,6 +13,38 @@ export default function Contacto() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-12">
+      {/* Banner principal */}
+      <motion.div
+        className="w-full h-64 md:h-96 relative overflow-hidden rounded-xl shadow-xl mb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.7 }}
+      >
+        <img 
+          src="/img/local/contacto-banner.jpg" 
+          alt="Contacta con Asador La Morenica" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+          <div className="p-8 text-white">
+            <h1 className="text-4xl md:text-5xl font-dancing mb-3">Contacta con Nosotros</h1>
+            <p className="text-lg md:text-xl">Estamos aquí para ayudarte</p>
+          </div>
+        </div>
+      </motion.div>
+      
+      {/* Franja decorativa */}
+      <div className="relative py-6 my-8">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-[#D2B48C]"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4">
+            <img src="/img/corporativa/svg/phone-icon.svg" alt="Contacto" className="w-12 h-12" />
+          </span>
+        </div>
+      </div>
+      
       <motion.div 
         className="text-center space-y-6"
         initial={{ opacity: 0, y: 20 }}
@@ -137,9 +169,11 @@ export default function Contacto() {
                 <li>Eventos especiales</li>
                 <li>Fines de semana</li>
               </ul>
-              <Button className="w-full mt-4 bg-[#8B4513] hover:bg-[#6F3710]">
-                Llamar para Reservar
-              </Button>
+              <a href="tel:+34686536975">
+                <Button className="w-full mt-4 bg-[#8B4513] hover:bg-[#6F3710]">
+                  Llamar para Reservar
+                </Button>
+              </a>
             </CardContent>
           </Card>
         </motion.div>
@@ -200,9 +234,11 @@ export default function Contacto() {
                 <li>Menús personalizados</li>
                 <li>Eventos corporativos</li>
               </ul>
-              <Button className="w-full mt-4 bg-[#8B4513] hover:bg-[#6F3710]">
-                Solicitar Presupuesto
-              </Button>
+              <a href="https://wa.me/34686536975" target="_blank" rel="noopener noreferrer">
+                <Button className="w-full mt-4 bg-[#8B4513] hover:bg-[#6F3710]">
+                  Solicitar Presupuesto
+                </Button>
+              </a>
             </CardContent>
           </Card>
         </motion.div>
@@ -242,12 +278,16 @@ export default function Contacto() {
           por teléfono o email, o visítanos en nuestro local.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Button className="bg-[#8B4513] hover:bg-[#6F3710]">
-            965813907
-          </Button>
-          <Button className="bg-[#8B4513] hover:bg-[#6F3710]">
-            686536975
-          </Button>
+          <a href="tel:+34965813907">
+            <Button className="bg-[#8B4513] hover:bg-[#6F3710]">
+              965813907
+            </Button>
+          </a>
+          <a href="tel:+34686536975">
+            <Button className="bg-[#8B4513] hover:bg-[#6F3710]">
+              686536975
+            </Button>
+          </a>
         </div>
       </motion.div>
     </div>

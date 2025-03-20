@@ -341,7 +341,7 @@ export default function Home() {
                     <p className="text-sm sm:text-base">C/ Celada 72, Villena (03400) Alicante</p>
                     <p className="flex items-center justify-center gap-2 mt-2 text-sm sm:text-base">
                       <Phone className="h-4 w-4" />
-                      965813907 / 654027015
+                      965813907 / 686536975
                     </p>
                   </>
                 )

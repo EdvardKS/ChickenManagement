@@ -14,7 +14,7 @@ export default function FloatingContact() {
       transition={{ duration: 0.5 }}
     >
       <motion.a 
-        href="https://wa.me/34654027015?text=Hola!%20Me%20gustar%C3%ADa%20encargar..." 
+        href="https://wa.me/34686536975?text=Hola!%20Me%20gustar%C3%ADa%20encargar..." 
         target="_blank" 
         rel="noopener noreferrer"
         variants={buttonVariants}
@@ -30,7 +30,7 @@ export default function FloatingContact() {
       </motion.a>
 
       <motion.a 
-        href="tel:+34654027015"
+        href="tel:+34686536975"
         variants={buttonVariants}
         initial="initial"
         whileHover="hover"

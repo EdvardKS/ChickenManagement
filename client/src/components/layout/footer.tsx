@@ -18,7 +18,7 @@ export default function Footer() {
             <div className="space-y-2">
               <p className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                965813907 / 654027015
+                965813907 / 686536975
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />

@@ -23,7 +23,7 @@ export default function Contact() {
           </CardHeader>
           <CardContent className="space-y-2">
             <p>965813907</p>
-            <p>654027015</p>
+            <p>686536975</p>
           </CardContent>
         </Card>
 

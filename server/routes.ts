@@ -134,6 +134,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const productUpdate = req.body;
+      const updated = await storage.updateProduct(id, productUpdate);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      res.status(500).json({ error: 'Error al actualizar el producto' });
+    }
+  });
+
   // Business Hours
   app.get("/api/business-hours", async (_req, res) => {
     try {

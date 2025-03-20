@@ -9,7 +9,8 @@ import {
   Database, 
   FileJson, 
   Settings,
-  ChevronDown 
+  ChevronDown,
+  Star
 } from "lucide-react";
 import {
   Sheet,
@@ -45,6 +46,8 @@ export default function Header() {
       return { icon: <FileJson className="h-4 w-4" />, text: 'Semillas', path: '/admin/seeds' };
     } else if (location.includes('/admin/settings')) {
       return { icon: <Settings className="h-4 w-4" />, text: 'Configuración', path: '/admin/settings' };
+    } else if (location.includes('/admin/featured-menus')) {
+      return { icon: <Star className="h-4 w-4" />, text: 'Menús Destacados', path: '/admin/featured-menus' };
     }
     // Por defecto, mostrar Pedidos
     return { icon: <Package className="h-4 w-4" />, text: 'Pedidos', path: '/admin/orders' };
@@ -97,6 +100,14 @@ export default function Header() {
                     <div className="flex items-center space-x-2 w-full">
                       <ChartBar className="h-4 w-4" />
                       <span>Dashboards</span>
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/admin/featured-menus">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
+                      <Star className="h-4 w-4" />
+                      <span>Menús Destacados</span>
                     </div>
                   </DropdownMenuItem>
                 </Link>

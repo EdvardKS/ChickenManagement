@@ -99,7 +99,7 @@ export const users = pgTable("users", {
   email: text("email"),
   name: text("name"),
   phone: text("phone"),
-  comparsaName: text("comparsa_name"),
+  comparsaName: text("comparsaname"),
   details: text("details"),
   active: boolean("active").default(true),
   createdAt: timestamp("created_at").defaultNow(),

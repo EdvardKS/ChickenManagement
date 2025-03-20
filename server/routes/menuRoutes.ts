@@ -3,7 +3,7 @@ import { storage } from "../storage";
 import { z } from "zod";
 import { db } from "../db";
 import { products, settings } from "../../shared/schema";
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, desc, asc, or, SQL } from "drizzle-orm";
 
 const router = Router();
 
@@ -19,9 +19,11 @@ router.get("/featured", async (_req: Request, res: Response) => {
     const featuredSettings = await db.select()
       .from(settings)
       .where(
-        eq(settings.key, FEATURED_MENU_1)
-        .or(eq(settings.key, FEATURED_MENU_2))
-        .or(eq(settings.key, FEATURED_MENU_3))
+        or(
+          eq(settings.key, FEATURED_MENU_1),
+          eq(settings.key, FEATURED_MENU_2),
+          eq(settings.key, FEATURED_MENU_3)
+        )
       );
 
     // Si no hay configuraciones, devolver menús destacados según la lógica actual
@@ -46,7 +48,9 @@ router.get("/featured", async (_req: Request, res: Response) => {
     const featuredMenus = await db.select()
       .from(products)
       .where(
-        featuredMenuIds.map(id => eq(products.id, id)).reduce((acc, condition) => acc.or(condition))
+        featuredMenuIds.length === 1 
+          ? eq(products.id, featuredMenuIds[0])
+          : or(...featuredMenuIds.map(id => eq(products.id, id)))
       );
 
     // Ordenar menús según el orden en settings
@@ -82,9 +86,11 @@ router.get("/all", async (_req: Request, res: Response) => {
     const featuredSettings = await db.select()
       .from(settings)
       .where(
-        eq(settings.key, FEATURED_MENU_1)
-        .or(eq(settings.key, FEATURED_MENU_2))
-        .or(eq(settings.key, FEATURED_MENU_3))
+        or(
+          eq(settings.key, FEATURED_MENU_1),
+          eq(settings.key, FEATURED_MENU_2),
+          eq(settings.key, FEATURED_MENU_3)
+        )
       );
     
     // Crear un mapa de ID de menú -> posición en destacados
@@ -143,9 +149,13 @@ router.patch("/:id/featured", async (req: Request, res: Response) => {
       // Buscar en qué posición está este menú
       const featuredSettings = await db.select()
         .from(settings)
-        .where(eq(settings.key, FEATURED_MENU_1))
-        .or(eq(settings.key, FEATURED_MENU_2))
-        .or(eq(settings.key, FEATURED_MENU_3));
+        .where(
+          or(
+            eq(settings.key, FEATURED_MENU_1),
+            eq(settings.key, FEATURED_MENU_2),
+            eq(settings.key, FEATURED_MENU_3)
+          )
+        );
       
       for (const setting of featuredSettings) {
         if (setting.value === menuId.toString()) {

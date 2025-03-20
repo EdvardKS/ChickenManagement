@@ -115,7 +115,7 @@ export default function Header() {
                   <a className="text-lg">Admin</a>
                 </Link>
                 <Link href="/order">
-                  <Button className="w-full bg-blue-600 text-white hover:bg-blue-700">
+                  <Button className="w-full bg-[#8B4513] text-white hover:bg-[#6d3610]">
                     Hacer Pedido
                   </Button>
                 </Link>

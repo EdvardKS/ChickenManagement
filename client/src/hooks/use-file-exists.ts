@@ -27,9 +27,17 @@ export function useFileExists(path: string | null | undefined) {
     const checkFileExists = async () => {
       try {
         setLoading(true);
-        const response = await apiRequest<FileExistsResponse>(`/api/file-exists?path=${encodeURIComponent(path)}`);
-        setExists(response.exists);
-        setError(null);
+        // Usar fetch directamente para evitar problemas de tipado
+        const response = await fetch(`/api/file-exists?path=${encodeURIComponent(path)}`);
+        const data = await response.json() as FileExistsResponse;
+        
+        if (response.ok) {
+          setExists(data.exists);
+          setError(null);
+        } else {
+          setExists(false);
+          setError(new Error(data.error || "Error al verificar el archivo"));
+        }
       } catch (err) {
         setExists(false);
         setError(err instanceof Error ? err : new Error("Error desconocido"));

@@ -1011,15 +1011,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // API para verificar si una imagen existe
-  app.get('/api/file-exists', async (req: Request, res: Response) => {
-    const { path: filePath } = req.query;
-    if (!filePath) {
+  app.get('/api/file-exists', async (req, res) => {
+    const filePath = req.query.path;
+    if (!filePath || typeof filePath !== 'string') {
       return res.status(400).json({ exists: false, error: 'No path provided' });
     }
     
     try {
       // Normalizar la ruta para evitar acceso a directorios superiores
-      const normalizedPath = filePath.toString().replace(/\.\./g, '');
+      const normalizedPath = filePath.replace(/\.\./g, '');
       // Construir ruta completa
       const fullPath = path.join(process.cwd(), 'client', 'public', normalizedPath);
       

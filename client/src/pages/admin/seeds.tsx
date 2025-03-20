@@ -56,6 +56,10 @@ export default function AdminSeeds() {
     imageUrl: "",
     categoryId: 0
   });
+  
+  // Estado para productos modificados a la espera de ser guardados
+  const [modifiedProducts, setModifiedProducts] = useState<{[key: number]: {field: string, value: any}[]}>({});
+  const [savingProduct, setSavingProduct] = useState<number | null>(null);
   // Nuevo estado para la imagen temporal
   const [tempProductImage, setTempProductImage] = useState<File | null>(null);
   const [tempImagePreview, setTempImagePreview] = useState<string>("");
@@ -187,6 +191,94 @@ export default function AdminSeeds() {
   };
 
   // Funciones CRUD para Productos
+  const handleProductChange = (id: number, field: string, value: any) => {
+    // Buscamos el producto original en la base de datos
+    const originalProduct = products?.find((p: any) => p.id === id);
+    
+    // Verificamos si el valor ha cambiado
+    if (originalProduct && originalProduct[field] !== value) {
+      // Actualizamos el estado de productos modificados
+      setModifiedProducts(prev => {
+        const productChanges = prev[id] || [];
+        
+        // Verificamos si ya existe un cambio para este campo
+        const existingChangeIndex = productChanges.findIndex(change => change.field === field);
+        
+        if (existingChangeIndex >= 0) {
+          // Si ya existe un cambio para este campo, lo actualizamos
+          const updatedChanges = [...productChanges];
+          updatedChanges[existingChangeIndex] = { field, value };
+          return { ...prev, [id]: updatedChanges };
+        } else {
+          // Si no existe, agregamos un nuevo cambio
+          return { ...prev, [id]: [...productChanges, { field, value }] };
+        }
+      });
+    } else if (originalProduct && originalProduct[field] === value) {
+      // Si el valor es igual al original, eliminamos el cambio si existe
+      setModifiedProducts(prev => {
+        if (!prev[id]) return prev;
+        
+        const filteredChanges = prev[id].filter(change => change.field !== field);
+        
+        if (filteredChanges.length === 0) {
+          // Si no quedan cambios para este producto, eliminamos la entrada
+          const newState = { ...prev };
+          delete newState[id];
+          return newState;
+        }
+        
+        return { ...prev, [id]: filteredChanges };
+      });
+    }
+  };
+  
+  const saveProductChanges = async (id: number) => {
+    if (!modifiedProducts[id] || modifiedProducts[id].length === 0) return;
+    
+    setSavingProduct(id);
+    
+    try {
+      // Convertimos los cambios a un objeto con formato {campo1: valor1, campo2: valor2}
+      const changes = modifiedProducts[id].reduce((acc, change) => ({
+        ...acc,
+        [change.field]: change.value
+      }), {});
+      
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(changes)
+      });
+
+      if (!response.ok) throw new Error('Error al actualizar el producto');
+
+      // Limpiamos los cambios guardados
+      setModifiedProducts(prev => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      setEditingProduct(null);
+      
+      toast({
+        title: "Éxito",
+        description: "Producto actualizado correctamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al actualizar el producto",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingProduct(null);
+    }
+  };
+  
+  // Función CRUD antigua para compatibilidad
   const handleProductEdit = async (id: number, field: string, value: any) => {
     try {
       const response = await fetch(`/api/products/${id}`, {
@@ -880,7 +972,7 @@ export default function AdminSeeds() {
                     {editingProduct === product.id ? (
                       <Input
                         defaultValue={product.name}
-                        onBlur={(e) => handleProductEdit(product.id, 'name', e.target.value)}
+                        onBlur={(e) => handleProductChange(product.id, 'name', e.target.value)}
                       />
                     ) : (
                       product.name
@@ -890,7 +982,7 @@ export default function AdminSeeds() {
                     {editingProduct === product.id ? (
                       <Input
                         defaultValue={product.description}
-                        onBlur={(e) => handleProductEdit(product.id, 'description', e.target.value)}
+                        onBlur={(e) => handleProductChange(product.id, 'description', e.target.value)}
                       />
                     ) : (
                       product.description

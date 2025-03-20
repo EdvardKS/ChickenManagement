@@ -95,12 +95,12 @@ export function OrderDrawer({
     }
   }, [order]);
   
-  // Reset menu state when the drawer opens
+  // Reset menu state when the drawer opens or when order changes
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || order) {
       setIsMenuOpen(false);
     }
-  }, [isOpen]);
+  }, [isOpen, order]);
 
   const generateInvoiceNumber = (id: number) => {
     return id.toString().padStart(6, '0');
@@ -197,6 +197,7 @@ export function OrderDrawer({
     setIsEditing(false);
     setIsGeneratingInvoice(false);
     setIsPreviewingInvoice(false);
+    setIsMenuOpen(false); // Asegurarnos de que el menú está cerrado
     reset();
     editForm.reset();
     setSelectedQuantity(""); 

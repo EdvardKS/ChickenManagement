@@ -94,6 +94,13 @@ export function OrderDrawer({
       setSelectedQuantity(order.quantity?.toString() || "1");
     }
   }, [order]);
+  
+  // Reset menu state when the drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsMenuOpen(false);
+    }
+  }, [isOpen]);
 
   const generateInvoiceNumber = (id: number) => {
     return id.toString().padStart(6, '0');
@@ -279,7 +286,7 @@ export function OrderDrawer({
               className="h-36"
             />
             <div className="flex-1 flex justify-end">
-              <DropdownMenu>
+              <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"

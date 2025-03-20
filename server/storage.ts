@@ -419,8 +419,10 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.username, username))
-      .where(eq(users.active, true));
+      .where(and(
+        eq(users.username, username),
+        eq(users.active, true)
+      ));
     return user;
   }
 
@@ -428,8 +430,10 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, id))
-      .where(eq(users.active, true));
+      .where(and(
+        eq(users.id, id),
+        eq(users.active, true)
+      ));
     return user;
   }
 

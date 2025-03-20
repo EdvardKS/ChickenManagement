@@ -63,19 +63,14 @@ export default function Login() {
   };
   
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
+    <div 
+      className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: 'url("/img/festeros/cabalgata villena.JPG")' }}
+    >
       <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
-          <img 
-            src="/images/moros-cristianos.svg" 
-            alt="Moros y Cristianos" 
-            className="h-40 mx-auto rounded-lg object-contain shadow-md" 
-          />
-        </div>
-        
-        <Card>
+        <Card className="bg-white/90 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-center">Acceso al Sistema</CardTitle>
+            <CardTitle className="text-center text-2xl">Acceso al Sistema</CardTitle>
             <CardDescription className="text-center">
               Accede al panel de administración para Fiestas de Moros y Cristianos
             </CardDescription>

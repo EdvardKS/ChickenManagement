@@ -361,24 +361,108 @@ export default function Home() {
       <section className={sectionBaseClasses}>
         <div className={containerBaseClasses}>
           <motion.div 
-            className={`${maxWidthBaseClasses} text-center space-y-8`}
+            className={`${maxWidthBaseClasses} space-y-12`}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-[#8B4513]">Nuestra Historia</h2>
-            <div className="prose prose-lg mx-auto px-4">
+            <div className="text-center space-y-6 max-w-3xl mx-auto">
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-[#8B4513]">Nuestra Historia</h2>
               <p className="text-base sm:text-lg lg:text-xl text-gray-600">
                 Llevamos más de 20 años en Villena y comarca, orgullosos de ser un referente 
                 en la zona gracias a nuestro horno de leña para asar pollos, lo que les 
                 confiere un sabor inigualable y una textura distinta.
               </p>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600">
-                En Asador La Morenica encontrarás una fusión única de cocina española y armenia, 
-                creando una experiencia gastronómica inolvidable.
-              </p>
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
+              <motion.div 
+                className="overflow-hidden rounded-xl shadow-xl"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <img 
+                  src="/img/corporativa/maxtor/nosotros/los_duenyos.jpg" 
+                  alt="Los dueños del Asador La Morenica" 
+                  className="w-full h-auto object-cover"
+                />
+              </motion.div>
+              
+              <motion.div 
+                className="space-y-6"
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-dancing text-[#8B4513]">Tradición Familiar</h3>
+                <p className="text-base sm:text-lg text-gray-600">
+                  En Asador La Morenica encontrarás una fusión única de cocina española y armenia, 
+                  creando una experiencia gastronómica inolvidable gracias a la pasión de una familia 
+                  dedicada a ofrecer lo mejor de ambas culturas.
+                </p>
+                <p className="text-base sm:text-lg text-gray-600">
+                  Nuestro equipo trabaja cada día para ofrecerte una atención personalizada y platos 
+                  preparados con el máximo cuidado y los mejores ingredientes.
+                </p>
+              </motion.div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
+              <motion.div 
+                className="space-y-6 order-2 md:order-1"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-dancing text-[#8B4513]">Nuestro Asador</h3>
+                <p className="text-base sm:text-lg text-gray-600">
+                  El secreto de nuestro sabor único está en nuestro horno tradicional de leña, 
+                  donde asamos los pollos siguiendo recetas transmitidas de generación en generación.
+                </p>
+                <p className="text-base sm:text-lg text-gray-600">
+                  La combinación perfecta de tradiciones culinarias, el sabor de la leña y el 
+                  cuidado en cada detalle hacen que cada visita a nuestro asador sea una 
+                  experiencia para recordar.
+                </p>
+              </motion.div>
+              
+              <motion.div 
+                className="overflow-hidden rounded-xl shadow-xl order-1 md:order-2"
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <img 
+                  src="/img/corporativa/maxtor/nosotros/nuestro_asador.jpg" 
+                  alt="Nuestro asador tradicional" 
+                  className="w-full h-auto object-cover"
+                />
+              </motion.div>
+            </div>
+            
+            <motion.div 
+              className="overflow-hidden rounded-xl shadow-xl mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <img 
+                src="/img/corporativa/maxtor/nosotros/el_equipo.jpg" 
+                alt="Nuestro equipo" 
+                className="w-full h-auto object-cover"
+              />
+              <div className="p-6 text-center bg-white">
+                <h3 className="text-xl sm:text-2xl font-dancing text-[#8B4513] mb-2">Nuestro Equipo</h3>
+                <p className="text-gray-600">Un equipo dedicado a ofrecerte la mejor experiencia en cada visita</p>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -429,31 +513,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Sobre Nosotros */}
-      <section className={sectionBaseClasses}>
-        <div className={containerBaseClasses}>
-          <motion.div 
-            className={`${maxWidthBaseClasses} text-center space-y-8`}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-[#8B4513]">Nuestra Historia</h2>
-            <div className="prose prose-lg mx-auto px-4">
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600">
-                Llevamos más de 20 años en Villena y comarca, orgullosos de ser un referente 
-                en la zona gracias a nuestro horno de leña para asar pollos, lo que les 
-                confiere un sabor inigualable y una textura distinta.
-              </p>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600">
-                En Asador La Morenica encontrarás una fusión única de cocina española y armenia, 
-                creando una experiencia gastronómica inolvidable.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+
     </div>
   );
 }

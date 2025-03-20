@@ -22,7 +22,7 @@ const heroTexts = [
     cta: {
       primary: {
         text: "Contactar",
-        href: "/contact",
+        href: "/contacto",
         variant: "outline",
         className: "bg-white/10 text-white border-white hover:bg-white hover:text-[#8B4513]"
       }
@@ -34,7 +34,7 @@ const heroTexts = [
     cta: {
       primary: {
         text: "Ver Productos",
-        href: "/products",
+        href: "/productos",
         variant: "default",
         className: "bg-[#8B4513] text-white border-none hover:bg-[#6d3610]"
       }
@@ -58,7 +58,7 @@ const heroTexts = [
     cta: {
       primary: {
         text: "Nuestra Historia",
-        href: "/about",
+        href: "/nosotros",
         variant: "default",
         className: "bg-[#8B4513] text-white border-none hover:bg-[#6d3610]"
       }

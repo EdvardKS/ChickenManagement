@@ -214,7 +214,7 @@ export default function Header() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col space-y-4 mt-8">
-                <Link href="/products">
+                <Link href="/productos">
                   <div className="text-lg cursor-pointer">Productos</div>
                 </Link>
                 <Link href="/nosotros">

@@ -30,7 +30,7 @@ export default function Nosotros() {
         </div>
         <div className="relative flex justify-center">
           <span className="bg-white px-4">
-            <img src="/img/corporativa/svg/chicken-icon.svg" alt="Decoración" className="w-12 h-12" />
+            <img src="/img/corporativa/svg/flor.png" alt="Decoración" className="w-12 h-12" />
           </span>
         </div>
       </div>

@@ -40,7 +40,7 @@ export default function Contacto() {
         </div>
         <div className="relative flex justify-center">
           <span className="bg-white px-4">
-            <img src="/img/corporativa/svg/phone-icon.svg" alt="Contacto" className="w-12 h-12" />
+            <img src="/img/corporativa/svg/flor.png" alt="Contacto" className="w-12 h-12" />
           </span>
         </div>
       </div>

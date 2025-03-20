@@ -40,7 +40,7 @@ function PublicRoutes() {
       <main className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/products">
+          <Route path="/productos">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <Products />
             </div>

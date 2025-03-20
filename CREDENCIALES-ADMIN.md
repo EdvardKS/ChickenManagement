@@ -2,7 +2,7 @@
 
 ## Rol: Haykakan (Administrador)
 
-**Usuario:** admin  
+**Usuario:** narine  
 **Contraseña:** admin123
 
 Este usuario tiene acceso completo a todas las funcionalidades del sistema, incluyendo:

@@ -24,7 +24,7 @@ export default function FeaturedMenus() {
   const { data: menus, isLoading } = useQuery({
     queryKey: ['/api/menus/all'],
     queryFn: async () => {
-      const response = await apiRequest('/api/menus/all');
+      const response = await apiRequest<Product[]>('/api/menus/all');
       return response;
     }
   });
@@ -34,8 +34,8 @@ export default function FeaturedMenus() {
     if (menus) {
       // Filtrar menús destacados y ordenarlos
       const featured = menus
-        .filter((menu: Product) => menu.featured)
-        .sort((a: Product, b: Product) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
+        .filter((menu) => menu.featured)
+        .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
       
       setFeaturedMenus(featured);
     }
@@ -44,7 +44,7 @@ export default function FeaturedMenus() {
   // Mutación para actualizar el estado destacado de un menú
   const updateFeaturedMutation = useMutation({
     mutationFn: async ({ id, featured, order }: { id: number, featured: boolean, order?: number }) => {
-      const response = await apiRequest<Product>(
+      const response = await apiRequest(
         `/api/menus/${id}/featured`, 
         'PATCH', 
         { featured, order }

@@ -26,6 +26,11 @@ const navItems = [
     icon: ChartBar
   },
   {
+    title: "Menús Destacados",
+    href: "/admin/featured-menus",
+    icon: Star
+  },
+  {
     title: "Horarios",
     href: "/admin/horarios",
     icon: Clock

@@ -24,8 +24,8 @@ export default function FeaturedMenus() {
   const { data: menus, isLoading } = useQuery({
     queryKey: ['/api/menus/all'],
     queryFn: async () => {
-      const response = await apiRequest<Product[]>('/api/menus/all');
-      return response;
+      const response = await apiRequest('GET', '/api/menus/all');
+      return response.json();
     }
   });
   
@@ -45,11 +45,11 @@ export default function FeaturedMenus() {
   const updateFeaturedMutation = useMutation({
     mutationFn: async ({ id, featured, order }: { id: number, featured: boolean, order?: number }) => {
       const response = await apiRequest(
+        'PATCH',
         `/api/menus/${id}/featured`, 
-        'PATCH', 
         { featured, order }
       );
-      return response;
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/menus/all'] });

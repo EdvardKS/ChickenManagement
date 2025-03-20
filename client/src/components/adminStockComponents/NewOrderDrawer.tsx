@@ -182,7 +182,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
           <Button 
             type="submit"
-            className="bg-yellow-600 hover:bg-yellow-700 text-white w-full p-6 my-4 text-2xl"
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full p-6 my-4 text-2xl"
             disabled={createOrder.isPending}
           >
             {createOrder.isPending ? "Creando..." : "Crear Encargo"}

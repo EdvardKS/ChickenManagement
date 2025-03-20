@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import stockRoutes from './routes/stockRoutes';
 import orderRoutes from './routes/orderRoutes';
+import menuRoutes from './routes/menuRoutes';
 import { storage } from "./storage";
 import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema, insertSettingsSchema } from "@shared/schema";
@@ -85,6 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register routes
   app.use('/api/stock', stockRoutes);
   app.use('/api/orders', orderRoutes);
+  app.use('/api/menus', menuRoutes);
 
 
   // Categories

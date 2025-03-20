@@ -20,6 +20,7 @@ import AdminDatabase from "@/pages/admin/database";
 import AdminSettings from "@/pages/admin/settings";
 import AdminSeeds from "@/pages/admin/seeds";
 import AdminHorarios from "@/pages/admin/horarios";
+import FeaturedMenus from "@/pages/admin/featured-menus";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
@@ -82,6 +83,7 @@ function AdminRoutes() {
           <Route path="/admin/database" component={AdminDatabase} />
           <Route path="/admin/settings" component={AdminSettings} />
           <Route path="/admin/seeds" component={AdminSeeds} />
+          <Route path="/admin/featured-menus" component={FeaturedMenus} />
           <Route path="/admin/dashboards/:dashboard*">
             <DashboardLayout>
               <Switch>

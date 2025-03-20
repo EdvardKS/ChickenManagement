@@ -26,15 +26,19 @@ export default function ProductCard({ product }: ProductCardProps) {
       <CardContent>
         <p className="text-gray-600">{product.description}</p>
         <p className="text-xl font-bold mt-2">
-          {typeof product.price === 'number' 
-            ? product.price.toFixed(2) 
-            : product.price}€
+          {(() => {
+            try {
+              return Number(product.price).toFixed(2);
+            } catch (e) {
+              return product.price;
+            }
+          })()}€
         </p>
       </CardContent>
       
       <CardFooter>
         <Link href="/encargar">
-          <Button className="w-full">Encargar</Button>
+          <Button className="w-full bg-[#8B4513] hover:bg-[#6d3610] text-white border-none">Encargar</Button>
         </Link>
       </CardFooter>
     </Card>

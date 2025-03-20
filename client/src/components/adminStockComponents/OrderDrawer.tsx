@@ -146,12 +146,22 @@ export function OrderDrawer({
         return;
       }
 
+      // Solución para evitar problemas de fecha
+      // Utilizamos la fecha original si hay algún problema
+      let pickupTimeISO;
+      try {
+        pickupTimeISO = pickupTime.toISOString();
+      } catch (e) {
+        console.error("Error convirtiendo fecha a ISO:", e);
+        pickupTimeISO = order!.pickupTime; // Usamos la fecha original
+      }
+
       const updatedOrder = {
         ...order!,
         customerName: data.customerName,
         quantity: selectedQuantity,
         details: data.details || null,
-        pickupTime: pickupTime.toISOString(),
+        pickupTime: pickupTimeISO,
         customerPhone: data.customerPhone || null,
         status: order!.status,
         deleted: order!.deleted

@@ -65,7 +65,7 @@ export default function Login() {
   return (
     <div 
       className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: 'url("/img/corporativa/maxtor/Castillo-de-Villena1.svg")' }}
+      style={{ backgroundImage: 'url("/img/corporativa/maxtor/Castillo-de-Villena1.jpg")' }}
     >
       <div className="w-full max-w-md">
         <div className="text-center mb-6">

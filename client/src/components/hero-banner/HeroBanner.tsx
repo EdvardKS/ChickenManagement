@@ -12,7 +12,7 @@ const heroTexts = [
         text: "Hacer Pedido",
         href: "/order",
         variant: "default",
-        className: "bg-[#8B4513] text-white border-none hover:bg-[#6d3610]"
+        className: "bg-blue-600 text-white border-none hover:bg-blue-700"
       }
     }
   },
@@ -24,7 +24,7 @@ const heroTexts = [
         text: "Contactar",
         href: "/contact",
         variant: "outline",
-        className: "bg-white/10 text-white border-white hover:bg-white hover:text-[#8B4513]"
+        className: "bg-white/10 text-white border-white hover:bg-white hover:text-blue-600"
       }
     }
   },
@@ -36,7 +36,7 @@ const heroTexts = [
         text: "Ver Productos",
         href: "/products",
         variant: "default",
-        className: "bg-[#8B4513] text-white border-none hover:bg-[#6d3610]"
+        className: "bg-blue-600 text-white border-none hover:bg-blue-700"
       }
     }
   },
@@ -48,7 +48,7 @@ const heroTexts = [
         text: "Seguir en Instagram",
         href: "https://www.instagram.com/asadolamorenica/",
         variant: "outline",
-        className: "bg-white/10 text-white border-white hover:bg-white hover:text-[#8B4513]"
+        className: "bg-white/10 text-white border-white hover:bg-white hover:text-blue-600"
       }
     }
   },
@@ -60,7 +60,7 @@ const heroTexts = [
         text: "Nuestra Historia",
         href: "/about",
         variant: "default",
-        className: "bg-[#8B4513] text-white border-none hover:bg-[#6d3610]"
+        className: "bg-blue-600 text-white border-none hover:bg-blue-700"
       }
     }
   }

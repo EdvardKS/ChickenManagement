@@ -293,12 +293,69 @@ export default function Nosotros() {
         </motion.div>
       </div>
 
+      {/* Sección de Apoyo Deportivo */}
+      <div className="grid md:grid-cols-2 gap-12 items-center">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 1.2 }}
+          className="space-y-6"
+        >
+          <h2 className="text-3xl font-dancing text-[#8B4513]">Comprometidos con el Deporte Local</h2>
+          <p className="text-gray-700">
+            En Asador La Morenica creemos firmemente en el poder del deporte para unir a la comunidad
+            y promover valores positivos, especialmente entre los jóvenes.
+          </p>
+          <p className="text-gray-700">
+            Desde 2006, hemos apoyado con orgullo al Club de Baloncesto UVE 74 de Villena, patrocinando
+            diversos equipos y eventos a lo largo de los años.
+          </p>
+          <p className="text-gray-700">
+            En 2006, tuvimos el honor de patrocinar al equipo femenino del UVE 74, un grupo de 
+            deportistas que representó con talento y dedicación los valores de nuestro pueblo.
+          </p>
+          <p className="text-gray-700">
+            En 2018, continuamos nuestra colaboración con el club durante la presentación oficial
+            de la temporada, reafirmando nuestro compromiso con el deporte villenense.
+          </p>
+        </motion.div>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 1.3 }}
+          className="rounded-lg overflow-hidden shadow-lg"
+        >
+          <div className="grid grid-cols-1 gap-4">
+            <div className="rounded-lg overflow-hidden">
+              <img 
+                src="/img/corporativa/2006 equpo femenino de asador la morenica.jpg" 
+                alt="Equipo femenino Asador La Morenica 2006" 
+                className="w-full h-auto object-cover"
+              />
+              <div className="bg-[#FBF7F4] p-2 text-center">
+                <p className="text-sm text-gray-700">Equipo femenino patrocinado por Asador La Morenica (2006)</p>
+              </div>
+            </div>
+            <div className="rounded-lg overflow-hidden">
+              <img 
+                src="/img/corporativa/06 2018-12-9 PRESENTACION V74 VILLENA (81).JPG" 
+                alt="Presentación UVE 74 Villena 2018" 
+                className="w-full h-auto object-cover"
+              />
+              <div className="bg-[#FBF7F4] p-2 text-center">
+                <p className="text-sm text-gray-700">Presentación del UVE 74 Villena (Diciembre 2018)</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       {/* Llamada a la acción */}
       <motion.div 
         className="text-center space-y-6 py-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 1.2 }}
+        transition={{ duration: 0.5, delay: 1.4 }}
       >
         <h2 className="text-3xl font-dancing text-[#8B4513]">Ven a Conocernos</h2>
         <p className="text-lg text-gray-700 max-w-2xl mx-auto">

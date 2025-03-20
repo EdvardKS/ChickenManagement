@@ -97,8 +97,8 @@ export default function Nosotros() {
           className="rounded-lg overflow-hidden shadow-lg order-2 md:order-1"
         >
           <img 
-            src="/img/corporativa/maxtor/nosotros/horno_le_a.jpg" 
-            alt="Horno tradicional de leña" 
+            src="/img/products/paella_marisco.jpg" 
+            alt="Horno tradicional y nuestras paellas" 
             className="w-full h-auto object-cover"
           />
         </motion.div>
@@ -160,18 +160,18 @@ export default function Nosotros() {
         >
           <div className="grid grid-cols-2 gap-2">
             <img 
-              src="/img/corporativa/maxtor/especialidades/calamares.jpg" 
-              alt="Calamares" 
+              src="/img/products/rustidera_cordero.jpg" 
+              alt="Rustidera de cordero" 
               className="w-full h-40 object-cover rounded-lg shadow-md"
             />
             <img 
-              src="/img/corporativa/maxtor/especialidades/setsunomomo.jpg" 
-              alt="Ensalada fusion" 
+              src="/img/products/rustidera_pulpo.jpg" 
+              alt="Rustidera de pulpo" 
               className="w-full h-40 object-cover rounded-lg shadow-md"
             />
             <img 
-              src="/img/corporativa/maxtor/especialidades/gabardinas.jpg" 
-              alt="Gabardinas - especialidad de la casa" 
+              src="/img/products/pollos.jpg" 
+              alt="Nuestros pollos - especialidad de la casa" 
               className="w-full h-40 object-cover rounded-lg shadow-md col-span-2"
             />
           </div>
@@ -212,8 +212,8 @@ export default function Nosotros() {
           className="rounded-lg overflow-hidden shadow-lg order-2 md:order-1"
         >
           <img 
-            src="/img/corporativa/maxtor/car_villena.jpg" 
-            alt="Cartel de Villena - Salón para eventos" 
+            src="/img/products/menu_uno.jpg" 
+            alt="Menú especial para eventos" 
             className="w-full h-auto object-cover"
           />
         </motion.div>
@@ -364,7 +364,7 @@ export default function Nosotros() {
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-6">
           <a 
-            href="/order" 
+            href="/encargar" 
             className="bg-[#8B4513] hover:bg-[#6d3610] text-white font-bold py-3 px-6 rounded-lg transition-colors"
           >
             Hacer un Pedido

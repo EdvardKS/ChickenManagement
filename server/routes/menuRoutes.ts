@@ -18,9 +18,11 @@ router.get("/featured", async (_req: Request, res: Response) => {
     // Primero, obtener los IDs de menús destacados desde settings
     const featuredSettings = await db.select()
       .from(settings)
-      .where(eq(settings.key, FEATURED_MENU_1))
-      .or(eq(settings.key, FEATURED_MENU_2))
-      .or(eq(settings.key, FEATURED_MENU_3));
+      .where(
+        eq(settings.key, FEATURED_MENU_1)
+        .or(eq(settings.key, FEATURED_MENU_2))
+        .or(eq(settings.key, FEATURED_MENU_3))
+      );
 
     // Si no hay configuraciones, devolver menús destacados según la lógica actual
     if (featuredSettings.length === 0) {
@@ -79,9 +81,11 @@ router.get("/all", async (_req: Request, res: Response) => {
     // Obtener las configuraciones de menús destacados
     const featuredSettings = await db.select()
       .from(settings)
-      .where(eq(settings.key, FEATURED_MENU_1))
-      .or(eq(settings.key, FEATURED_MENU_2))
-      .or(eq(settings.key, FEATURED_MENU_3));
+      .where(
+        eq(settings.key, FEATURED_MENU_1)
+        .or(eq(settings.key, FEATURED_MENU_2))
+        .or(eq(settings.key, FEATURED_MENU_3))
+      );
     
     // Crear un mapa de ID de menú -> posición en destacados
     const featuredMap: { [key: number]: number } = {};

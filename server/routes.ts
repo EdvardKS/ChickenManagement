@@ -417,12 +417,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const FEATURED_MENU_2 = "featured_menu_2";
       const FEATURED_MENU_3 = "featured_menu_3";
       
-      // Verificar si ya existen las claves
-      const existingSettings = await db.select()
+      // Verificar cada clave individualmente
+      const settings1 = await db.select()
         .from(settings)
-        .where(eq(settings.key, FEATURED_MENU_1))
-        .or(eq(settings.key, FEATURED_MENU_2))
-        .or(eq(settings.key, FEATURED_MENU_3));
+        .where(eq(settings.key, FEATURED_MENU_1));
+      
+      const settings2 = await db.select()
+        .from(settings)
+        .where(eq(settings.key, FEATURED_MENU_2));
+        
+      const settings3 = await db.select()
+        .from(settings)
+        .where(eq(settings.key, FEATURED_MENU_3));
+      
+      // Crear lista de configuraciones existentes
+      const existingSettings = [
+        ...settings1,
+        ...settings2,
+        ...settings3
+      ];
       
       const missingKeys = [
         FEATURED_MENU_1,
@@ -430,13 +443,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         FEATURED_MENU_3
       ].filter(key => !existingSettings.some(s => s.key === key));
       
-      // Insertar configuraciones faltantes
-      if (missingKeys.length > 0) {
-        await db.insert(settings)
-          .values(missingKeys.map(key => ({
-            key,
-            value: "0" // Valor por defecto (ningún menú seleccionado)
-          })));
+      // Insertar configuraciones faltantes una por una
+      for (const key of missingKeys) {
+        await db.insert(settings).values({
+          key,
+          value: "0" // Valor por defecto (ningún menú seleccionado)
+        });
+      }
+      
+      // Agregar también las configuraciones básicas del sistema
+      const defaultSettings = [
+        { key: 'smtp_host', value: 'smtp.gmail.com' },
+        { key: 'smtp_port', value: '587' },
+        { key: 'smtp_user', value: 'your-email@gmail.com' },
+        { key: 'smtp_pass', value: 'your-app-password' },
+        { key: 'smtp_from', value: 'Your Restaurant <your-email@gmail.com>' },
+        { key: 'dias_abierto', value: '["V","S","D"]' },
+        { key: 'horario_abertura', value: '10:00' },
+        { key: 'horario_cerrar', value: '16:00' },
+        { key: 'minimo_pedido', value: '1' },
+        { key: 'maximo_pedido', value: '10' },
+        { key: 'tiempo_preparacion', value: '30' }, // minutos
+        { key: 'intervalo_recogida', value: '15' }, // minutos
+      ];
+
+      for (const setting of defaultSettings) {
+        const existing = await storage.getSetting(setting.key);
+        if (!existing) {
+          await storage.updateSetting(setting.key, setting.value);
+        }
       }
       
       res.json({ 

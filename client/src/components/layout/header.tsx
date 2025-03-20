@@ -84,54 +84,54 @@ export default function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/orders">
-                    <a className="flex items-center space-x-2 w-full">
+                <Link href="/admin/orders">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
                       <Package className="h-4 w-4" />
                       <span>Pedidos</span>
-                    </a>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/dashboards/orders-overview">
-                    <a className="flex items-center space-x-2 w-full">
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/admin/dashboards/orders-overview">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
                       <ChartBar className="h-4 w-4" />
                       <span>Dashboards</span>
-                    </a>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/horarios">
-                    <a className="flex items-center space-x-2 w-full">
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/admin/horarios">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
                       <Clock className="h-4 w-4" />
                       <span>Horarios</span>
-                    </a>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/database">
-                    <a className="flex items-center space-x-2 w-full">
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/admin/database">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
                       <Database className="h-4 w-4" />
                       <span>Base de Datos</span>
-                    </a>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/seeds">
-                    <a className="flex items-center space-x-2 w-full">
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/admin/seeds">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
                       <FileJson className="h-4 w-4" />
                       <span>Semillas</span>
-                    </a>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/settings">
-                    <a className="flex items-center space-x-2 w-full">
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/admin/settings">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
                       <Settings className="h-4 w-4" />
                       <span>Configuración</span>
-                    </a>
-                  </Link>
-                </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -174,17 +174,15 @@ export default function Header() {
         {/* Centered logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <Link href="/">
-            <a>
-              <img
-                src={
-                  isScrolled
-                    ? "/img/corporativa/logo-negro.png"
-                    : "/img/corporativa/logo-blanco.png"
-                }
-                alt="Asador La Morenica"
-                className="h-20 transition-opacity duration-300 pt-2"
-              />
-            </a>
+            <img
+              src={
+                isScrolled
+                  ? "/img/corporativa/logo-negro.png"
+                  : "/img/corporativa/logo-blanco.png"
+              }
+              alt="Asador La Morenica"
+              className="h-20 transition-opacity duration-300 pt-2"
+            />
           </Link>
         </div>
 
@@ -206,16 +204,16 @@ export default function Header() {
               </SheetHeader>
               <div className="flex flex-col space-y-4 mt-8">
                 <Link href="/products">
-                  <a className="text-lg">Productos</a>
+                  <div className="text-lg cursor-pointer">Productos</div>
                 </Link>
                 <Link href="/about">
-                  <a className="text-lg">Nosotros</a>
+                  <div className="text-lg cursor-pointer">Nosotros</div>
                 </Link>
                 <Link href="/contact">
-                  <a className="text-lg">Contacto</a>
+                  <div className="text-lg cursor-pointer">Contacto</div>
                 </Link>
                 <Link href="/admin">
-                  <a className="text-lg">Admin</a>
+                  <div className="text-lg cursor-pointer">Admin</div>
                 </Link>
                 <Link href="/order">
                   <Button className="w-full bg-[#8B4513] text-white hover:bg-[#6d3610]">
@@ -225,7 +223,7 @@ export default function Header() {
                 {isAdmin && (
                   <div className="border-t pt-4 mt-4">
                     <Link href="/">
-                      <a className="text-lg">Volver al Sitio</a>
+                      <div className="text-lg cursor-pointer">Volver al Sitio</div>
                     </Link>
                   </div>
                 )}

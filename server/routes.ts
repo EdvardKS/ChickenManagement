@@ -408,6 +408,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Error al obtener la configuración' });
     }
   });
+  
+  // Inicializar configuraciones básicas si no existen
+  app.post("/api/settings/initialize", async (_req, res) => {
+    try {
+      // Claves de configuración para menús destacados
+      const FEATURED_MENU_1 = "featured_menu_1";
+      const FEATURED_MENU_2 = "featured_menu_2";
+      const FEATURED_MENU_3 = "featured_menu_3";
+      
+      // Verificar si ya existen las claves
+      const existingSettings = await db.select()
+        .from(settings)
+        .where(eq(settings.key, FEATURED_MENU_1))
+        .or(eq(settings.key, FEATURED_MENU_2))
+        .or(eq(settings.key, FEATURED_MENU_3));
+      
+      const missingKeys = [
+        FEATURED_MENU_1,
+        FEATURED_MENU_2,
+        FEATURED_MENU_3
+      ].filter(key => !existingSettings.some(s => s.key === key));
+      
+      // Insertar configuraciones faltantes
+      if (missingKeys.length > 0) {
+        await db.insert(settings)
+          .values(missingKeys.map(key => ({
+            key,
+            value: "0" // Valor por defecto (ningún menú seleccionado)
+          })));
+      }
+      
+      res.json({ 
+        message: "Configuración inicializada correctamente", 
+        initializedSettings: missingKeys 
+      });
+    } catch (error) {
+      console.error('Error initializing settings:', error);
+      res.status(500).json({ error: 'Error al inicializar la configuración' });
+    }
+  });
 
   app.post("/api/settings", async (req, res) => {
     try {
@@ -449,37 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add default settings if they don't exist
-  app.post("/api/settings/initialize", async (_req, res) => {
-    try {
-      const defaultSettings = [
-        { key: 'smtp_host', value: 'smtp.gmail.com' },
-        { key: 'smtp_port', value: '587' },
-        { key: 'smtp_user', value: 'your-email@gmail.com' },
-        { key: 'smtp_pass', value: 'your-app-password' },
-        { key: 'smtp_from', value: 'Your Restaurant <your-email@gmail.com>' },
-        { key: 'dias_abierto', value: '["V","S","D"]' },
-        { key: 'horario_abertura', value: '10:00' },
-        { key: 'horario_cerrar', value: '16:00' },
-        { key: 'minimo_pedido', value: '1' },
-        { key: 'maximo_pedido', value: '10' },
-        { key: 'tiempo_preparacion', value: '30' }, // minutos
-        { key: 'intervalo_recogida', value: '15' }, // minutos
-      ];
-
-      for (const setting of defaultSettings) {
-        const existing = await storage.getSetting(setting.key);
-        if (!existing) {
-          await storage.updateSetting(setting.key, setting.value);
-        }
-      }
-
-      res.json({ message: 'Configuración inicial creada correctamente' });
-    } catch (error) {
-      console.error('Error initializing settings:', error);
-      res.status(500).json({ error: 'Error al inicializar la configuración' });
-    }
-  });
+  // Esta ruta de configuración ha sido reemplazada por la versión anterior, ya no es necesaria
 
   // Seeds Preview
   app.get("/api/admin/seeds/:type/preview", async (req, res) => {

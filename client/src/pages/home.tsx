@@ -57,9 +57,9 @@ export default function Home() {
             </div>
             <div className="flex-1 max-w-xl w-full px-4 lg:px-0">
               <img 
-                src="/img/aburrido.svg" 
+                src="/img/products/1702127812-20231209_134517-min.jpg" 
                 alt="Nuestro horno de leña tradicional" 
-                className="rounded-xl shadow-2xl w-full h-auto"
+                className="rounded-xl shadow-2xl w-full h-auto object-cover"
               /> 
             </div>
           </div>

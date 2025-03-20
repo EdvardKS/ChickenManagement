@@ -195,7 +195,7 @@ export default function Home() {
             </div>
             <div className="relative order-1 lg:order-2">
               <img 
-                src="/img/aburrido.svg" 
+                src="/img/products/1702127812-20231209_134517-min.jpg" 
                 alt="Nuestro salón de eventos"
                 className="rounded-xl shadow-2xl w-full h-auto aspect-video object-cover"
               />

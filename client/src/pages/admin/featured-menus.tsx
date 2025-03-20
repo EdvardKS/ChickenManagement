@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import AdminLayout from "../../components/layout/admin-layout";
-import { Product } from "@shared/schema";
+import { type Product } from "../../types/schema";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
@@ -24,18 +24,22 @@ export default function FeaturedMenus() {
   const { data: menus, isLoading } = useQuery({
     queryKey: ['/api/menus/all'],
     queryFn: async () => {
-      const response = await apiRequest<Product[]>('/api/menus/all');
+      const response = await apiRequest('/api/menus/all');
       return response;
-    },
-    onSuccess: (data) => {
+    }
+  });
+  
+  // Efecto para actualizar los menús destacados cuando cambian los datos
+  React.useEffect(() => {
+    if (menus) {
       // Filtrar menús destacados y ordenarlos
-      const featured = data
-        .filter(menu => menu.featured)
-        .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
+      const featured = menus
+        .filter((menu: Product) => menu.featured)
+        .sort((a: Product, b: Product) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
       
       setFeaturedMenus(featured);
     }
-  });
+  }, [menus]);
   
   // Mutación para actualizar el estado destacado de un menú
   const updateFeaturedMutation = useMutation({

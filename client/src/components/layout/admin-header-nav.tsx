@@ -9,6 +9,7 @@ import {
   Database,
   Clock,
   FileJson,
+  Star,
   ChevronUp,
   ChevronDown
 } from "lucide-react";

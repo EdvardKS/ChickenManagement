@@ -21,107 +21,110 @@ interface StockDrawerProps {
 export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   const { toast } = useToast();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingAction, setPendingAction] = useState<{ action: 'add' | 'remove' | 'reset', quantity?: number } | null>(null);
+  const [pendingAction, setPendingAction] = useState<{ action: 'add_mounted' | 'remove_mounted' | 'direct_sale' | 'direct_sale_correction' | 'reset', quantity?: number } | null>(null);
   const { data: stock } = useQuery<Stock>({ queryKey: ['/api/stock'] });
 
-  // Mutación para actualizar el stock montado (initial_stock)
-  const updateMountedStock = useMutation({
-    mutationFn: async ({ action, quantity }: { action: 'add' | 'remove'; quantity: number }) => {
-      const currentInitialStock = parseFloat(stock?.initialStock || "0");
-      const newInitialStock = action === 'add' ? 
-        currentInitialStock + quantity : 
-        currentInitialStock - quantity;
-
-      const res = await apiRequest("POST", `/api/stock/update`, { 
-        initialStock: newInitialStock.toString(),
-        updateType: 'mounted' // Indica que es una actualización de stock montado
+  // Mutación para actualizar el stock montado (agregar pollos al stock montado)
+  const addMountedStock = useMutation({
+    mutationFn: async (quantity: number) => {
+      const res = await apiRequest("POST", "/api/stock/mounted/add", { 
+        quantity
       });
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
-        title: "Stock montado actualizado",
-        description: "El stock montado se ha actualizado correctamente"
+        title: "Pollos montados añadidos",
+        description: "Se han añadido pollos al stock montado correctamente"
       });
     },
     onError: (error) => {
-      console.error("Error actualizando stock montado:", error);
+      console.error("Error añadiendo pollos montados:", error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el stock montado",
+        description: "No se pudieron añadir pollos al stock montado",
         variant: "destructive"
       });
     }
   });
 
-  // Mutación para ventas directas (afecta solo current_stock)
-  const handleDirectSale = async (quantity: number) => {
-    try {
-      const endpoint = quantity < 0 ? "/api/stock/sell" : "/api/stock/add";
-      const absoluteQuantity = Math.abs(quantity);
-
-      await apiRequest("POST", endpoint, { 
-        quantity: absoluteQuantity,
-        updateType: 'sale' // Indica que es una venta directa
+  // Mutación para quitar pollos del stock montado (corrección)
+  const removeMountedStock = useMutation({
+    mutationFn: async (quantity: number) => {
+      const res = await apiRequest("POST", "/api/stock/mounted/remove", { 
+        quantity
       });
-
+      return res.json();
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
-        title: quantity < 0 ? "Venta registrada" : "Corrección registrada",
-        description: quantity < 0 ? 
-          "La venta se ha registrado correctamente" : 
-          "La corrección se ha registrado correctamente"
+        title: "Corrección de pollos montados",
+        description: "Se ha realizado la corrección de pollos montados correctamente"
       });
-    } catch (error) {
-      console.error("Error registrando operación:", error);
+    },
+    onError: (error) => {
+      console.error("Error en corrección de pollos montados:", error);
       toast({
         title: "Error",
-        description: "No se pudo registrar la operación",
+        description: "No se pudo realizar la corrección de pollos montados",
         variant: "destructive"
       });
     }
-  };
+  });
 
-  const handleMountedStock = (quantity: number) => {
-    setPendingAction({ 
-      action: quantity > 0 ? 'add' : 'remove', 
-      quantity: Math.abs(quantity) 
-    });
-    setShowConfirmDialog(true);
-  };
-
-  const handleResetStock = () => {
-    setPendingAction({ action: 'reset' });
-    setShowConfirmDialog(true);
-  };
-
-  const handleConfirmAction = () => {
-    if (!pendingAction) return;
-
-    if (pendingAction.action === 'reset') {
-      resetStock.mutate();
-    } else if (pendingAction.quantity) {
-      updateMountedStock.mutate({ 
-        action: pendingAction.action, 
-        quantity: pendingAction.quantity 
+  // Mutación para venta directa sin encargo
+  const directSale = useMutation({
+    mutationFn: async (quantity: number) => {
+      const res = await apiRequest("POST", "/api/stock/direct-sale", { 
+        quantity
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+      toast({
+        title: "Venta directa registrada",
+        description: "La venta sin encargo se ha registrado correctamente"
+      });
+    },
+    onError: (error) => {
+      console.error("Error registrando venta directa:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo registrar la venta sin encargo",
+        variant: "destructive"
       });
     }
-    setShowConfirmDialog(false);
-    setPendingAction(null);
-  };
+  });
 
-  const formatQuantity = (quantity: string | number) => {
-    const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity;
-    return num === Math.floor(num) ? num.toString() : num.toFixed(1);
-  };
+  // Mutación para corrección de venta directa
+  const directSaleCorrection = useMutation({
+    mutationFn: async (quantity: number) => {
+      const res = await apiRequest("POST", "/api/stock/direct-sale/correct", { 
+        quantity
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+      toast({
+        title: "Corrección registrada",
+        description: "La corrección de venta se ha registrado correctamente"
+      });
+    },
+    onError: (error) => {
+      console.error("Error registrando corrección:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo registrar la corrección de venta",
+        variant: "destructive"
+      });
+    }
+  });
 
-  const calculateBars = (quantity: number) => {
-    const bars = Math.floor(quantity / 6);
-    const remainingChickens = quantity % 6;
-    return remainingChickens > 0 ? `${bars} barras y ${remainingChickens} pollos` : `${bars} barras`;
-  };
-
+  // Mutación para resetear el stock
   const resetStock = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/stock/reset", {});
@@ -134,7 +137,95 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
         description: "Los valores del día han sido reseteados correctamente",
       });
     },
+    onError: (error) => {
+      console.error("Error al resetear stock:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo resetear el stock del día",
+        variant: "destructive"
+      });
+    }
   });
+
+  // Manejador para pollos montados (initial_stock)
+  const handleMountedStock = (quantity: number) => {
+    setPendingAction({ 
+      action: quantity > 0 ? 'add_mounted' : 'remove_mounted', 
+      quantity: Math.abs(quantity) 
+    });
+    setShowConfirmDialog(true);
+  };
+
+  // Manejador para ventas sin encargo y correcciones
+  const handleDirectSale = (quantity: number) => {
+    if (quantity < 0) {
+      // Venta directa sin encargo
+      setPendingAction({ 
+        action: 'direct_sale', 
+        quantity: Math.abs(quantity) 
+      });
+    } else {
+      // Corrección de venta
+      setPendingAction({ 
+        action: 'direct_sale_correction', 
+        quantity
+      });
+    }
+    setShowConfirmDialog(true);
+  };
+
+  // Manejador para resetear stock
+  const handleResetStock = () => {
+    setPendingAction({ action: 'reset' });
+    setShowConfirmDialog(true);
+  };
+
+  // Confirmación de acción pendiente
+  const handleConfirmAction = () => {
+    if (!pendingAction) return;
+
+    switch (pendingAction.action) {
+      case 'add_mounted':
+        if (pendingAction.quantity) {
+          addMountedStock.mutate(pendingAction.quantity);
+        }
+        break;
+      case 'remove_mounted':
+        if (pendingAction.quantity) {
+          removeMountedStock.mutate(pendingAction.quantity);
+        }
+        break;
+      case 'direct_sale':
+        if (pendingAction.quantity) {
+          directSale.mutate(pendingAction.quantity);
+        }
+        break;
+      case 'direct_sale_correction':
+        if (pendingAction.quantity) {
+          directSaleCorrection.mutate(pendingAction.quantity);
+        }
+        break;
+      case 'reset':
+        resetStock.mutate();
+        break;
+    }
+    
+    setShowConfirmDialog(false);
+    setPendingAction(null);
+  };
+
+  // Formatea las cantidades para mostrar números enteros o con decimales según corresponda
+  const formatQuantity = (quantity: string | number) => {
+    const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity;
+    return num === Math.floor(num) ? num.toString() : num.toFixed(1);
+  };
+
+  // Calcula y muestra el número de barras y pollos individuales
+  const calculateBars = (quantity: number) => {
+    const bars = Math.floor(quantity / 6);
+    const remainingChickens = quantity % 6;
+    return remainingChickens > 0 ? `${bars} barras y ${remainingChickens} pollos` : `${bars} barras`;
+  };
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -144,6 +235,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
         </DrawerHeader>
 
         <div className="p-4 space-y-4 flex-grow overflow-auto">
+          {/* Total de pollos Montado - Solo se edita con los botones de esta card */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="border p-5 rounded-lg text-center">
               <Label className="text-lg font-semibold">Total de pollos Montado:</Label>
@@ -187,6 +279,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
               </div>
             </div>
 
+            {/* Total de pollos Actual - Se actualiza automáticamente, no se edita directamente */}
             <div className="border p-5 rounded-lg text-center">
               <Label className="text-lg font-semibold">Total de pollos Actual:</Label>
               <div className="text-4xl font-bold mt-2">
@@ -195,6 +288,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
             </div>
           </div>
 
+          {/* Mostrar valores de stock con encargos y sin encargos */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="border p-5 rounded-lg text-center">
               <Label className="text-lg font-semibold">Con Encargos:</Label>
@@ -211,6 +305,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
             </div>
           </div>
 
+          {/* Sección para ventas sin encargo */}
           <div className="border p-5 rounded-lg text-center">
             <Label className="text-lg font-semibold">Venta de SIN encargo:</Label>
             <div className="grid grid-cols-2 gap-4 mt-4">
@@ -242,6 +337,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
             </div>
           </div>
 
+          {/* Botón para resetear valores */}
           <div className="p-4">
             <Button
               variant="outline"
@@ -259,9 +355,24 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Acción</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingAction?.action === 'reset'
-                ? "¿Estás seguro de que deseas resetear los valores del día?"
-                : `¿Estás seguro de que deseas ${pendingAction?.action === 'add' ? 'añadir' : 'quitar'} ${pendingAction?.quantity} pollos montados?`}
+              {(() => {
+                if (!pendingAction) return "";
+                
+                switch (pendingAction.action) {
+                  case 'add_mounted':
+                    return `¿Estás seguro de que deseas añadir ${pendingAction.quantity} pollos montados?`;
+                  case 'remove_mounted':
+                    return `¿Estás seguro de que deseas quitar ${pendingAction.quantity} pollos montados (corrección)?`;
+                  case 'direct_sale':
+                    return `¿Confirmas la venta sin encargo de ${pendingAction.quantity} pollos?`;
+                  case 'direct_sale_correction':
+                    return `¿Confirmas la corrección de ${pendingAction.quantity} pollos en venta directa?`;
+                  case 'reset':
+                    return "¿Estás seguro de que deseas resetear los valores del día? Esto creará un nuevo registro en la base de datos.";
+                  default:
+                    return "";
+                }
+              })()}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

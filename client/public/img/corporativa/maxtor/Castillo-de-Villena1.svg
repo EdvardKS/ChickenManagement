@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradiente de fondo para simular un cielo -->
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3a7bd5" />
+      <stop offset="100%" stop-color="#6faade" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo de cielo -->
+  <rect width="1200" height="800" fill="url(#skyGradient)" />
+  
+  <!-- Montañas en el fondo -->
+  <path d="M0,500 Q200,350 400,450 Q600,300 800,400 Q1000,300 1200,380 L1200,800 L0,800 Z" fill="#4b5842" opacity="0.7" />
+  
+  <!-- Tierra -->
+  <rect x="0" y="600" width="1200" height="200" fill="#5a4d41" />
+  
+  <!-- Castillo principal - base -->
+  <rect x="350" y="300" width="500" height="300" fill="#d2c4a5" />
+  
+  <!-- Torre central principal -->
+  <rect x="550" y="100" width="100" height="200" fill="#d2c4a5" />
+  <polygon points="550,100 650,100 600,50" fill="#a03c28" />
+  
+  <!-- Torre izquierda -->
+  <rect x="350" y="200" width="80" height="100" fill="#d2c4a5" />
+  <polygon points="350,200 430,200 390,150" fill="#a03c28" />
+  
+  <!-- Torre derecha -->
+  <rect x="770" y="200" width="80" height="100" fill="#d2c4a5" />
+  <polygon points="770,200 850,200 810,150" fill="#a03c28" />
+  
+  <!-- Detalles de almenas en la parte superior del castillo -->
+  <g fill="#d2c4a5">
+    <!-- Almenas torre central -->
+    <rect x="550" y="80" width="20" height="20" />
+    <rect x="580" y="80" width="20" height="20" />
+    <rect x="610" y="80" width="20" height="20" />
+    
+    <!-- Almenas parte principal -->
+    <rect x="350" y="290" width="20" height="20" />
+    <rect x="380" y="290" width="20" height="20" />
+    <rect x="410" y="290" width="20" height="20" />
+    <rect x="440" y="290" width="20" height="20" />
+    <rect x="470" y="290" width="20" height="20" />
+    <rect x="500" y="290" width="20" height="20" />
+    <rect x="530" y="290" width="20" height="20" />
+    <rect x="560" y="290" width="20" height="20" />
+    <rect x="590" y="290" width="20" height="20" />
+    <rect x="620" y="290" width="20" height="20" />
+    <rect x="650" y="290" width="20" height="20" />
+    <rect x="680" y="290" width="20" height="20" />
+    <rect x="710" y="290" width="20" height="20" />
+    <rect x="740" y="290" width="20" height="20" />
+    <rect x="770" y="290" width="20" height="20" />
+    <rect x="800" y="290" width="20" height="20" />
+    <rect x="830" y="290" width="20" height="20" />
+  </g>
+  
+  <!-- Puerta principal -->
+  <rect x="550" y="450" width="100" height="150" fill="#5f4a36" />
+  <path d="M550,450 Q600,400 650,450" fill="none" stroke="#5f4a36" stroke-width="10" />
+  
+  <!-- Ventanas -->
+  <g fill="#285f9f">
+    <!-- Ventanas torre central -->
+    <rect x="575" y="150" width="50" height="80" rx="5" />
+    
+    <!-- Ventanas izquierdas -->
+    <rect x="400" y="350" width="60" height="80" rx="5" />
+    <rect x="400" y="450" width="60" height="80" rx="5" />
+    
+    <!-- Ventanas derechas -->
+    <rect x="740" y="350" width="60" height="80" rx="5" />
+    <rect x="740" y="450" width="60" height="80" rx="5" />
+  </g>
+  
+  <!-- Banderas -->
+  <g>
+    <line x1="600" y1="50" x2="600" y2="10" stroke="#333" stroke-width="3" />
+    <rect x="600" y="10" width="30" height="20" fill="#cc0000" />
+    
+    <line x1="390" y1="150" x2="390" y2="120" stroke="#333" stroke-width="2" />
+    <rect x="390" y="120" width="20" height="15" fill="#cc0000" />
+    
+    <line x1="810" y1="150" x2="810" y2="120" stroke="#333" stroke-width="2" />
+    <rect x="810" y="120" width="20" height="15" fill="#cc0000" />
+  </g>
+  
+  <!-- Texto del Castillo de Villena -->
+  <text x="600" y="750" font-family="serif" font-size="48" text-anchor="middle" fill="#fff" font-weight="bold">
+    Castillo de Villena
+  </text>
+</svg>

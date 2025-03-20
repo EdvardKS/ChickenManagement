@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { 
+  Menu, 
+  Package, 
+  ChartBar, 
+  Clock, 
+  Database, 
+  FileJson, 
+  Settings 
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -35,9 +43,50 @@ export default function Header() {
       }`}
     >
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
-        {/* Social media icons on the left - Hidden in admin section */}
+        {/* Social media icons or admin nav links */}
         <div className="flex items-center space-x-4">
-          {!isAdmin && (
+          {isAdmin ? (
+            // Admin navigation links
+            <div className="flex items-center space-x-2">
+              <Link href="/admin/orders">
+                <a className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
+                  <Package className="h-4 w-4" />
+                  <span>Pedidos</span>
+                </a>
+              </Link>
+              <Link href="/admin/dashboards/orders-overview">
+                <a className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
+                  <ChartBar className="h-4 w-4" />
+                  <span>Dashboards</span>
+                </a>
+              </Link>
+              <Link href="/admin/horarios">
+                <a className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
+                  <Clock className="h-4 w-4" />
+                  <span>Horarios</span>
+                </a>
+              </Link>
+              <Link href="/admin/database">
+                <a className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
+                  <Database className="h-4 w-4" />
+                  <span>Base de Datos</span>
+                </a>
+              </Link>
+              <Link href="/admin/seeds">
+                <a className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
+                  <FileJson className="h-4 w-4" />
+                  <span>Semillas</span>
+                </a>
+              </Link>
+              <Link href="/admin/settings">
+                <a className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
+                  <Settings className="h-4 w-4" />
+                  <span>Configuración</span>
+                </a>
+              </Link>
+            </div>
+          ) : (
+            // Social media icons for public section
             <>
               <a
                 href="https://www.facebook.com/people/Asador-la-morenica/100064982920008/"

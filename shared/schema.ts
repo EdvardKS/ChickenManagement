@@ -17,6 +17,8 @@ export const products = pgTable("products", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(), 
   imageUrl: text("image_url"),
   categoryId: integer("category_id").references(() => categories.id),
+  featured: boolean("featured").default(false),
+  featuredOrder: integer("featured_order").default(0),
   deleted: boolean("deleted").default(false),
 });
 

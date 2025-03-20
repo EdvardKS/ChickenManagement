@@ -24,6 +24,10 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product>;
   deleteProduct(id: number): Promise<void>;
+  
+  // Featured Menus
+  getFeaturedMenus(): Promise<Product[]>;
+  updateFeaturedMenu(id: number, featured: boolean, order?: number): Promise<Product>;
 
   // Orders
   getOrders(): Promise<Order[]>;
@@ -113,6 +117,30 @@ export class DatabaseStorage implements IStorage {
       .update(products)
       .set({ deleted: true })
       .where(eq(products.id, id));
+  }
+  
+  // Featured Menus
+  async getFeaturedMenus(): Promise<Product[]> {
+    return await db
+      .select()
+      .from(products)
+      .where(and(
+        eq(products.deleted, false),
+        eq(products.featured, true)
+      ))
+      .orderBy(products.featuredOrder);
+  }
+  
+  async updateFeaturedMenu(id: number, featured: boolean, order: number = 0): Promise<Product> {
+    const [updated] = await db
+      .update(products)
+      .set({ 
+        featured: featured,
+        featuredOrder: order 
+      })
+      .where(eq(products.id, id))
+      .returning();
+    return updated;
   }
 
   // Orders

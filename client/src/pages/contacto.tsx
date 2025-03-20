@@ -21,8 +21,8 @@ export default function Contacto() {
         transition={{ duration: 0.7 }}
       >
         <img 
-          src="/img/local/contacto-banner.jpg" 
-          alt="Contacta con Asador La Morenica" 
+          src="/img/corporativa/maxtor/Castillo-de-Villena1.jpg" 
+          alt="Castillo de Villena - Contacta con Asador La Morenica" 
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">

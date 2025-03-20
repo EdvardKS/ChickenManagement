@@ -11,7 +11,7 @@ export default function Nosotros() {
         transition={{ duration: 0.7 }}
       >
         <img 
-          src="/img/local/fachada-banner.jpg" 
+          src="/img/corporativa/maxtor/nosotros/la_fachada.jpg" 
           alt="Asador La Morenica" 
           className="w-full h-full object-cover"
         />
@@ -81,8 +81,8 @@ export default function Nosotros() {
           className="rounded-lg overflow-hidden shadow-lg"
         >
           <img 
-            src="/img/local/fachada.jpg" 
-            alt="Fachada Asador La Morenica" 
+            src="/img/corporativa/maxtor/nosotros/nuestro_asador.jpg" 
+            alt="Nuestro Asador La Morenica" 
             className="w-full h-auto object-cover"
           />
         </motion.div>
@@ -97,7 +97,7 @@ export default function Nosotros() {
           className="rounded-lg overflow-hidden shadow-lg order-2 md:order-1"
         >
           <img 
-            src="/img/especialidades/horno.jpg" 
+            src="/img/corporativa/maxtor/nosotros/horno_le_a.jpg" 
             alt="Horno tradicional de leña" 
             className="w-full h-auto object-cover"
           />
@@ -158,11 +158,23 @@ export default function Nosotros() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="rounded-lg overflow-hidden shadow-lg"
         >
-          <img 
-            src="/img/especialidades/fusion.jpg" 
-            alt="Platos de fusión española y armenia" 
-            className="w-full h-auto object-cover"
-          />
+          <div className="grid grid-cols-2 gap-2">
+            <img 
+              src="/img/corporativa/maxtor/especialidades/calamares.jpg" 
+              alt="Calamares" 
+              className="w-full h-40 object-cover rounded-lg shadow-md"
+            />
+            <img 
+              src="/img/corporativa/maxtor/especialidades/setsunomomo.jpg" 
+              alt="Ensalada fusion" 
+              className="w-full h-40 object-cover rounded-lg shadow-md"
+            />
+            <img 
+              src="/img/corporativa/maxtor/especialidades/gabardinas.jpg" 
+              alt="Gabardinas - especialidad de la casa" 
+              className="w-full h-40 object-cover rounded-lg shadow-md col-span-2"
+            />
+          </div>
         </motion.div>
       </div>
 
@@ -200,8 +212,8 @@ export default function Nosotros() {
           className="rounded-lg overflow-hidden shadow-lg order-2 md:order-1"
         >
           <img 
-            src="/img/salon/salon.jpg" 
-            alt="Salón para eventos" 
+            src="/img/corporativa/maxtor/car_villena.jpg" 
+            alt="Cartel de Villena - Salón para eventos" 
             className="w-full h-auto object-cover"
           />
         </motion.div>
@@ -261,11 +273,23 @@ export default function Nosotros() {
           transition={{ duration: 0.5, delay: 1.1 }}
           className="rounded-lg overflow-hidden shadow-lg"
         >
-          <img 
-            src="/img/especialidades/festeros.jpg" 
-            alt="Fiestas de Moros y Cristianos" 
-            className="w-full h-auto object-cover"
-          />
+          <div className="grid grid-cols-2 gap-2">
+            <img 
+              src="/img/festeros/cabalgata villena.JPG" 
+              alt="Cabalgata Fiestas de Villena" 
+              className="w-full h-40 object-cover rounded-lg shadow-md"
+            />
+            <img 
+              src="/img/festeros/fiestasmujeres.jpg" 
+              alt="Fiestas con mujeres villeneras" 
+              className="w-full h-40 object-cover rounded-lg shadow-md"
+            />
+            <img 
+              src="/img/festeros/mujeres villena.webp" 
+              alt="Mujeres de Villena en fiestas" 
+              className="w-full h-40 object-cover rounded-lg shadow-md col-span-2"
+            />
+          </div>
         </motion.div>
       </div>
 

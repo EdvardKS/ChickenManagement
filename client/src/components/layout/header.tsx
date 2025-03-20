@@ -30,7 +30,7 @@ export default function Header() {
   return (
     <header
       className={`${isHome ? 'fixed' : 'relative'} top-0 py-5 left-0 w-full z-50 transition-colors duration-300 ${
-        isScrolled ? "bg-[#f8efe5] shadow-md" : "bg-transparent"
+        isScrolled ? "bg-slate-50 shadow-md" : "bg-transparent"
       }`}
     >
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
@@ -115,7 +115,7 @@ export default function Header() {
                   <a className="text-lg">Admin</a>
                 </Link>
                 <Link href="/order">
-                  <Button className="w-full bg-[#8B4513] text-white hover:bg-[#734010]">
+                  <Button className="w-full bg-blue-600 text-white hover:bg-blue-700">
                     Hacer Pedido
                   </Button>
                 </Link>

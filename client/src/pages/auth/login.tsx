@@ -68,7 +68,11 @@ export default function Login() {
       style={{ backgroundImage: 'url("/img/corporativa/maxtor/Castillo-de-Villena1.svg")' }}
     >
       <div className="w-full max-w-md">
-        <Card className="bg-white/90 backdrop-blur-sm">
+        <div className="text-center mb-6">
+          <h1 className="text-4xl font-bold text-white drop-shadow-lg">Fiestas de Moros y Cristianos</h1>
+          <p className="text-white text-lg drop-shadow-md">Sistema de Gestión de Pedidos</p>
+        </div>
+        <Card className="bg-white/90 backdrop-blur-sm border-2 border-primary/20 shadow-xl">
           <CardHeader>
             <CardTitle className="text-center text-2xl">Acceso al Sistema</CardTitle>
             <CardDescription className="text-center">
@@ -117,10 +121,19 @@ export default function Login() {
             </Form>
           </CardContent>
           <CardFooter className="text-center text-sm text-gray-500">
-            <p className="w-full">
-              Este sistema está diseñado para usuarios registrados que participan en las Fiestas de Moros y Cristianos.
-              Para obtener acceso, contacte con el administrador de Asador La Morenica.
-            </p>
+            <div className="w-full space-y-2">
+              <p>
+                Este sistema está diseñado para los usuarios registrados que participan en las Fiestas de Moros y Cristianos.
+              </p>
+              <p>
+                Los administradores pueden gestionar pedidos y reservas para las comparsas durante las fiestas,
+                permitiendo una mejor organización de los encargos de comida y servicios para los festeros.
+              </p>
+              <p>
+                Los usuarios con rol "festero" podrán acceder a funcionalidades específicas para sus comparsas.
+                Para obtener acceso, contacte con el administrador de Asador La Morenica.
+              </p>
+            </div>
           </CardFooter>
         </Card>
       </div>

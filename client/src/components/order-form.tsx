@@ -92,7 +92,8 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
   });
 
   const onSubmit = (data: any) => {
-    if (data.quantity > currentStock) {
+    // Validar stock suficiente
+    if (data.quantity > Number(currentStock)) {
       toast({
         title: "Stock insuficiente",
         description: "No hay suficiente stock disponible para tu pedido",
@@ -100,7 +101,43 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
       });
       return;
     }
-    createOrder.mutate(data);
+    
+    // Asegurarse de que los datos cumplen con el esquema
+    try {
+      // Convertir quantity a número explícitamente (para que coincida con el schema)
+      // Garantizar que sea un número con decimales válidos (0.5, 1.0, etc)
+      const quantity = parseFloat(data.quantity.toString());
+      
+      // Asegurar que la fecha esté en formato ISO
+      const pickupTime = new Date(data.pickupTime);
+      
+      // Verificar validez de los datos
+      if (isNaN(quantity)) {
+        throw new Error('Cantidad inválida');
+      }
+      
+      if (isNaN(pickupTime.getTime())) {
+        throw new Error('Fecha de recogida inválida');
+      }
+      
+      // Preparar datos según el esquema esperado
+      const orderData = {
+        ...data,
+        quantity: quantity,
+        pickupTime: pickupTime.toISOString(),
+        totalAmount: quantity * 1200, // 12€ por pollo
+      };
+      
+      console.log('Enviando pedido:', orderData);
+      createOrder.mutate(orderData);
+    } catch (error) {
+      console.error('Error en validación del formulario:', error);
+      toast({
+        title: "Error en el formulario",
+        description: error instanceof Error ? error.message : "Verifica los datos ingresados",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -160,13 +197,30 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                     <Input 
                       {...field} 
                       type="number" 
-                      min="1" 
+                      min="0.5" 
                       max={currentStock}
+                      step="0.5"
                       onChange={(e) => {
-                        const quantity = parseInt(e.target.value);
-                        field.onChange(quantity);
-                        form.setValue("totalAmount", quantity * 1200); // 12€ per chicken
-                        form.setValue("details", `${quantity} pollo(s)`);
+                        // Usar parseFloat para permitir decimales
+                        const quantityValue = e.target.value;
+                        const quantity = parseFloat(quantityValue);
+                        
+                        // Validar que sea un múltiplo de 0.5
+                        const validQuantity = Math.round(quantity * 2) / 2;
+                        
+                        field.onChange(validQuantity);
+                        form.setValue("totalAmount", validQuantity * 1200); // 12€ per chicken
+                        
+                        // Formatear el mensaje para mostrar enteros o fracciones correctamente
+                        const quantityText = validQuantity === 1 
+                          ? '1 pollo' 
+                          : validQuantity === 0.5 
+                            ? 'medio pollo'
+                            : `${validQuantity} pollos`;
+                            
+                        form.setValue("details", quantityText);
+                        
+                        console.log('Cantidad seleccionada:', validQuantity);
                       }}
                     />
                   </FormControl>

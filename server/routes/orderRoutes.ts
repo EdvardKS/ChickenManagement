@@ -113,8 +113,25 @@ router.get("/", async (_req, res) => {
 // Create new order
 router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
   try {
-    const order = insertOrderSchema.parse(req.body);
+    console.log('📝 Create Order - Request body:', req.body);
+    
+    // Intenta validar el objeto de pedido
+    let order;
+    try {
+      order = insertOrderSchema.parse(req.body);
+      console.log('✅ Create Order - Validated order data:', order);
+    } catch (validationError: any) {
+      console.error('❌ Create Order - Validation error:', validationError);
+      return res.status(400).json({ 
+        error: 'Datos de pedido inválidos', 
+        details: validationError.errors || validationError.message || 'Error de validación',
+        receivedData: req.body
+      });
+    }
+    
+    // Crear el pedido en la base de datos
     const created = await storage.createOrder(order);
+    console.log('✨ Create Order - Order created in database:', created);
 
     // Verificar si es un pedido para un día pasado
     const today = new Date();
@@ -123,33 +140,64 @@ router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
     orderDate.setHours(0, 0, 0, 0);
     const isPastOrder = orderDate < today;
 
-    console.log('Creando nuevo pedido:', { 
+    console.log('🗓️ Create Order - Date check:', { 
       id: created.id, 
       orderDate: orderDate.toISOString(), 
       today: today.toISOString(), 
       isPastOrder 
     });
 
-    req.stockUpdate = await prepareStockUpdate(
-      'new_order',
-      parseFloat(created.quantity.toString()),
-      'client',
-      isPastOrder
-    );
+    // Asegurarse de que quantity sea un número
+    const quantityValue = typeof created.quantity === 'string' 
+      ? parseFloat(created.quantity) 
+      : Number(created.quantity);
+      
+    if (isNaN(quantityValue)) {
+      console.error('❌ Create Order - Invalid quantity value:', created.quantity);
+      return res.status(400).json({ error: 'Cantidad inválida en el pedido' });
+    }
 
-    await new Promise((resolve, reject) => {
-      stockMiddleware(req, res, (err) => {
-        if (err) reject(err);
-        else resolve(undefined);
+    console.log('📦 Create Order - Preparing stock update with quantity:', quantityValue);
+    
+    try {
+      req.stockUpdate = await prepareStockUpdate(
+        'new_order',
+        quantityValue,
+        'client',
+        isPastOrder
+      );
+      
+      console.log('📦 Create Order - Stock update prepared:', req.stockUpdate);
+
+      await new Promise((resolve, reject) => {
+        stockMiddleware(req, res, (err) => {
+          if (err) {
+            console.error('❌ Create Order - Stock middleware error:', err);
+            reject(err);
+          } else {
+            resolve(undefined);
+          }
+        });
       });
-    });
-
-    res.json(created);
-  } catch (error) {
-    console.error('Error creating order:', error);
-    console.error('Error details:', JSON.stringify(error, null, 2));
+      
+      console.log('✅ Create Order - Order and stock successfully updated');
+      res.json(created);
+    } catch (stockError: any) {
+      console.error('❌ Create Order - Stock update error:', stockError);
+      // El pedido ya se creó, pero hubo un error al actualizar el stock
+      return res.status(500).json({ 
+        error: 'Error al actualizar el stock', 
+        details: stockError.message || 'Error desconocido en actualización de stock',
+        order: created
+      });
+    }
+  } catch (error: any) {
+    console.error('❌ Create Order - Unexpected error:', error);
     console.error('Request body:', JSON.stringify(req.body, null, 2));
-    res.status(500).json({ error: 'Error al crear el pedido' });
+    res.status(500).json({ 
+      error: 'Error al crear el pedido', 
+      details: error.message || 'Error inesperado'
+    });
   }
 });
 

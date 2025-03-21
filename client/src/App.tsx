@@ -7,7 +7,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import FloatingContact from "@/components/floating-contact";
 import AdminLayout from "@/components/layout/admin-layout";
-import { AuthProvider, ProtectedRoute, HaykakanRoute } from "@/components/auth/auth-provider";
+import { AuthProvider, ProtectedRoute, HaykakanRoute, useAuth } from "@/components/auth/auth-provider";
 
 import Home from "@/pages/home";
 import Products from "@/pages/products"; 
@@ -24,12 +24,14 @@ import AdminSettings from "@/pages/admin/settings";
 import AdminSeeds from "@/pages/admin/seeds";
 import AdminHorarios from "@/pages/admin/horarios";
 import FeaturedMenus from "@/pages/admin/featured-menus";
-import FiestasPage from "@/pages/admin/fiestas";
+import FiestasAdminPage from "@/pages/admin/fiestas";
+import FesteroPage from "@/pages/fiestas";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
 import AdminUsers from "@/pages/admin/users";
 import NotFound from "@/pages/not-found";
+import { ReactNode } from "react";
 
 // SEO metadata
 document.title = "Asador La Morenica | Pollos Asados a la Leña en Villena";
@@ -37,6 +39,54 @@ const metaDescription = document.createElement('meta');
 metaDescription.name = 'description';
 metaDescription.content = 'Los mejores pollos asados a la leña en Villena y comarca. Tradición y sabor único desde hace más de 20 años. Fusión de cocina española y armenia.';
 document.head.appendChild(metaDescription);
+
+// Componente de protección para rutas de festeros
+function FesteroRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isFestero, isLoading } = useAuth();
+  const [, navigate] = useLocation();
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-screen">Cargando...</div>;
+  }
+
+  if (!isAuthenticated) {
+    // Redirigir a login si no está autenticado
+    navigate("/login");
+    return null;
+  }
+
+  if (!isFestero) {
+    // Si no es festero, redirigir según el rol
+    navigate("/admin");
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+// Componente de protección para rutas de admin (solo haykakan)
+function AdminOnlyRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isHaykakan, isLoading } = useAuth();
+  const [, navigate] = useLocation();
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-screen">Cargando...</div>;
+  }
+
+  if (!isAuthenticated) {
+    // Redirigir a login si no está autenticado
+    navigate("/login");
+    return null;
+  }
+
+  if (!isHaykakan) {
+    // Si es festero, redirigir a su vista
+    navigate("/fiestas");
+    return null;
+  }
+
+  return <>{children}</>;
+}
 
 function PublicRoutes() {
   return (
@@ -72,6 +122,15 @@ function PublicRoutes() {
             </div>
           </Route>
           <Route path="/login" component={Login} />
+          <Route path="/fiestas">
+            <FesteroRoute>
+              <div className="min-h-screen bg-gray-50">
+                <Header />
+                <FesteroPage />
+                <Footer />
+              </div>
+            </FesteroRoute>
+          </Route>
           {/* Mantener rutas anteriores para compatibilidad */}
           <Route path="/about">
             <Redirect to="/nosotros" />
@@ -90,7 +149,7 @@ function PublicRoutes() {
 
 function AdminRoutes() {
   return (
-    <ProtectedRoute>
+    <AdminOnlyRoute>
       <div className="min-h-screen bg-gray-50">
         <Header />
         <AdminLayout>
@@ -99,14 +158,14 @@ function AdminRoutes() {
               <Redirect to="/admin/orders" />
             </Route>
             <Route path="/admin/orders">
-              <ProtectedRoute>
+              <HaykakanRoute>
                 <AdminOrders />
-              </ProtectedRoute>
+              </HaykakanRoute>
             </Route>
             <Route path="/admin/horarios">
-              <ProtectedRoute>
+              <HaykakanRoute>
                 <AdminHorarios />
-              </ProtectedRoute>
+              </HaykakanRoute>
             </Route>
             <Route path="/admin/database">
               <HaykakanRoute>
@@ -124,9 +183,9 @@ function AdminRoutes() {
               </HaykakanRoute>
             </Route>
             <Route path="/admin/featured-menus">
-              <ProtectedRoute>
+              <HaykakanRoute>
                 <FeaturedMenus />
-              </ProtectedRoute>
+              </HaykakanRoute>
             </Route>
             <Route path="/admin/users">
               <HaykakanRoute>
@@ -134,33 +193,33 @@ function AdminRoutes() {
               </HaykakanRoute>
             </Route>
             <Route path="/admin/fiestas">
-              <ProtectedRoute>
-                <FiestasPage />
-              </ProtectedRoute>
+              <HaykakanRoute>
+                <FiestasAdminPage />
+              </HaykakanRoute>
             </Route>
             <Route path="/admin/dashboards/:dashboard*">
-              <ProtectedRoute>
+              <HaykakanRoute>
                 <DashboardLayout>
                   <Switch>
                     <Route path="/admin/dashboards/orders-overview">
-                      <ProtectedRoute>
+                      <HaykakanRoute>
                         <OrdersOverview />
-                      </ProtectedRoute>
+                      </HaykakanRoute>
                     </Route>
                     <Route path="/admin/dashboards/stock-levels">
-                      <ProtectedRoute>
+                      <HaykakanRoute>
                         <StockLevels />
-                      </ProtectedRoute>
+                      </HaykakanRoute>
                     </Route>
                   </Switch>
                 </DashboardLayout>
-              </ProtectedRoute>
+              </HaykakanRoute>
             </Route>
             <Route component={NotFound} />
           </Switch>
         </AdminLayout>
       </div>
-    </ProtectedRoute>
+    </AdminOnlyRoute>
   );
 }
 

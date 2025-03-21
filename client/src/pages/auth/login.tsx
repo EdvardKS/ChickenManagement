@@ -51,7 +51,7 @@ export default function Login() {
       if (data.user.role === 'haykakan') {
         window.location.href = '/admin/orders'; // Ruta por defecto para administradores
       } else if (data.user.role === 'festero') {
-        window.location.href = '/admin/fiestas'; // Ruta por defecto para festeros
+        window.location.href = '/fiestas'; // Ruta exclusiva para festeros
       } else {
         window.location.href = '/admin'; // Ruta genérica como fallback
       }

@@ -135,11 +135,16 @@ function UsuariosTab() {
               </tr>
             ) : users && users.length > 0 ? (
               users
-                .filter((user: User) => 
-                  // Filtrar según el estado de los switches
-                  (showAdmins || user.role === 'festero') && 
-                  (showDeleted || user.active)
-                )
+                .filter((user: User) => {
+                  // Mostrar usuarios según los filtros activados
+                  // Si showAdmins está activado, mostrar todos los roles; si no, solo festeros
+                  const roleFilter = showAdmins || user.role === 'festero';
+                  
+                  // Si showDeleted está activado, mostrar tanto activos como inactivos; si no, solo activos
+                  const activeFilter = showDeleted || user.active;
+                  
+                  return roleFilter && activeFilter;
+                })
                 .map((user: User) => (
                   <tr key={user.id} className="border-t hover:bg-muted/50">
                     <td className="p-2">{user.username}</td>

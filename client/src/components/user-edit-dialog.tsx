@@ -193,8 +193,7 @@ export function UserEditDialog({
                   <FormControl>
                     <Input
                       placeholder="Ingrese un nombre de usuario"
-                      {...field}
-                      disabled={!isCreating} // Solo editable al crear
+                      {...field} 
                     />
                   </FormControl>
                   <FormMessage />

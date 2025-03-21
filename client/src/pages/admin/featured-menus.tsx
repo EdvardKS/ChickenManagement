@@ -23,10 +23,6 @@ export default function FeaturedMenus() {
   // Consulta para obtener todos los menús (categoría ID 1)
   const { data: menus, isLoading } = useQuery({
     queryKey: ['/api/menus/all'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/menus/all');
-      return response.json();
-    }
   });
   
   // Efecto para actualizar los menús destacados cuando cambian los datos
@@ -44,12 +40,11 @@ export default function FeaturedMenus() {
   // Mutación para actualizar el estado destacado de un menú
   const updateFeaturedMutation = useMutation({
     mutationFn: async ({ id, featured, order }: { id: number, featured: boolean, order?: number }) => {
-      const response = await apiRequest(
-        'PATCH',
-        `/api/menus/${id}/featured`, 
-        { featured, order }
-      );
-      return response.json();
+      return await apiRequest(`/api/menus/${id}/featured`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured, order }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/menus/all'] });

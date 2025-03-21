@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PlusCircle, Pencil, User, Users } from 'lucide-react';
+import { PlusCircle, Pencil, Power, CheckCircle, User, Users } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { InsertUser } from '@shared/schema';
@@ -245,15 +247,35 @@ export default function UsersPage() {
 
   return (
     <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
-          <p className="text-gray-500">Administra usuarios del sistema y participantes de fiestas</p>
+      <div className="mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
+            <p className="text-gray-500">Administra usuarios del sistema y participantes de fiestas</p>
+          </div>
+          <Button onClick={() => handleOpenDialog()} className="space-x-2">
+            <PlusCircle className="h-4 w-4" />
+            <span>Nuevo Usuario</span>
+          </Button>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="space-x-2">
-          <PlusCircle className="h-4 w-4" />
-          <span>Nuevo Usuario</span>
-        </Button>
+        
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="show-inactive" 
+              checked={showAll}
+              onCheckedChange={setShowAll}
+            />
+            <Label htmlFor="show-inactive">
+              {showAll ? "Mostrando todos los usuarios (incluidos inactivos)" : "Mostrando solo usuarios activos"}
+            </Label>
+          </div>
+          <div>
+            <Badge className="ml-2" variant="outline">
+              {users.length} usuario{users.length !== 1 ? 's' : ''} 
+            </Badge>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
@@ -292,7 +314,7 @@ export default function UsersPage() {
                 </div>
               )}
               
-              <div className="pt-1">
+              <div className="pt-1 space-y-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -302,6 +324,32 @@ export default function UsersPage() {
                   <Pencil className="h-4 w-4 mr-2" />
                   Editar
                 </Button>
+                
+                <Button
+                  variant={user.active ? "destructive" : "default"}
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleToggleActive(user.id)}
+                  disabled={toggleActiveStatusMutation.isPending}
+                >
+                  {user.active ? (
+                    <>
+                      <Power className="h-4 w-4 mr-2" />
+                      Desactivar
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Activar
+                    </>
+                  )}
+                </Button>
+                
+                {!user.active && (
+                  <Badge variant="outline" className="w-full flex justify-center mt-2 bg-red-50">
+                    Usuario inactivo
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>

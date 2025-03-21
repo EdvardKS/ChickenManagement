@@ -47,13 +47,13 @@ export default function Login() {
         description: `Bienvenido, ${data.user.username}`,
       });
       
-      // Redirigir según el rol del usuario
+      // Redirigir según el rol del usuario usando navegación forzada
       if (data.user.role === 'haykakan') {
-        navigate('/admin/orders'); // Ruta por defecto para administradores
+        window.location.href = '/admin/orders'; // Ruta por defecto para administradores
       } else if (data.user.role === 'festero') {
-        navigate('/admin/fiestas'); // Ruta por defecto para festeros
+        window.location.href = '/admin/fiestas'; // Ruta por defecto para festeros
       } else {
-        navigate('/admin'); // Ruta genérica como fallback
+        window.location.href = '/admin'; // Ruta genérica como fallback
       }
     },
     onError: (error: any) => {

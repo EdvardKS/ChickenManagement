@@ -468,7 +468,7 @@ router.patch("/:id/cancel", isHaykakan, async (req: Request & { stockUpdate?: an
 });
 
 // Mark order as error
-router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id/error", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('⚠️ Error Order - Request received for order:', id);

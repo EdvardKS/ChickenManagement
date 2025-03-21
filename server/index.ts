@@ -2,16 +2,28 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import pg from "pg";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Configuración de sesiones
-const MemoryStore = new session.MemoryStore();
+// Crear una instancia de PgStore para almacenar sesiones en PostgreSQL
+const PgStore = connectPgSimple(session);
+
+// Configurar la conexión a la base de datos para sesiones
+const pgPool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL
+});
 
 app.use(session({
-  store: MemoryStore,
+  store: new PgStore({
+    pool: pgPool,
+    tableName: 'session', // Nombre de la tabla en la que se almacenarán las sesiones
+    createTableIfMissing: true, // Crear la tabla si no existe
+  }),
   secret: process.env.SESSION_SECRET || 'asador_la_morenica_secret',
   resave: false,
   saveUninitialized: false,

@@ -56,11 +56,40 @@ app.use((req, res, next) => {
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    console.error('🔴 SERVER ERROR:');
+    console.error('📌 Error message:', err.message);
+    console.error('📌 Error stack:', err.stack);
+    
+    // Si es un error de validación de Zod, extraer detalles
+    if (err.name === 'ZodError' && err.errors) {
+      console.error('📌 Zod validation errors:', JSON.stringify(err.errors, null, 2));
+      return res.status(400).json({ 
+        error: 'Validation error', 
+        details: err.errors,
+        message: err.message
+      });
+    }
+    
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
+    
+    // Construir un objeto de respuesta detallado
+    const errorResponse = {
+      error: message,
+      status,
+      code: err.code,
+      details: err.details || undefined,
+      // Solo incluir stack trace en desarrollo
+      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+    };
+    
+    console.error('📌 Sending error response:', JSON.stringify(errorResponse, null, 2));
+    
+    // Enviar respuesta de error
+    res.status(status).json(errorResponse);
+    
+    // No lanzar el error nuevamente - solo registrar
+    console.error(err);
   });
 
   // importantly only setup vite in development and after

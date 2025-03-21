@@ -2,9 +2,51 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    const error = new Error(`${res.status}: ${text}`);
-    (error as any).status = res.status;
+    // Intentar obtener el cuerpo como JSON primero
+    let error: any;
+    let errorBody: any;
+    
+    try {
+      // Intentar leer cuerpo como JSON
+      const clonedRes = res.clone();  // Clonar para no consumir el body
+      errorBody = await clonedRes.json();
+      
+      // Crear un error con los detalles disponibles
+      error = new Error(errorBody.error || errorBody.message || `${res.status}: ${res.statusText}`);
+      
+      // Agregar información adicional al objeto de error
+      error.status = res.status;
+      error.statusText = res.statusText;
+      error.url = res.url;
+      
+      // Agregar todos los detalles recibidos del servidor
+      if (errorBody.details) error.details = errorBody.details;
+      if (errorBody.code) error.code = errorBody.code;
+      if (errorBody.stack && process.env.NODE_ENV !== 'production') error.serverStack = errorBody.stack;
+      
+      // Incluir el cuerpo completo para referencia
+      error.response = errorBody;
+      
+      console.error(`API Error [${res.status}]:`, errorBody);
+    } catch (e) {
+      // Si falla al leer como JSON, intentar leer como texto
+      try {
+        const text = await res.text() || res.statusText;
+        error = new Error(`${res.status}: ${text}`);
+        error.status = res.status;
+        error.statusText = res.statusText;
+        error.url = res.url;
+        console.error(`API Error [${res.status}]:`, text);
+      } catch (textError) {
+        // Si todo falla, crear un error genérico
+        error = new Error(`${res.status}: ${res.statusText}`);
+        error.status = res.status;
+        error.statusText = res.statusText;
+        error.url = res.url;
+        console.error(`API Error [${res.status}] (no body)`, res.statusText);
+      }
+    }
+    
     throw error;
   }
 }

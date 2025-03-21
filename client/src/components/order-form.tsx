@@ -67,24 +67,69 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
       });
       form.reset();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error al crear pedido:', error);
       
-      // Intenta extraer el mensaje de error si está disponible
+      // Mostrar todos los detalles del error en la consola para depuración
+      console.error('Objeto de error completo:', error);
+      
+      if (error.response) {
+        console.error('Respuesta del servidor:', error.response);
+      }
+      
+      // Extraer y formatear los detalles del error para mostrarlos al usuario
+      let errorTitle = "Error al crear el pedido";
       let errorMessage = "No se pudo realizar el pedido. Por favor, inténtalo de nuevo.";
       
       try {
+        // Intentar extraer detalles estructurados
         if (typeof error === 'object' && error !== null) {
-          const errorDetail = JSON.stringify(error);
-          console.log('Detalles del error:', errorDetail);
-          errorMessage = `Error: ${errorDetail}`;
+          if (error.message) {
+            console.log('Mensaje de error:', error.message);
+            errorTitle = "Error: " + error.message.substring(0, 50);
+          }
+          
+          // Si hay detalles disponibles en el error
+          if (error.details) {
+            console.log('Detalles del error:', error.details);
+            
+            // Formatear detalles para mostrarlos
+            if (Array.isArray(error.details)) {
+              // Si es un array de errores (como en errores de Zod)
+              errorMessage = error.details.map((detail: any) => 
+                `- ${detail.path?.join('.')}: ${detail.message}`
+              ).join('\n');
+            } else if (typeof error.details === 'object') {
+              // Si es un objeto con detalles
+              errorMessage = Object.entries(error.details)
+                .map(([key, value]) => `- ${key}: ${value}`)
+                .join('\n');
+            } else {
+              // Si es un string u otro tipo
+              errorMessage = `${error.details}`;
+            }
+          } else if (error.error) {
+            // Algunos APIs devuelven el mensaje en un campo 'error'
+            errorMessage = typeof error.error === 'string' 
+              ? error.error 
+              : JSON.stringify(error.error);
+          } else {
+            // Último recurso: convertir todo el objeto a string
+            errorMessage = JSON.stringify(error, null, 2);
+          }
         }
       } catch (e) {
         console.error('Error al procesar el mensaje de error:', e);
       }
       
+      // Limitar la longitud del mensaje para que sea legible en el toast
+      if (errorMessage.length > 200) {
+        errorMessage = errorMessage.substring(0, 197) + '...';
+      }
+      
+      // Mostrar el toast con la información de error
       toast({
-        title: "Error",
+        title: errorTitle,
         description: errorMessage,
         variant: "destructive",
       });

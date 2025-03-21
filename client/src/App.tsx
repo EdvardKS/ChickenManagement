@@ -24,6 +24,7 @@ import AdminSettings from "@/pages/admin/settings";
 import AdminSeeds from "@/pages/admin/seeds";
 import AdminHorarios from "@/pages/admin/horarios";
 import FeaturedMenus from "@/pages/admin/featured-menus";
+import FiestasPage from "@/pages/admin/fiestas";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
@@ -131,6 +132,11 @@ function AdminRoutes() {
               <HaykakanRoute>
                 <AdminUsers />
               </HaykakanRoute>
+            </Route>
+            <Route path="/admin/fiestas">
+              <ProtectedRoute>
+                <FiestasPage />
+              </ProtectedRoute>
             </Route>
             <Route path="/admin/dashboards/:dashboard*">
               <ProtectedRoute>

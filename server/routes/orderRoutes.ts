@@ -147,6 +147,8 @@ router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
     res.json(created);
   } catch (error) {
     console.error('Error creating order:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    console.error('Request body:', JSON.stringify(req.body, null, 2));
     res.status(500).json({ error: 'Error al crear el pedido' });
   }
 });

@@ -59,6 +59,22 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
       console.log('🚀 API REQUEST - Cuerpo:', JSON.stringify(data, null, 2));
       
       try {
+        console.log('🚀 API REQUEST - Headers:', {
+          'Content-Type': 'application/json'
+        });
+        
+        // Verificar los valores esperados por el esquema
+        console.log('🔍 API REQUEST - Verificación de datos enviados:');
+        console.log(' - customerName:', typeof data.customerName, data.customerName);
+        console.log(' - quantity:', typeof data.quantity, data.quantity);
+        console.log(' - pickupTime:', typeof data.pickupTime, data.pickupTime);
+        console.log(' - customerPhone:', typeof data.customerPhone, data.customerPhone);
+        console.log(' - customerEmail:', typeof data.customerEmail, data.customerEmail);
+        console.log(' - customerDNI:', typeof data.customerDNI, data.customerDNI);
+        console.log(' - customerAddress:', typeof data.customerAddress, data.customerAddress);
+        console.log(' - details:', typeof data.details, data.details);
+        console.log(' - totalAmount:', typeof data.totalAmount, data.totalAmount);
+        
         const result = await apiRequest("/api/orders", {
           method: "POST",
           headers: {
@@ -71,6 +87,25 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
         return result;
       } catch (error) {
         console.error('❌ API REQUEST - Error en la solicitud:', error);
+        console.error('❌ API REQUEST - Tipo de error:', Object.prototype.toString.call(error));
+        
+        if (error instanceof Error) {
+          console.error('❌ API REQUEST - Mensaje de error:', error.message);
+          console.error('❌ API REQUEST - Stack trace:', error.stack);
+        }
+        
+        // Intentar extraer más información del error
+        try {
+          // @ts-ignore
+          if (error.status) console.error('❌ API REQUEST - Status:', error.status);
+          // @ts-ignore
+          if (error.statusText) console.error('❌ API REQUEST - Status text:', error.statusText);
+          // @ts-ignore
+          if (error.data) console.error('❌ API REQUEST - Datos de error:', error.data);
+        } catch (e) {
+          console.error('❌ API REQUEST - No se pudieron extraer más detalles del error');
+        }
+        
         throw error;
       }
     },

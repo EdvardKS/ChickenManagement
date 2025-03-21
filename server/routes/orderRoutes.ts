@@ -113,15 +113,53 @@ router.get("/", async (_req, res) => {
 // Create new order
 router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
   try {
+    console.log('📝 Create Order - Request recibida');
+    console.log('📝 Create Order - Headers:', req.headers);
+    console.log('📝 Create Order - Método:', req.method);
+    console.log('📝 Create Order - URL:', req.url);
     console.log('📝 Create Order - Request body:', req.body);
+    console.log('📝 Create Order - Tipo de datos body:', typeof req.body);
+    
+    // Examinar la estructura y tipos de datos del body
+    if (req.body) {
+      console.log('📝 Create Order - Detalle de campos:');
+      Object.entries(req.body).forEach(([key, value]) => {
+        console.log(`   - ${key}: ${typeof value} = ${JSON.stringify(value)}`);
+      });
+    }
     
     // Intenta validar el objeto de pedido
     let order;
     try {
+      console.log('🔍 Create Order - Validando contra schema:', JSON.stringify(insertOrderSchema, null, 2));
       order = insertOrderSchema.parse(req.body);
       console.log('✅ Create Order - Validated order data:', order);
+      
+      // Verificar explícitamente cada campo requerido
+      console.log('🔍 Create Order - Validación de campos individuales:');
+      console.log('   - customerName:', order.customerName, typeof order.customerName);
+      console.log('   - quantity:', order.quantity, typeof order.quantity);
+      console.log('   - pickupTime:', order.pickupTime, typeof order.pickupTime);
+      
+      // Verificar que quantity sea un múltiplo de 0.5
+      const isValidQuantity = order.quantity % 0.5 === 0;
+      console.log('   - ¿Cantidad válida (múltiplo de 0.5)?', isValidQuantity);
+      
+      // Verificar que pickupTime sea una fecha válida
+      const isValidDate = !isNaN(new Date(order.pickupTime).getTime());
+      console.log('   - ¿Fecha válida?', isValidDate);
     } catch (validationError: any) {
       console.error('❌ Create Order - Validation error:', validationError);
+      console.error('❌ Create Order - Error format:', validationError.format ? validationError.format() : 'No format method');
+      
+      // Analizar errores de validación en detalle
+      if (validationError.errors) {
+        console.error('❌ Create Order - Validation errors detail:');
+        validationError.errors.forEach((err: any, index: number) => {
+          console.error(`   [${index}] Path: ${err.path}, Code: ${err.code}, Message: ${err.message}`);
+        });
+      }
+      
       return res.status(400).json({ 
         error: 'Datos de pedido inválidos', 
         details: validationError.errors || validationError.message || 'Error de validación',

@@ -46,7 +46,15 @@ export default function Login() {
         title: 'Inicio de sesión exitoso',
         description: `Bienvenido, ${data.user.username}`,
       });
-      navigate('/admin');
+      
+      // Redirigir según el rol del usuario
+      if (data.user.role === 'haykakan') {
+        navigate('/admin/pedidos'); // Ruta por defecto para administradores
+      } else if (data.user.role === 'festero') {
+        navigate('/fiestas'); // Ruta por defecto para festeros
+      } else {
+        navigate('/admin'); // Ruta genérica como fallback
+      }
     },
     onError: (error: any) => {
       if (error.status === 401) {

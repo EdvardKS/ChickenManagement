@@ -111,7 +111,12 @@ router.get("/", async (_req, res) => {
 });
 
 // Create new order
-router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
+router.post("/", async (req: Request & { stockUpdate?: any, session?: any }, res) => {
+  // Comprobar información de autenticación (para depuración)
+  console.log('🔒 Create Order - Información de sesión:', req.session);
+  console.log('🔒 Create Order - Headers de autenticación:', req.headers.authorization);
+  console.log('🔒 Create Order - Usuario en sesión:', req.session?.userId, req.session?.username);
+  
   try {
     console.log('📝 Create Order - Request recibida');
     console.log('📝 Create Order - Headers:', req.headers);

@@ -167,26 +167,85 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
+    console.log('📝 Storage - Create Order - Starting creation with data:', JSON.stringify(order, null, 2));
+    
+    // Verificar los tipos de datos y su estructura
+    console.log('🔍 Storage - Create Order - Verificando tipos de datos:');
+    console.log('   - customerName:', typeof order.customerName, order.customerName);
+    console.log('   - quantity:', typeof order.quantity, order.quantity);
+    console.log('   - pickupTime:', typeof order.pickupTime, 
+      order.pickupTime instanceof Date ? 'Es instancia de Date' : 'No es instancia de Date', 
+      order.pickupTime);
+    
+    if (order.customerPhone) console.log('   - customerPhone:', typeof order.customerPhone, order.customerPhone);
+    if (order.customerEmail) console.log('   - customerEmail:', typeof order.customerEmail, order.customerEmail);
+    if (order.customerDNI) console.log('   - customerDNI:', typeof order.customerDNI, order.customerDNI);
+    if (order.customerAddress) console.log('   - customerAddress:', typeof order.customerAddress, order.customerAddress);
+    if (order.details) console.log('   - details:', typeof order.details, order.details);
+    if (order.totalAmount) console.log('   - totalAmount:', typeof order.totalAmount, order.totalAmount);
+
+    // Asegurar que pickupTime es instancia de Date
+    if (!(order.pickupTime instanceof Date)) {
+      console.log('⚠️ Storage - Create Order - pickupTime no es una instancia de Date, intentando convertir:', order.pickupTime);
+      try {
+        order.pickupTime = new Date(order.pickupTime);
+        console.log('✅ Storage - Create Order - pickupTime convertido correctamente:', order.pickupTime);
+      } catch (dateError) {
+        console.error('❌ Storage - Create Order - Error al convertir pickupTime:', dateError);
+        throw new Error(`Fecha inválida: ${order.pickupTime}`);
+      }
+    }
+    
+    // Asegurar que quantity sea un número y convertirlo a string para la base de datos
+    let quantityNum = order.quantity;
+    if (typeof quantityNum !== 'number') {
+      console.log('⚠️ Storage - Create Order - quantity no es un número, intentando convertir:', quantityNum);
+      try {
+        quantityNum = Number(quantityNum);
+        if (isNaN(quantityNum)) throw new Error(`Valor no numérico: ${order.quantity}`);
+        console.log('✅ Storage - Create Order - quantity convertido correctamente:', quantityNum);
+      } catch (numError) {
+        console.error('❌ Storage - Create Order - Error al convertir quantity:', numError);
+        throw new Error(`Cantidad inválida: ${order.quantity}`);
+      }
+    }
+    
+    // Preparamos los datos para la inserción
     const now = new Date();
-    const [newOrder] = await db
-      .insert(orders)
-      .values({
-        ...order,
-        status: 'pending',
-        createdAt: now,
-        updatedAt: now
-      })
-      .returning();
-
-    // Registrar en el log
-    await db.insert(orderLogs).values({
-      orderId: newOrder.id,
-      action: 'create',
-      newState: JSON.stringify(newOrder),
-      createdBy: 'system'
-    });
-
-    return newOrder;
+    const orderData = {
+      ...order,
+      quantity: quantityNum.toString(), // Convertimos a string explícitamente para la BD
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    console.log('🔄 Storage - Create Order - Datos finales para inserción:', JSON.stringify(orderData, null, 2));
+    
+    try {
+      console.log('🚀 Storage - Create Order - Ejecutando inserción en la base de datos...');
+      const [newOrder] = await db
+        .insert(orders)
+        .values(orderData)
+        .returning();
+      
+      console.log('✅ Storage - Create Order - Inserción exitosa, orden creada:', newOrder);
+  
+      // Registrar en el log
+      console.log('📝 Storage - Create Order - Registrando en logs...');
+      await db.insert(orderLogs).values({
+        orderId: newOrder.id,
+        action: 'create',
+        newState: JSON.stringify(newOrder),
+        createdBy: 'system'
+      });
+      console.log('✅ Storage - Create Order - Log registrado correctamente');
+  
+      return newOrder;
+    } catch (dbError) {
+      console.error('❌ Storage - Create Order - Error de base de datos:', dbError);
+      throw dbError;
+    }
   }
 
   async updateOrder(id: number, orderData: Partial<Order>): Promise<Order> {

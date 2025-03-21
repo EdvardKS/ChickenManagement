@@ -21,7 +21,7 @@ interface StockUpdate {
   reservedStock: number;
   unreservedStock: number;
   action: StockAction;
-  quantity: number;
+  quantity: number;  // Siempre esperamos un número
   source?: 'admin' | 'client';
 }
 
@@ -77,17 +77,25 @@ export async function stockMiddleware(
 
 export async function prepareStockUpdate(
   action: StockAction,
-  quantity: number,
+  quantity: number | string,
   source?: 'admin' | 'client',
   isPastOrder: boolean = false
 ): Promise<StockUpdate> {
   const currentStock = await storage.getCurrentStock();
   if (!currentStock) throw new Error('No stock found');
 
+  // Asegurar que quantity es un número
+  const quantityNum = typeof quantity === 'string' ? parseFloat(quantity) : Number(quantity);
+  
+  if (isNaN(quantityNum)) {
+    throw new Error(`Cantidad inválida: ${quantity}. Se espera un número válido.`);
+  }
+
   console.log('[Prepare Stock Update] Estado actual:', {
     current: currentStock,
     action,
-    quantity,
+    quantity: quantityNum,
+    quantityOriginal: quantity,
     isPastOrder
   });
 
@@ -101,15 +109,20 @@ export async function prepareStockUpdate(
       reservedStock: parseFloat(currentStock.reservedStock),
       unreservedStock: parseFloat(currentStock.unreservedStock),
       action,
-      quantity,
+      quantity: quantityNum,  // Usar el valor numérico convertido
       source
     };
   }
 
-  // Convertir todos los valores a números
+  // Convertir todos los valores a números, asegurándonos de que sean valores válidos
   const initial = parseFloat(currentStock.initialStock);
   const current = parseFloat(currentStock.currentStock);
   const reserved = parseFloat(currentStock.reservedStock);
+  
+  // Verificar que los valores convertidos son válidos
+  if (isNaN(initial) || isNaN(current) || isNaN(reserved)) {
+    throw new Error(`Valores de stock inválidos: initialStock=${currentStock.initialStock}, currentStock=${currentStock.currentStock}, reservedStock=${currentStock.reservedStock}`);
+  }
 
   let newInitial = initial;
   let newCurrent = current;
@@ -118,67 +131,94 @@ export async function prepareStockUpdate(
   switch (action) {
     case 'direct_sale':
       // Solo reduce el stock actual para ventas sin encargo
-      newCurrent = Math.max(0, current - quantity);
+      newCurrent = Math.max(0, current - quantityNum);
       console.log('[Prepare Stock Update] Venta directa:', {
         oldCurrent: current,
-        quantity,
+        quantity: quantityNum,
         newCurrent
       });
       break;
     case 'direct_sale_correction':
       // Solo aumenta el stock actual (corrección)
-      newCurrent = current + quantity;
+      newCurrent = current + quantityNum;
       console.log('[Prepare Stock Update] Corrección de venta:', {
         oldCurrent: current,
-        quantity,
+        quantity: quantityNum,
         newCurrent
       });
       break;
     case 'add_mounted':
       // Actualiza initial_stock (pollos montados) y current_stock
-      newInitial = initial + quantity;
-      newCurrent = current + quantity; // También incrementamos current_stock
+      newInitial = initial + quantityNum;
+      newCurrent = current + quantityNum; // También incrementamos current_stock
       console.log('[Prepare Stock Update] Pollos montados añadidos:', {
         oldInitial: initial,
         oldCurrent: current,
-        quantity,
+        quantity: quantityNum,
         newInitial,
         newCurrent
       });
       break;
     case 'remove_mounted':
       // Actualiza initial_stock (corrección de pollos montados) y current_stock
-      newInitial = Math.max(0, initial - quantity);
-      newCurrent = Math.max(0, current - quantity); // También decrementamos current_stock
+      newInitial = Math.max(0, initial - quantityNum);
+      newCurrent = Math.max(0, current - quantityNum); // También decrementamos current_stock
       console.log('[Prepare Stock Update] Corrección de pollos montados:', {
         oldInitial: initial,
         oldCurrent: current,
-        quantity,
+        quantity: quantityNum,
         newInitial,
         newCurrent
       });
       break;
     case 'new_order':
       // Solo aumenta el stock reservado (pedidos)
-      newReserved = reserved + quantity;
+      newReserved = reserved + quantityNum;
+      console.log('[Prepare Stock Update] Nuevo pedido:', {
+        oldReserved: reserved,
+        quantity: quantityNum,
+        newReserved
+      });
       break;
     case 'cancel_order':
       // Solo reduce el stock reservado (cancelación de pedidos)
-      newReserved = Math.max(0, reserved - quantity);
+      newReserved = Math.max(0, reserved - quantityNum);
+      console.log('[Prepare Stock Update] Pedido cancelado:', {
+        oldReserved: reserved,
+        quantity: quantityNum,
+        newReserved
+      });
       break;
     case 'order_delivered':
       // Reduce el stock actual y reservado (entrega de pedidos)
-      newCurrent = Math.max(0, current - quantity);
-      newReserved = Math.max(0, reserved - quantity);
+      newCurrent = Math.max(0, current - quantityNum);
+      newReserved = Math.max(0, reserved - quantityNum);
+      console.log('[Prepare Stock Update] Pedido entregado:', {
+        oldCurrent: current,
+        oldReserved: reserved,
+        quantity: quantityNum,
+        newCurrent,
+        newReserved
+      });
       break;
     case 'order_error':
       // Solo reduce el stock reservado (pedido con error)
-      newReserved = Math.max(0, reserved - quantity);
+      newReserved = Math.max(0, reserved - quantityNum);
+      console.log('[Prepare Stock Update] Pedido con error:', {
+        oldReserved: reserved,
+        quantity: quantityNum,
+        newReserved
+      });
       break;
     case 'order_update':
       // Actualiza el stock reservado (modificación de pedido)
       // quantity aquí representa la diferencia (nuevo - antiguo)
-      newReserved = Math.max(0, reserved + quantity);
+      newReserved = Math.max(0, reserved + quantityNum);
+      console.log('[Prepare Stock Update] Pedido actualizado:', {
+        oldReserved: reserved,
+        quantity: quantityNum,
+        newReserved
+      });
       break;
     case 'reset_stock':
       // Resetea todos los valores a 0
@@ -196,13 +236,14 @@ export async function prepareStockUpdate(
       break;
   }
 
-  const update = {
+  // Crear el objeto de actualización usando el valor numérico convertido para quantity
+  const update: StockUpdate = {
     initialStock: newInitial,
     currentStock: newCurrent,
     reservedStock: newReserved,
     unreservedStock: Math.max(0, newCurrent - newReserved),
     action,
-    quantity,
+    quantity: quantityNum,  // Usar el valor numérico convertido
     source
   };
 

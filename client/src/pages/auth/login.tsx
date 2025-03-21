@@ -49,9 +49,9 @@ export default function Login() {
       
       // Redirigir según el rol del usuario
       if (data.user.role === 'haykakan') {
-        navigate('/admin/pedidos'); // Ruta por defecto para administradores
+        navigate('/admin/orders'); // Ruta por defecto para administradores
       } else if (data.user.role === 'festero') {
-        navigate('/fiestas'); // Ruta por defecto para festeros
+        navigate('/admin/fiestas'); // Ruta por defecto para festeros
       } else {
         navigate('/admin'); // Ruta genérica como fallback
       }
@@ -122,7 +122,11 @@ export default function Login() {
                   <div className="text-red-500 text-sm text-center">{loginError}</div>
                 )}
                 
-                <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-[#8B4513] text-white hover:bg-[#6d3610]" 
+                  disabled={loginMutation.isPending}
+                >
                   {loginMutation.isPending ? <Loader size="sm" /> : 'Iniciar Sesión'}
                 </Button>
               </form>

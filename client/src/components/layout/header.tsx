@@ -11,7 +11,8 @@ import {
   Settings,
   ChevronDown,
   Star,
-  LogOut
+  LogOut,
+  Users
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -51,6 +52,8 @@ export default function Header() {
       return { icon: <Settings className="h-4 w-4" />, text: 'Configuración', path: '/admin/settings' };
     } else if (location.includes('/admin/featured-menus')) {
       return { icon: <Star className="h-4 w-4" />, text: 'Menús Destacados', path: '/admin/featured-menus' };
+    } else if (location.includes('/admin/fiestas')) {
+      return { icon: <Users className="h-4 w-4" />, text: 'Fiestas', path: '/admin/fiestas' };
     }
     // Por defecto, mostrar Pedidos
     return { icon: <Package className="h-4 w-4" />, text: 'Pedidos', path: '/admin/orders' };
@@ -143,6 +146,14 @@ export default function Header() {
                     <div className="flex items-center space-x-2 w-full">
                       <Settings className="h-4 w-4" />
                       <span>Configuración</span>
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/admin/fiestas">
+                  <DropdownMenuItem className="focus:bg-slate-100 cursor-pointer">
+                    <div className="flex items-center space-x-2 w-full">
+                      <Users className="h-4 w-4" />
+                      <span>Fiestas</span>
                     </div>
                   </DropdownMenuItem>
                 </Link>

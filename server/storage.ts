@@ -460,8 +460,7 @@ export class DatabaseStorage implements IStorage {
   async getAllUsers(): Promise<User[]> {
     return await db
       .select()
-      .from(users)
-      .where(eq(users.active, true));
+      .from(users);
   }
 
   async getFesteroUsers(): Promise<User[]> {

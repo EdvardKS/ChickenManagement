@@ -27,16 +27,17 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   // Mutación para actualizar el stock montado (agregar pollos al stock montado)
   const addMountedStock = useMutation({
     mutationFn: async (quantity: number) => {
-      const res = await apiRequest("POST", "/api/stock/mounted/add", { 
-        quantity
+      return await apiRequest("/api/stock/mounted/add", { 
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity }),
       });
-      return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Pollos montados añadidos",
-        description: "Se han añadido pollos al stock montado correctamente"
+        description: `Se han añadido ${data.quantity || ""} pollos al stock montado correctamente`
       });
     },
     onError: (error) => {
@@ -52,16 +53,17 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   // Mutación para quitar pollos del stock montado (corrección)
   const removeMountedStock = useMutation({
     mutationFn: async (quantity: number) => {
-      const res = await apiRequest("POST", "/api/stock/mounted/remove", { 
-        quantity
+      return await apiRequest("/api/stock/mounted/remove", { 
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity }),
       });
-      return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Corrección de pollos montados",
-        description: "Se ha realizado la corrección de pollos montados correctamente"
+        description: `Se ha realizado la corrección de ${data.quantity || ""} pollos montados correctamente`
       });
     },
     onError: (error) => {
@@ -77,16 +79,17 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   // Mutación para venta directa sin encargo
   const directSale = useMutation({
     mutationFn: async (quantity: number) => {
-      const res = await apiRequest("POST", "/api/stock/direct-sale", { 
-        quantity
+      return await apiRequest("/api/stock/direct-sale", { 
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity }),
       });
-      return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Venta directa registrada",
-        description: "La venta sin encargo se ha registrado correctamente"
+        description: `Se ha registrado la venta de ${data.quantity || ""} pollos correctamente`
       });
     },
     onError: (error) => {
@@ -102,16 +105,17 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   // Mutación para corrección de venta directa
   const directSaleCorrection = useMutation({
     mutationFn: async (quantity: number) => {
-      const res = await apiRequest("POST", "/api/stock/direct-sale/correct", { 
-        quantity
+      return await apiRequest("/api/stock/direct-sale/correct", { 
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity }),
       });
-      return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Corrección registrada",
-        description: "La corrección de venta se ha registrado correctamente"
+        description: `Se ha registrado la corrección de ${data.quantity || ""} pollos correctamente`
       });
     },
     onError: (error) => {
@@ -127,10 +131,13 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
   // Mutación para resetear el stock
   const resetStock = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/stock/reset", {});
-      return res.json();
+      return await apiRequest("/api/stock/reset", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Stock reseteado",

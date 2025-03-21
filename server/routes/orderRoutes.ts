@@ -34,6 +34,19 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
+    // Verificar si es un pedido de un día anterior
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const orderDate = new Date(currentOrder.pickupTime);
+    orderDate.setHours(0, 0, 0, 0);
+    const isPastOrder = orderDate < today;
+
+    console.log('🗓️ Update Order - Date check:', { 
+      orderDate: orderDate.toISOString(), 
+      today: today.toISOString(), 
+      isPastOrder 
+    });
+
     try {
       // Validate the request body
       const validatedData = updateOrderSchema.parse(req.body);
@@ -57,7 +70,8 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
         req.stockUpdate = await prepareStockUpdate(
           'cancel_order',
           parseFloat(currentOrder.quantity.toString()),
-          'admin'
+          'admin',
+          isPastOrder
         );
 
         await new Promise((resolve, reject) => {
@@ -102,10 +116,25 @@ router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
     const order = insertOrderSchema.parse(req.body);
     const created = await storage.createOrder(order);
 
+    // Verificar si es un pedido para un día pasado
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const orderDate = new Date(created.pickupTime);
+    orderDate.setHours(0, 0, 0, 0);
+    const isPastOrder = orderDate < today;
+
+    console.log('Creando nuevo pedido:', { 
+      id: created.id, 
+      orderDate: orderDate.toISOString(), 
+      today: today.toISOString(), 
+      isPastOrder 
+    });
+
     req.stockUpdate = await prepareStockUpdate(
       'new_order',
       parseFloat(created.quantity.toString()),
-      'client'
+      'client',
+      isPastOrder
     );
 
     await new Promise((resolve, reject) => {
@@ -132,10 +161,25 @@ router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) =
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
+    // Verificar si es un pedido de un día anterior
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const orderDate = new Date(order.pickupTime);
+    orderDate.setHours(0, 0, 0, 0);
+    const isPastOrder = orderDate < today;
+
+    console.log('Confirmando pedido:', { 
+      id, 
+      orderDate: orderDate.toISOString(), 
+      today: today.toISOString(), 
+      isPastOrder 
+    });
+
     req.stockUpdate = await prepareStockUpdate(
       'order_delivered',
       parseFloat(order.quantity.toString()),
-      'admin'
+      'admin',
+      isPastOrder
     );
 
     await new Promise((resolve, reject) => {
@@ -168,10 +212,25 @@ router.patch("/:id/cancel", async (req: Request & { stockUpdate?: any }, res) =>
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
+    // Verificar si es un pedido de un día anterior
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const orderDate = new Date(order.pickupTime);
+    orderDate.setHours(0, 0, 0, 0);
+    const isPastOrder = orderDate < today;
+
+    console.log('Cancelando pedido:', { 
+      id, 
+      orderDate: orderDate.toISOString(), 
+      today: today.toISOString(), 
+      isPastOrder 
+    });
+
     req.stockUpdate = await prepareStockUpdate(
       'cancel_order',
       parseFloat(order.quantity.toString()),
-      'admin'
+      'admin',
+      isPastOrder
     );
 
     await new Promise((resolve, reject) => {
@@ -204,10 +263,25 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
+    // Verificar si es un pedido de un día anterior
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const orderDate = new Date(order.pickupTime);
+    orderDate.setHours(0, 0, 0, 0);
+    const isPastOrder = orderDate < today;
+
+    console.log('Marcando pedido como error:', { 
+      id, 
+      orderDate: orderDate.toISOString(), 
+      today: today.toISOString(), 
+      isPastOrder 
+    });
+
     req.stockUpdate = await prepareStockUpdate(
       'order_error',
       parseFloat(order.quantity.toString()),
-      'admin'
+      'admin',
+      isPastOrder
     );
 
     await new Promise((resolve, reject) => {

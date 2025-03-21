@@ -78,7 +78,8 @@ export async function stockMiddleware(
 export async function prepareStockUpdate(
   action: StockAction,
   quantity: number,
-  source?: 'admin' | 'client'
+  source?: 'admin' | 'client',
+  isPastOrder: boolean = false
 ): Promise<StockUpdate> {
   const currentStock = await storage.getCurrentStock();
   if (!currentStock) throw new Error('No stock found');
@@ -86,8 +87,24 @@ export async function prepareStockUpdate(
   console.log('[Prepare Stock Update] Estado actual:', {
     current: currentStock,
     action,
-    quantity
+    quantity,
+    isPastOrder
   });
+
+  // Si es un pedido de días pasados, permitimos operaciones especiales
+  if (isPastOrder) {
+    console.log('[Prepare Stock Update] Procesando pedido de día pasado');
+    // Para pedidos pasados, no afectamos el stock actual
+    return {
+      initialStock: parseFloat(currentStock.initialStock),
+      currentStock: parseFloat(currentStock.currentStock),
+      reservedStock: parseFloat(currentStock.reservedStock),
+      unreservedStock: parseFloat(currentStock.unreservedStock),
+      action,
+      quantity,
+      source
+    };
+  }
 
   // Convertir todos los valores a números
   const initial = parseFloat(currentStock.initialStock);

@@ -10,8 +10,10 @@ import {
   FileJson, 
   Settings,
   ChevronDown,
-  Star
+  Star,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +33,7 @@ export default function Header() {
   const [location] = useLocation();
   const isHome = location === "/";
   const isAdmin = location.startsWith("/admin");
+  const { logout, isAuthenticated } = useAuth();
 
   // Obtener la sección actual para mostrar en el menú desplegable
   const getCurrentSection = () => {
@@ -231,11 +234,18 @@ export default function Header() {
                     Hacer Pedido
                   </Button>
                 </Link>
-                {isAdmin && (
-                  <div className="border-t pt-4 mt-4">
+                {isAuthenticated && (
+                  <div className="border-t pt-4 mt-4 space-y-4">
                     <Link href="/">
                       <div className="text-lg cursor-pointer">Volver al Sitio</div>
                     </Link>
+                    <div 
+                      onClick={logout}
+                      className="text-lg cursor-pointer flex items-center text-red-600 hover:text-red-800"
+                    >
+                      <LogOut className="mr-2 h-5 w-5" />
+                      Cerrar Sesión
+                    </div>
                   </div>
                 )}
               </div>

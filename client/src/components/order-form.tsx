@@ -33,22 +33,30 @@ interface OrderFormProps {
 export default function OrderForm({ currentStock }: OrderFormProps) {
   const { toast } = useToast();
 
+  // Convertimos la fecha a string tal como espera la API
+  const today = new Date();
+  
   const form = useForm({
     resolver: zodResolver(insertOrderSchema),
     defaultValues: {
       customerName: "",
       customerPhone: "",
       customerEmail: "",
-      items: [],
+      customerDNI: "",
+      customerAddress: "",
+      quantity: 1,
+      details: "",
       totalAmount: 0,
-      pickupTime: new Date(),
+      pickupTime: today.toISOString(),
     },
   });
 
   const createOrder = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/orders", data);
-      return res.json();
+      return apiRequest("/api/orders", {
+        method: "POST",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -143,7 +151,7 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                         const quantity = parseInt(e.target.value);
                         field.onChange(quantity);
                         form.setValue("totalAmount", quantity * 1200); // 12€ per chicken
-                        form.setValue("items", [`${quantity} pollo(s)`]);
+                        form.setValue("details", `${quantity} pollo(s)`);
                       }}
                     />
                   </FormControl>
@@ -180,8 +188,13 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                        selected={new Date(field.value)}
+                        onSelect={(date: Date | undefined) => {
+                          // Convierte la fecha a ISO string al seleccionarla
+                          if (date) {
+                            field.onChange(date.toISOString());
+                          }
+                        }}
                         disabled={(date) =>
                           date < new Date() || date > new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
                         }

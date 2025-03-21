@@ -131,86 +131,72 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
       // Mostrar todos los detalles del error en la consola para depuración
       console.error('❌ MUTATION ERROR - Objeto de error completo:', error);
       
-      if (error.response) {
-        console.error('❌ MUTATION ERROR - Respuesta del servidor:', error.response);
-      }
-      
-      if (error.status) {
-        console.error('❌ MUTATION ERROR - Código de estado HTTP:', error.status);
-      }
-      
-      if (error.statusText) {
-        console.error('❌ MUTATION ERROR - Texto de estado HTTP:', error.statusText);
-      }
-      
-      if (error.url) {
-        console.error('❌ MUTATION ERROR - URL de la solicitud:', error.url);
-      }
-      
-      if (error.stack) {
-        console.error('❌ MUTATION ERROR - Stack trace del error:', error.stack);
-      }
-      
       // Extraer y formatear los detalles del error para mostrarlos al usuario
       let errorTitle = "Error al crear el pedido";
       let errorMessage = "No se pudo realizar el pedido. Por favor, inténtalo de nuevo.";
       
       try {
-        console.log('🔍 MUTATION ERROR - Analizando estructura del error para mostrar al usuario...');
+        console.log('🔍 MUTATION ERROR - Analizando estructura del error...');
         
-        // Intentar extraer detalles estructurados
-        if (typeof error === 'object' && error !== null) {
-          // Mensaje principal del error
-          if (error.message) {
-            console.log('🔍 MUTATION ERROR - Mensaje de error:', error.message);
-            errorTitle = "Error: " + error.message.substring(0, 50);
-          }
+        // Si hay un mensaje amigable ya definido por el manejador de errores global
+        if (error.friendlyMessage) {
+          console.log('🔍 MUTATION ERROR - Usando mensaje amigable predefinido:', error.friendlyMessage);
           
-          // Detalles del error (generalmente proporcionados por nuestro backend)
+          if (error.status === 401) {
+            errorTitle = "Sesión requerida";
+            errorMessage = error.friendlyMessage + "\n\nSerás redirigido a la página de inicio de sesión en unos momentos.";
+          } else if (error.status === 403) {
+            errorTitle = "Permiso denegado";
+            errorMessage = error.friendlyMessage + "\n\nContacta con un administrador si crees que esto es un error.";
+          } else {
+            errorTitle = "Error en la aplicación";
+            errorMessage = error.friendlyMessage;
+          }
+        }
+        // Si no hay mensaje amigable, intentar extraer información útil
+        else if (typeof error === 'object' && error !== null) {
+          // Priorizar los detalles sobre el mensaje general si están disponibles
           if (error.details) {
-            console.log('🔍 MUTATION ERROR - Detalles del error:', error.details);
+            console.log('🔍 MUTATION ERROR - Usando detalles del error:', error.details);
+            errorMessage = typeof error.details === 'string' 
+              ? error.details 
+              : JSON.stringify(error.details);
+          }
+          // Siguiente prioridad: mensaje del error
+          else if (error.message) {
+            console.log('🔍 MUTATION ERROR - Usando mensaje del error:', error.message);
+            errorTitle = "Error: " + error.message.substring(0, 50);
             
-            // Formatear detalles para mostrarlos
-            if (Array.isArray(error.details)) {
-              // Si es un array de errores (como en errores de Zod)
-              errorMessage = error.details.map((detail: any) => 
-                `- ${detail.path?.join('.')}: ${detail.message}`
-              ).join('\n');
-            } else if (typeof error.details === 'object') {
-              // Si es un objeto con detalles
-              errorMessage = Object.entries(error.details)
-                .map(([key, value]) => `- ${key}: ${value}`)
-                .join('\n');
-            } else {
-              // Si es un string u otro tipo
-              errorMessage = `${error.details}`;
+            // Para errores de autenticación/autorización, personalizar mensaje
+            if (error.status === 401) {
+              errorTitle = "No has iniciado sesión";
+              errorMessage = "Debes iniciar sesión para realizar esta acción.\n\nSerás redirigido automáticamente.";
+            } else if (error.status === 403) {
+              errorTitle = "No tienes permisos";
+              errorMessage = "Tu usuario no tiene permisos para crear pedidos.\n\nContacta con un administrador.";
             }
           } 
-          // Campo 'error' (alternativa común en APIs)
-          else if (error.error) {
-            console.log('🔍 MUTATION ERROR - Campo error:', error.error);
-            errorMessage = typeof error.error === 'string' 
-              ? error.error 
-              : JSON.stringify(error.error);
-          } 
-          // Si hay datos recibidos que son relevantes
-          else if (error.receivedData) {
-            console.log('🔍 MUTATION ERROR - Datos recibidos:', error.receivedData);
-            errorMessage = `Datos incorrectos: ${JSON.stringify(error.receivedData)}`;
+          // Si hay una respuesta del servidor
+          else if (error.response) {
+            console.log('🔍 MUTATION ERROR - Usando respuesta del servidor:', error.response);
+            const respMessage = error.response.message || error.response.error;
+            if (respMessage) {
+              errorMessage = typeof respMessage === 'string' 
+                ? respMessage
+                : JSON.stringify(respMessage);
+            }
           }
-          // Si ninguno de los campos anteriores está presente
-          else {
-            console.log('🔍 MUTATION ERROR - Fallback a stringify del error completo');
-            // Último recurso: convertir todo el objeto a string
-            try {
-              errorMessage = JSON.stringify(error, null, 2);
-            } catch (jsonError) {
-              errorMessage = "Error no serializable: " + Object.prototype.toString.call(error);
+          
+          // Añadir código de estado si está disponible (para debugging)
+          if (error.status) {
+            console.log('🔍 MUTATION ERROR - Añadiendo código de estado:', error.status);
+            if (process.env.NODE_ENV !== 'production') {
+              errorMessage += `\n\n(Código de error: ${error.status})`;
             }
           }
         }
       } catch (e) {
-        console.error('❌ MUTATION ERROR - Error al procesar el mensaje de error:', e);
+        console.error('❌ MUTATION ERROR - Error al procesar mensaje de error:', e);
       }
       
       // Limitar la longitud del mensaje para que sea legible en el toast
@@ -218,7 +204,7 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
         errorMessage = errorMessage.substring(0, 197) + '...';
       }
       
-      console.log('🔔 MUTATION ERROR - Mensaje final que se mostrará al usuario:', {
+      console.log('🔔 MUTATION ERROR - Mensaje final a mostrar:', {
         title: errorTitle,
         description: errorMessage
       });
@@ -228,6 +214,7 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
         title: errorTitle,
         description: errorMessage,
         variant: "destructive",
+        duration: 6000, // Más tiempo para leer mensajes de error
       });
     },
   });

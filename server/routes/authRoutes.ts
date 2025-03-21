@@ -115,14 +115,33 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
 
 // Middleware to check if user has admin role
 export const isHaykakan = (req: Request, res: Response, next: NextFunction) => {
+  console.log('🔒 isHaykakan middleware - Verificando autenticación y rol');
+  console.log('🔒 isHaykakan middleware - Sesión actual:', req.session);
+  
   if (!req.session.userId) {
-    return res.status(401).json({ message: 'No autenticado' });
+    console.error('❌ isHaykakan middleware - No hay sesión de usuario');
+    return res.status(401).json({ 
+      message: 'No autenticado',
+      details: 'Debe iniciar sesión para acceder a esta función',
+      code: 'AUTH_REQUIRED',
+      endpoint: req.originalUrl
+    });
   }
+  
+  console.log(`🔒 isHaykakan middleware - Usuario: ${req.session.username}, Rol: ${req.session.role}`);
   
   if (req.session.role !== 'haykakan') {
-    return res.status(403).json({ message: 'No autorizado' });
+    console.error(`❌ isHaykakan middleware - Rol incorrecto: ${req.session.role}`);
+    return res.status(403).json({ 
+      message: 'No autorizado',
+      details: 'Se requiere rol de administrador (haykakan) para esta operación',
+      code: 'INSUFFICIENT_PERMISSIONS',
+      role: req.session.role,
+      endpoint: req.originalUrl
+    });
   }
   
+  console.log('✅ isHaykakan middleware - Autorización exitosa');
   next();
 };
 

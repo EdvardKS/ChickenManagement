@@ -196,9 +196,19 @@ router.post('/users', isHaykakan, async (req: Request, res: Response) => {
 });
 
 // Get all users (haykakan role required)
-router.get('/users', isHaykakan, async (_req: Request, res: Response) => {
+router.get('/users', isHaykakan, async (req: Request, res: Response) => {
   try {
-    const users = await storage.getAllUsers();
+    // Obtener el parámetro de consulta para incluir inactivos 
+    const showAll = req.query.showAll === 'true';
+    
+    // Obtener todos los usuarios
+    const allUsers = await storage.getAllUsers();
+    
+    // Filtrar usuarios según el parámetro showAll
+    const users = showAll 
+      ? allUsers 
+      : allUsers.filter(user => user.active);
+    
     // Eliminar contraseñas de los datos
     const usersWithoutPasswords = users.map(user => {
       const { password, ...userWithoutPassword } = user;
@@ -268,6 +278,37 @@ router.patch('/users/:id', isHaykakan, async (req: Request, res: Response) => {
     res.json(userInfo);
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
+
+// Toggle user active status
+router.patch('/users/:id/toggle-active', isHaykakan, async (req: Request, res: Response) => {
+  try {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: 'ID de usuario inválido' });
+    }
+    
+    // Verificar si el usuario existe
+    const user = await storage.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    
+    // Invertir el estado active
+    const newActiveStatus = !user.active;
+    const updatedUser = await storage.updateUser(userId, { active: newActiveStatus });
+    
+    // Enviar respuesta sin contraseña
+    const { password, ...userInfo } = updatedUser;
+    
+    res.json({
+      ...userInfo,
+      message: newActiveStatus ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente' 
+    });
+  } catch (error) {
+    console.error('Error al cambiar estado del usuario:', error);
     res.status(500).json({ message: 'Error en el servidor' });
   }
 });

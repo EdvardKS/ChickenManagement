@@ -74,14 +74,15 @@ export default function UsersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Consulta para obtener usuarios
   const { data: users = [], isLoading, error } = useQuery({
-    queryKey: ['/api/auth/users'],
+    queryKey: ['/api/auth/users', { showAll }],
     queryFn: async () => {
-      const response = await apiRequest('/api/auth/users');
+      const response = await apiRequest(`/api/auth/users?showAll=${showAll}`);
       return response as User[];
     }
   });
@@ -139,6 +140,30 @@ export default function UsersPage() {
       toast({
         title: "Error",
         description: error.message || "Error al actualizar el usuario",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Mutación para activar/desactivar usuario
+  const toggleActiveStatusMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await apiRequest(`/api/auth/users/${userId}/toggle-active`, {
+        method: 'PATCH'
+      });
+      return response;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: data.message || "Estado actualizado",
+        description: "El estado del usuario ha sido actualizado",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Error al cambiar el estado del usuario",
         variant: "destructive",
       });
     }
@@ -208,6 +233,11 @@ export default function UsersPage() {
     } else {
       createUserMutation.mutate(data);
     }
+  };
+  
+  // Función para alternar el estado activo/inactivo de un usuario
+  const handleToggleActive = (userId: number) => {
+    toggleActiveStatusMutation.mutate(userId);
   };
 
   if (isLoading) return <div className="flex justify-center py-10"><p>Cargando usuarios...</p></div>;

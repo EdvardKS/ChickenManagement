@@ -4,6 +4,7 @@ import { storage } from '../storage';
 import { stockMiddleware, prepareStockUpdate } from '../middleware/stockMiddleware';
 import { insertOrderSchema } from '@shared/schema';
 import { z } from 'zod';
+import { isHaykakan } from './authRoutes';
 
 const router = Router();
 
@@ -20,7 +21,7 @@ const updateOrderSchema = z.object({
 });
 
 // Update order status
-router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('🔄 Update Order - Request received for order:', id);
@@ -111,7 +112,7 @@ router.get("/", async (_req, res) => {
 });
 
 // Create new order
-router.post("/", async (req: Request & { stockUpdate?: any, session?: any }, res) => {
+router.post("/", isHaykakan, async (req: Request & { stockUpdate?: any, session?: any }, res) => {
   // Comprobar información de autenticación (para depuración)
   console.log('🔒 Create Order - Información de sesión:', req.session);
   console.log('🔒 Create Order - Headers de autenticación:', req.headers.authorization);
@@ -245,7 +246,7 @@ router.post("/", async (req: Request & { stockUpdate?: any, session?: any }, res
 });
 
 // Confirm order delivery
-router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id/confirm", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('✅ Confirm Order - Request received for order:', id);
@@ -356,7 +357,7 @@ router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) =
 });
 
 // Cancel order
-router.patch("/:id/cancel", async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id/cancel", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('❌ Cancel Order - Request received for order:', id);

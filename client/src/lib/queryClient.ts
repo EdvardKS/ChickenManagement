@@ -1,6 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-export async function throwIfResNotOk(res: Response) {
+async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     // Intentar obtener el cuerpo como JSON primero
     let error: any;
@@ -113,14 +113,6 @@ export async function throwIfResNotOk(res: Response) {
   }
 }
 
-/**
- * IMPORTANTE: Esta función mantiene compatibilidad con dos formatos:
- * 1. apiRequest(url, options) - Formato antiguo
- * 2. apiRequest(method, url, data) - Formato nuevo
- * 
- * Para evitar conflictos y hacerlo más claro, se recomienda utilizar en su lugar
- * las funciones de 'api.ts': api(), apiGet(), apiPost(), apiPatch(), apiDelete()
- */
 export async function apiRequest(
   arg1: string,
   arg2?: string | RequestInit,

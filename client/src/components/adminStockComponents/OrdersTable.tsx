@@ -5,9 +5,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { OrderDrawer } from "./OrderDrawer";
 import type { Order } from "@shared/schema";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { confirmOrder, cancelOrder, markOrderAsError, updateOrder } from "@/services/orderService";
 
 interface OrdersTableProps {
   orders: Order[] | undefined;
@@ -38,9 +37,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         throw new Error('Pedido no encontrado');
       }
 
-      // Usamos el servicio en lugar de apiRequest
-      await confirmOrder(orderId);
-      
+      // Simplificamos la llamada para evitar errores de fecha
+      await apiRequest("PATCH", `/api/orders/${orderId}/confirm`, {});
+
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido entregado",
@@ -63,9 +64,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         throw new Error('Pedido no encontrado');
       }
 
-      // Usamos el servicio en lugar de apiRequest
-      await cancelOrder(orderId);
-      
+      // Simplificamos la llamada para evitar errores de fecha
+      await apiRequest("PATCH", `/api/orders/${orderId}/cancel`, {});
+
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido cancelado",
@@ -88,9 +91,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         throw new Error('Pedido no encontrado');
       }
 
-      // Usamos el servicio en lugar de apiRequest
-      await markOrderAsError(orderId);
-      
+      // Simplificamos la llamada para evitar errores de fecha
+      await apiRequest("PATCH", `/api/orders/${orderId}/error`, {});
+
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
       toast({
         title: "Pedido marcado como error",
@@ -116,14 +121,15 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       // Calculate stock difference for update
       const quantityDiff = parseFloat(order.quantity) - parseFloat(originalOrder.quantity);
 
-      // Usamos el servicio en lugar de apiRequest
-      await updateOrder(order.id, {
+      await apiRequest("PATCH", `/api/orders/${order.id}`, {
         ...order,
         quantityDiff,
         updateType: "order_update",
         pickupTime: new Date(order.pickupTime).toISOString()
       });
-      
+
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       toast({
         title: "Pedido actualizado",
         description: "El pedido ha sido actualizado y el stock ha sido ajustado",

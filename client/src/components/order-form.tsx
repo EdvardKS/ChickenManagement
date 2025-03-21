@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface OrderFormProps {
-  currentStock: number;
+  currentStock: number | string;
 }
 
 export default function OrderForm({ currentStock }: OrderFormProps) {
@@ -68,9 +68,24 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
       form.reset();
     },
     onError: (error) => {
+      console.error('Error al crear pedido:', error);
+      
+      // Intenta extraer el mensaje de error si está disponible
+      let errorMessage = "No se pudo realizar el pedido. Por favor, inténtalo de nuevo.";
+      
+      try {
+        if (typeof error === 'object' && error !== null) {
+          const errorDetail = JSON.stringify(error);
+          console.log('Detalles del error:', errorDetail);
+          errorMessage = `Error: ${errorDetail}`;
+        }
+      } catch (e) {
+        console.error('Error al procesar el mensaje de error:', e);
+      }
+      
       toast({
         title: "Error",
-        description: "No se pudo realizar el pedido. Por favor, inténtalo de nuevo.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -188,16 +203,16 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={new Date(field.value)}
+                        selected={field.value ? new Date(field.value) : undefined}
                         onSelect={(date: Date | undefined) => {
                           // Convierte la fecha a ISO string al seleccionarla
                           if (date) {
+                            // Asignar una hora por defecto a las 12:00
+                            date.setHours(12, 0, 0, 0);
                             field.onChange(date.toISOString());
+                            console.log('Fecha seleccionada:', date.toISOString());
                           }
                         }}
-                        disabled={(date) =>
-                          date < new Date() || date > new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                        }
                         locale={es}
                       />
                     </PopoverContent>

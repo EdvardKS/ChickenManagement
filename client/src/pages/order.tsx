@@ -5,7 +5,7 @@ import type { Stock } from "@shared/schema";
 
 export default function Order() {
   const { data: stock } = useQuery<Stock>({ 
-    queryKey: ['/api/stockActually'] 
+    queryKey: ['/api/stock'] 
   });
 
   return ( 
@@ -23,7 +23,7 @@ export default function Order() {
         </CardContent>
       </Card>
 
-      <OrderForm currentStock={stock?.currentStock ?? 0} />
+      <OrderForm currentStock={stock?.currentStock ? Number(stock.currentStock) : 0} />
     </div>
   );
 }

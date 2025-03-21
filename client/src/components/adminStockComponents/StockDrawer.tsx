@@ -7,6 +7,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
+  DrawerDescription,
 } from "@/components/ui/drawer";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -236,9 +237,12 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-screen w-full sm:w-[74%] flex flex-col">
+      <DrawerContent className="h-screen w-full sm:w-[74%] flex flex-col" aria-describedby="drawer-description">
         <DrawerHeader>
           <DrawerTitle className="text-center text-5xl py-5">Stock Actual 🐔</DrawerTitle>
+          <DrawerDescription id="drawer-description" className="sr-only">
+            Gestión del stock de pollos actual. Permite añadir o quitar pollos del stock montado y registrar ventas directas.
+          </DrawerDescription>
         </DrawerHeader>
 
         <div className="p-4 space-y-4 flex-grow overflow-auto">
@@ -358,10 +362,10 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
       </DrawerContent>
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent aria-describedby="alert-dialog-description">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Acción</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription id="alert-dialog-description">
               {(() => {
                 if (!pendingAction) return "";
                 

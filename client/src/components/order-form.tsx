@@ -53,28 +53,67 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
 
   const createOrder = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("/api/orders", {
-        method: "POST",
-        body: JSON.stringify(data)
-      });
+      console.log('🚀 API REQUEST - Iniciando solicitud al servidor para crear pedido:', data);
+      console.log('🚀 API REQUEST - URL:', "/api/orders");
+      console.log('🚀 API REQUEST - Método:', "POST");
+      console.log('🚀 API REQUEST - Cuerpo:', JSON.stringify(data, null, 2));
+      
+      try {
+        const result = await apiRequest("/api/orders", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        console.log('✅ API REQUEST - Respuesta exitosa del servidor:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ API REQUEST - Error en la solicitud:', error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ MUTATION SUCCESS - Pedido creado exitosamente:', data);
+      
+      console.log('🔄 MUTATION SUCCESS - Invalidando consultas para actualizar UI');
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+      
+      console.log('🔔 MUTATION SUCCESS - Mostrando notificación de éxito');
       toast({
         title: "Pedido realizado",
         description: "Tu pedido ha sido registrado correctamente",
       });
+      
+      console.log('🧹 MUTATION SUCCESS - Limpiando formulario');
       form.reset();
     },
     onError: (error: any) => {
-      console.error('Error al crear pedido:', error);
+      console.error('❌ MUTATION ERROR - Error al crear pedido:', error);
       
       // Mostrar todos los detalles del error en la consola para depuración
-      console.error('Objeto de error completo:', error);
+      console.error('❌ MUTATION ERROR - Objeto de error completo:', error);
       
       if (error.response) {
-        console.error('Respuesta del servidor:', error.response);
+        console.error('❌ MUTATION ERROR - Respuesta del servidor:', error.response);
+      }
+      
+      if (error.status) {
+        console.error('❌ MUTATION ERROR - Código de estado HTTP:', error.status);
+      }
+      
+      if (error.statusText) {
+        console.error('❌ MUTATION ERROR - Texto de estado HTTP:', error.statusText);
+      }
+      
+      if (error.url) {
+        console.error('❌ MUTATION ERROR - URL de la solicitud:', error.url);
+      }
+      
+      if (error.stack) {
+        console.error('❌ MUTATION ERROR - Stack trace del error:', error.stack);
       }
       
       // Extraer y formatear los detalles del error para mostrarlos al usuario
@@ -82,16 +121,19 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
       let errorMessage = "No se pudo realizar el pedido. Por favor, inténtalo de nuevo.";
       
       try {
+        console.log('🔍 MUTATION ERROR - Analizando estructura del error para mostrar al usuario...');
+        
         // Intentar extraer detalles estructurados
         if (typeof error === 'object' && error !== null) {
+          // Mensaje principal del error
           if (error.message) {
-            console.log('Mensaje de error:', error.message);
+            console.log('🔍 MUTATION ERROR - Mensaje de error:', error.message);
             errorTitle = "Error: " + error.message.substring(0, 50);
           }
           
-          // Si hay detalles disponibles en el error
+          // Detalles del error (generalmente proporcionados por nuestro backend)
           if (error.details) {
-            console.log('Detalles del error:', error.details);
+            console.log('🔍 MUTATION ERROR - Detalles del error:', error.details);
             
             // Formatear detalles para mostrarlos
             if (Array.isArray(error.details)) {
@@ -108,24 +150,43 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
               // Si es un string u otro tipo
               errorMessage = `${error.details}`;
             }
-          } else if (error.error) {
-            // Algunos APIs devuelven el mensaje en un campo 'error'
+          } 
+          // Campo 'error' (alternativa común en APIs)
+          else if (error.error) {
+            console.log('🔍 MUTATION ERROR - Campo error:', error.error);
             errorMessage = typeof error.error === 'string' 
               ? error.error 
               : JSON.stringify(error.error);
-          } else {
+          } 
+          // Si hay datos recibidos que son relevantes
+          else if (error.receivedData) {
+            console.log('🔍 MUTATION ERROR - Datos recibidos:', error.receivedData);
+            errorMessage = `Datos incorrectos: ${JSON.stringify(error.receivedData)}`;
+          }
+          // Si ninguno de los campos anteriores está presente
+          else {
+            console.log('🔍 MUTATION ERROR - Fallback a stringify del error completo');
             // Último recurso: convertir todo el objeto a string
-            errorMessage = JSON.stringify(error, null, 2);
+            try {
+              errorMessage = JSON.stringify(error, null, 2);
+            } catch (jsonError) {
+              errorMessage = "Error no serializable: " + Object.prototype.toString.call(error);
+            }
           }
         }
       } catch (e) {
-        console.error('Error al procesar el mensaje de error:', e);
+        console.error('❌ MUTATION ERROR - Error al procesar el mensaje de error:', e);
       }
       
       // Limitar la longitud del mensaje para que sea legible en el toast
       if (errorMessage.length > 200) {
         errorMessage = errorMessage.substring(0, 197) + '...';
       }
+      
+      console.log('🔔 MUTATION ERROR - Mensaje final que se mostrará al usuario:', {
+        title: errorTitle,
+        description: errorMessage
+      });
       
       // Mostrar el toast con la información de error
       toast({
@@ -137,11 +198,18 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
   });
 
   const onSubmit = (data: any) => {
+    console.log('🧩 FORM SUBMIT - Datos recibidos del formulario:', data);
+    console.log('🧩 FORM SUBMIT - Stock actual:', currentStock);
+    
     // Validar stock suficiente
     if (data.quantity > Number(currentStock)) {
+      console.error('❌ FORM SUBMIT - Stock insuficiente:', { 
+        requested: data.quantity, 
+        available: currentStock 
+      });
       toast({
         title: "Stock insuficiente",
-        description: "No hay suficiente stock disponible para tu pedido",
+        description: `Has solicitado ${data.quantity} pollos, pero solo hay disponibles ${currentStock}`,
         variant: "destructive",
       });
       return;
@@ -149,20 +217,35 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
     
     // Asegurarse de que los datos cumplen con el esquema
     try {
+      console.log('🧩 FORM SUBMIT - Procesando datos antes de envío...');
+      
       // Convertir quantity a número explícitamente (para que coincida con el schema)
       // Garantizar que sea un número con decimales válidos (0.5, 1.0, etc)
-      const quantity = parseFloat(data.quantity.toString());
+      const quantityRaw = data.quantity.toString();
+      console.log('🧩 FORM SUBMIT - Valor de cantidad antes de conversión:', quantityRaw, typeof quantityRaw);
+      
+      const quantity = parseFloat(quantityRaw);
+      console.log('🧩 FORM SUBMIT - Valor de cantidad después de conversión:', quantity, typeof quantity);
       
       // Asegurar que la fecha esté en formato ISO
+      console.log('🧩 FORM SUBMIT - Valor de fecha antes de conversión:', data.pickupTime, typeof data.pickupTime);
       const pickupTime = new Date(data.pickupTime);
+      console.log('🧩 FORM SUBMIT - Valor de fecha después de conversión:', pickupTime, 'ISO:', pickupTime.toISOString());
       
       // Verificar validez de los datos
       if (isNaN(quantity)) {
-        throw new Error('Cantidad inválida');
+        console.error('❌ FORM SUBMIT - Cantidad inválida:', data.quantity);
+        throw new Error(`Cantidad inválida: "${data.quantity}"`);
+      }
+      
+      if (quantity <= 0) {
+        console.error('❌ FORM SUBMIT - Cantidad debe ser mayor que cero:', quantity);
+        throw new Error('La cantidad debe ser mayor que cero');
       }
       
       if (isNaN(pickupTime.getTime())) {
-        throw new Error('Fecha de recogida inválida');
+        console.error('❌ FORM SUBMIT - Fecha de recogida inválida:', data.pickupTime);
+        throw new Error(`Fecha de recogida inválida: "${data.pickupTime}"`);
       }
       
       // Preparar datos según el esquema esperado
@@ -173,10 +256,13 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
         totalAmount: quantity * 1200, // 12€ por pollo
       };
       
-      console.log('Enviando pedido:', orderData);
+      console.log('✅ FORM SUBMIT - Datos finales del pedido:', JSON.stringify(orderData, null, 2));
+      
+      // Realizar la mutación para crear el pedido
+      console.log('🚀 FORM SUBMIT - Enviando pedido al servidor...');
       createOrder.mutate(orderData);
     } catch (error) {
-      console.error('Error en validación del formulario:', error);
+      console.error('❌ FORM SUBMIT - Error en validación del formulario:', error);
       toast({
         title: "Error en el formulario",
         description: error instanceof Error ? error.message : "Verifica los datos ingresados",

@@ -1,6 +1,8 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
-
-export async function throwIfResNotOk(res: Response) {
+/**
+ * Función para manejar errores de respuesta HTTP
+ * Extrae detalles del error y lanza una excepción enriquecida
+ */
+async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     // Intentar obtener el cuerpo como JSON primero
     let error: any;
@@ -25,7 +27,6 @@ export async function throwIfResNotOk(res: Response) {
       if (errorBody.code) error.code = errorBody.code;
       if (errorBody.endpoint) error.endpoint = errorBody.endpoint;
       if (errorBody.role) error.role = errorBody.role;
-      if (errorBody.stack && process.env.NODE_ENV !== 'production') error.serverStack = errorBody.stack;
 
       // Incluir el cuerpo completo para referencia
       error.response = errorBody;
@@ -49,13 +50,6 @@ export async function throwIfResNotOk(res: Response) {
       }
 
       console.error(`API Error [${res.status}]:`, errorBody);
-      console.error('Detalles completos del error:', {
-        status: res.status,
-        statusText: res.statusText,
-        url: res.url,
-        body: errorBody,
-        error: error
-      });
     } catch (e) {
       // Si falla al leer como JSON, intentar leer como texto
       try {
@@ -77,12 +71,6 @@ export async function throwIfResNotOk(res: Response) {
         }
 
         console.error(`API Error [${res.status}]:`, text);
-        console.error('Detalles completos del error:', {
-          status: res.status,
-          statusText: res.statusText,
-          url: res.url,
-          text: text
-        });
       } catch (textError) {
         // Si todo falla, crear un error genérico
         error = new Error(`${res.status}: ${res.statusText}`);
@@ -101,11 +89,6 @@ export async function throwIfResNotOk(res: Response) {
         }
 
         console.error(`API Error [${res.status}] (no body)`, res.statusText);
-        console.error('Detalles genéricos del error:', {
-          status: res.status,
-          statusText: res.statusText,
-          url: res.url
-        });
       }
     }
 
@@ -114,38 +97,23 @@ export async function throwIfResNotOk(res: Response) {
 }
 
 /**
- * IMPORTANTE: Esta función mantiene compatibilidad con dos formatos:
- * 1. apiRequest(url, options) - Formato antiguo
- * 2. apiRequest(method, url, data) - Formato nuevo
- * 
- * Para evitar conflictos y hacerlo más claro, se recomienda utilizar en su lugar
- * las funciones de 'api.ts': api(), apiGet(), apiPost(), apiPatch(), apiDelete()
+ * Función para realizar peticiones a la API - Formato simple
+ * Siempre usa el formato: (method, url, data)
+ * @param method Método HTTP (GET, POST, PUT, PATCH, DELETE)
+ * @param url URL del endpoint
+ * @param data Datos a enviar (opcional)
  */
-export async function apiRequest(
-  arg1: string,
-  arg2?: string | RequestInit,
+export async function api(
+  method: string,
+  url: string,
   data?: unknown,
 ): Promise<any> {
-  let url: string;
-  let options: RequestInit;
-
-  if (typeof arg2 === 'string') {
-    // Llamada con la firma nueva: (method, url, data)
-    url = arg2;
-    options = {
-      method: arg1,
-      headers: data ? { "Content-Type": "application/json" } : {},
-      body: data ? JSON.stringify(data) : undefined,
-      credentials: "include",
-    };
-  } else {
-    // Llamada con la firma antigua: (url, options)
-    url = arg1;
-    options = {
-      credentials: "include",
-      ...arg2,
-    };
-  }
+  const options: RequestInit = {
+    method,
+    headers: data ? { "Content-Type": "application/json" } : {},
+    body: data ? JSON.stringify(data) : undefined,
+    credentials: "include",
+  };
 
   const res = await fetch(url, options);
   await throwIfResNotOk(res);
@@ -157,37 +125,37 @@ export async function apiRequest(
   }
 }
 
+/**
+ * Función para realizar solicitudes GET a la API
+ * @param url URL del endpoint
+ */
+export async function apiGet<T = any>(url: string): Promise<T> {
+  return api("GET", url);
+}
 
+/**
+ * Función para realizar solicitudes POST a la API
+ * @param url URL del endpoint 
+ * @param data Datos a enviar
+ */
+export async function apiPost<T = any>(url: string, data?: any): Promise<T> {
+  return api("POST", url, data);
+}
 
-type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
-  on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
+/**
+ * Función para realizar solicitudes PATCH a la API
+ * @param url URL del endpoint
+ * @param data Datos a enviar
+ */
+export async function apiPatch<T = any>(url: string, data?: any): Promise<T> {
+  return api("PATCH", url, data);
+}
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
-
-    await throwIfResNotOk(res);
-    return await res.json();
-  };
-
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
-    },
-    mutations: {
-      retry: false,
-    },
-  },
-});
+/**
+ * Función para realizar solicitudes DELETE a la API
+ * @param url URL del endpoint
+ * @param data Datos a enviar (opcional)
+ */
+export async function apiDelete<T = any>(url: string, data?: any): Promise<T> {
+  return api("DELETE", url, data);
+}

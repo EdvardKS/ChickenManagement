@@ -39,7 +39,7 @@ async function throwIfResNotOk(res: Response) {
         
         // Redirigir a la página de inicio de sesión después de unos segundos
         setTimeout(() => {
-          window.location.href = '/auth/login';
+          window.location.href = '/login';
         }, 3000);
       } else if (res.status === 403) {
         // Error de autorización (permisos)
@@ -72,7 +72,7 @@ async function throwIfResNotOk(res: Response) {
           
           // Redirigir a la página de inicio de sesión después de unos segundos
           setTimeout(() => {
-            window.location.href = '/auth/login';
+            window.location.href = '/login';
           }, 3000);
         }
         
@@ -96,7 +96,7 @@ async function throwIfResNotOk(res: Response) {
           
           // Redirigir a la página de inicio de sesión después de unos segundos
           setTimeout(() => {
-            window.location.href = '/auth/login';
+            window.location.href = '/login';
           }, 3000);
         }
         

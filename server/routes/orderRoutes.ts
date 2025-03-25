@@ -4,7 +4,7 @@ import { storage } from '../storage';
 import { stockMiddleware, prepareStockUpdate } from '../middleware/stockMiddleware';
 import { insertOrderSchema } from '@shared/schema';
 import { z } from 'zod';
-import { isHaykakan } from './authRoutes';
+import { isHaykakan, isAuthenticated } from './authRoutes';
 
 const router = Router();
 
@@ -20,8 +20,8 @@ const updateOrderSchema = z.object({
   deleted: z.boolean().nullable()
 });
 
-// Update order status
-router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
+// Update order status (admin only)
+router.patch("/:id", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('🔄 Update Order - Request received for order:', id);

@@ -21,7 +21,7 @@ const updateOrderSchema = z.object({
 });
 
 // Update order status
-router.patch("/:id", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('🔄 Update Order - Request received for order:', id);
@@ -112,141 +112,33 @@ router.get("/", async (_req, res) => {
 });
 
 // Create new order
-router.post("/", isHaykakan, async (req: Request & { stockUpdate?: any, session?: any }, res) => {
-  // Comprobar información de autenticación (para depuración)
-  console.log('🔒 Create Order - Información de sesión:', req.session);
-  console.log('🔒 Create Order - Headers de autenticación:', req.headers.authorization);
-  console.log('🔒 Create Order - Usuario en sesión:', req.session?.userId, req.session?.username);
-  
+// Create new order
+router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
   try {
-    console.log('📝 Create Order - Request recibida');
-    console.log('📝 Create Order - Headers:', req.headers);
-    console.log('📝 Create Order - Método:', req.method);
-    console.log('📝 Create Order - URL:', req.url);
-    console.log('📝 Create Order - Request body:', req.body);
-    console.log('📝 Create Order - Tipo de datos body:', typeof req.body);
-    
-    // Examinar la estructura y tipos de datos del body
-    if (req.body) {
-      console.log('📝 Create Order - Detalle de campos:');
-      Object.entries(req.body).forEach(([key, value]) => {
-        console.log(`   - ${key}: ${typeof value} = ${JSON.stringify(value)}`);
-      });
-    }
-    
-    // Intenta validar el objeto de pedido
-    let order;
-    try {
-      console.log('🔍 Create Order - Validando contra schema:', JSON.stringify(insertOrderSchema, null, 2));
-      order = insertOrderSchema.parse(req.body);
-      console.log('✅ Create Order - Validated order data:', order);
-      
-      // Verificar explícitamente cada campo requerido
-      console.log('🔍 Create Order - Validación de campos individuales:');
-      console.log('   - customerName:', order.customerName, typeof order.customerName);
-      console.log('   - quantity:', order.quantity, typeof order.quantity);
-      console.log('   - pickupTime:', order.pickupTime, typeof order.pickupTime);
-      
-      // Verificar que quantity sea un múltiplo de 0.5
-      const isValidQuantity = order.quantity % 0.5 === 0;
-      console.log('   - ¿Cantidad válida (múltiplo de 0.5)?', isValidQuantity);
-      
-      // Verificar que pickupTime sea una fecha válida
-      const isValidDate = !isNaN(new Date(order.pickupTime).getTime());
-      console.log('   - ¿Fecha válida?', isValidDate);
-    } catch (validationError: any) {
-      console.error('❌ Create Order - Validation error:', validationError);
-      console.error('❌ Create Order - Error format:', validationError.format ? validationError.format() : 'No format method');
-      
-      // Analizar errores de validación en detalle
-      if (validationError.errors) {
-        console.error('❌ Create Order - Validation errors detail:');
-        validationError.errors.forEach((err: any, index: number) => {
-          console.error(`   [${index}] Path: ${err.path}, Code: ${err.code}, Message: ${err.message}`);
-        });
-      }
-      
-      return res.status(400).json({ 
-        error: 'Datos de pedido inválidos', 
-        details: validationError.errors || validationError.message || 'Error de validación',
-        receivedData: req.body
-      });
-    }
-    
-    // Crear el pedido en la base de datos
+    const order = insertOrderSchema.parse(req.body);
     const created = await storage.createOrder(order);
-    console.log('✨ Create Order - Order created in database:', created);
 
-    // Verificar si es un pedido para un día pasado
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const orderDate = new Date(created.pickupTime);
-    orderDate.setHours(0, 0, 0, 0);
-    const isPastOrder = orderDate < today;
+    req.stockUpdate = await prepareStockUpdate(
+      'new_order',
+      parseFloat(created.quantity.toString()),
+      'client'
+    );
 
-    console.log('🗓️ Create Order - Date check:', { 
-      id: created.id, 
-      orderDate: orderDate.toISOString(), 
-      today: today.toISOString(), 
-      isPastOrder 
+    await new Promise((resolve, reject) => {
+      stockMiddleware(req, res, (err) => {
+        if (err) reject(err);
+        else resolve(undefined);
+      });
     });
 
-    // Asegurarse de que quantity sea un número
-    const quantityValue = typeof created.quantity === 'string' 
-      ? parseFloat(created.quantity) 
-      : Number(created.quantity);
-      
-    if (isNaN(quantityValue)) {
-      console.error('❌ Create Order - Invalid quantity value:', created.quantity);
-      return res.status(400).json({ error: 'Cantidad inválida en el pedido' });
-    }
-
-    console.log('📦 Create Order - Preparing stock update with quantity:', quantityValue);
-    
-    try {
-      req.stockUpdate = await prepareStockUpdate(
-        'new_order',
-        quantityValue,
-        'client',
-        isPastOrder
-      );
-      
-      console.log('📦 Create Order - Stock update prepared:', req.stockUpdate);
-
-      await new Promise((resolve, reject) => {
-        stockMiddleware(req, res, (err) => {
-          if (err) {
-            console.error('❌ Create Order - Stock middleware error:', err);
-            reject(err);
-          } else {
-            resolve(undefined);
-          }
-        });
-      });
-      
-      console.log('✅ Create Order - Order and stock successfully updated');
-      res.json(created);
-    } catch (stockError: any) {
-      console.error('❌ Create Order - Stock update error:', stockError);
-      // El pedido ya se creó, pero hubo un error al actualizar el stock
-      return res.status(500).json({ 
-        error: 'Error al actualizar el stock', 
-        details: stockError.message || 'Error desconocido en actualización de stock',
-        order: created
-      });
-    }
-  } catch (error: any) {
-    console.error('❌ Create Order - Unexpected error:', error);
-    console.error('Request body:', JSON.stringify(req.body, null, 2));
-    res.status(500).json({ 
-      error: 'Error al crear el pedido', 
-      details: error.message || 'Error inesperado'
-    });
+    res.json(created);
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ error: 'Error al crear el pedido' });
   }
 });
-
 // Confirm order delivery
-router.patch("/:id/confirm", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('✅ Confirm Order - Request received for order:', id);
@@ -357,7 +249,7 @@ router.patch("/:id/confirm", isHaykakan, async (req: Request & { stockUpdate?: a
 });
 
 // Cancel order
-router.patch("/:id/cancel", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id/cancel",  async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('❌ Cancel Order - Request received for order:', id);
@@ -468,7 +360,7 @@ router.patch("/:id/cancel", isHaykakan, async (req: Request & { stockUpdate?: an
 });
 
 // Mark order as error
-router.patch("/:id/error", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
+router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('⚠️ Error Order - Request received for order:', id);

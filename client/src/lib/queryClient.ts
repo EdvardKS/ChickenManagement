@@ -112,7 +112,8 @@ export async function apiRequest(
     url === '/api/auth/me' || 
     url === '/api/menus/featured' || 
     url === '/api/stock' || 
-    url === '/api/business-hours'
+    url === '/api/business-hours' ||
+    url.startsWith('/api/business-hours')
   )) {
     try {
       return await res.json();
@@ -147,7 +148,8 @@ export const getQueryFn: <T>(options: {
       url === '/api/auth/me' || 
       url === '/api/menus/featured' || 
       url === '/api/stock' || 
-      url === '/api/business-hours'
+      url === '/api/business-hours' ||
+      url.startsWith('/api/business-hours')
     )) {
       return null;
     }

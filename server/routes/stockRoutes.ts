@@ -48,8 +48,8 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// Actualizar pollos montados (agregar)
-router.post("/mounted/add", async (req: Request & { stockUpdate?: any }, res) => {
+// Actualizar pollos montados (agregar) - admin only
+router.post("/mounted/add", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const { quantity } = stockUpdateSchema.parse(req.body);
     console.log("📦 Agregando pollos montados:", quantity);
@@ -74,8 +74,8 @@ router.post("/mounted/add", async (req: Request & { stockUpdate?: any }, res) =>
   }
 });
 
-// Actualizar pollos montados (quitar - corrección)
-router.post("/mounted/remove", async (req: Request & { stockUpdate?: any }, res) => {
+// Actualizar pollos montados (quitar - corrección) - admin only
+router.post("/mounted/remove", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const { quantity } = stockUpdateSchema.parse(req.body);
     console.log("📦 Quitando pollos montados (corrección):", quantity);
@@ -100,8 +100,8 @@ router.post("/mounted/remove", async (req: Request & { stockUpdate?: any }, res)
   }
 });
 
-// Procesar venta directa sin encargo
-router.post("/direct-sale", async (req: Request & { stockUpdate?: any }, res) => {
+// Procesar venta directa sin encargo - admin only
+router.post("/direct-sale", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const { quantity } = stockUpdateSchema.parse(req.body);
     console.log("📦 Procesando venta directa sin encargo:", quantity);
@@ -126,8 +126,8 @@ router.post("/direct-sale", async (req: Request & { stockUpdate?: any }, res) =>
   }
 });
 
-// Corrección de venta directa
-router.post("/direct-sale/correct", async (req: Request & { stockUpdate?: any }, res) => {
+// Corrección de venta directa - admin only
+router.post("/direct-sale/correct", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const { quantity } = stockUpdateSchema.parse(req.body);
     console.log("📦 Procesando corrección de venta directa:", quantity);
@@ -152,8 +152,8 @@ router.post("/direct-sale/correct", async (req: Request & { stockUpdate?: any },
   }
 });
 
-// Resetear stock para el día actual
-router.post("/reset", async (req: Request & { stockUpdate?: any }, res) => {
+// Resetear stock para el día actual - admin only
+router.post("/reset", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     console.log("📦 Reseteando stock para el día actual");
 

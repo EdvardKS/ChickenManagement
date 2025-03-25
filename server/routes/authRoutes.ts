@@ -105,8 +105,21 @@ router.get('/me', async (req: Request, res: Response) => {
   }
 });
 
+const publicRoutes = [
+  '/login',
+  '/register',
+  '/',
+  '/api/public',
+  // Agrega aquí todas las rutas públicas
+];
+
+
 // Middleware to check if user is authenticated
 export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  const isPublic = req.path.startsWith('/public') || req.path === '/login';
+
+  if (isPublic) return next();
+  
   if (!req.session.userId) {
     return res.status(401).json({ message: 'No autenticado' });
   }

@@ -3,6 +3,7 @@ import { type Request, Response } from 'express';
 import { storage } from '../storage';
 import { z } from 'zod';
 import { stockMiddleware, prepareStockUpdate } from '../middleware/stockMiddleware';
+import { isHaykakan, isAuthenticated } from './authRoutes';
 
 const router = Router();
 

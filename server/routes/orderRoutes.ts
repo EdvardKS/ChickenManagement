@@ -100,8 +100,8 @@ router.patch("/:id", isHaykakan, async (req: Request & { stockUpdate?: any }, re
   }
 });
 
-// Get all orders
-router.get("/", async (_req, res) => {
+// Get all orders (admin only)
+router.get("/", isHaykakan, async (_req, res) => {
   try {
     const orders = await storage.getOrders();
     res.json(orders);
@@ -137,8 +137,8 @@ router.post("/", async (req: Request & { stockUpdate?: any }, res) => {
     res.status(500).json({ error: 'Error al crear el pedido' });
   }
 });
-// Confirm order delivery
-router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) => {
+// Confirm order delivery (admin only)
+router.patch("/:id/confirm", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('✅ Confirm Order - Request received for order:', id);
@@ -248,8 +248,8 @@ router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) =
   }
 });
 
-// Cancel order
-router.patch("/:id/cancel",  async (req: Request & { stockUpdate?: any }, res) => {
+// Cancel order (admin only)
+router.patch("/:id/cancel", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('❌ Cancel Order - Request received for order:', id);
@@ -359,8 +359,8 @@ router.patch("/:id/cancel",  async (req: Request & { stockUpdate?: any }, res) =
   }
 });
 
-// Mark order as error
-router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => {
+// Mark order as error (admin only)
+router.patch("/:id/error", isHaykakan, async (req: Request & { stockUpdate?: any }, res) => {
   try {
     const id = parseInt(req.params.id);
     console.log('⚠️ Error Order - Request received for order:', id);

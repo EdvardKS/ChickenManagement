@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { products, settings } from "../../shared/schema";
 import { eq, desc, asc, or, SQL } from "drizzle-orm";
+import { isHaykakan, isAuthenticated } from "./authRoutes";
 
 const router = Router();
 
@@ -128,7 +129,8 @@ const updateFeaturedSchema = z.object({
   order: z.number().optional()
 });
 
-router.patch("/:id/featured", async (req: Request, res: Response) => {
+// Actualizar estado destacado de un menú (admin only)
+router.patch("/:id/featured", isHaykakan, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const menuId = parseInt(id, 10);

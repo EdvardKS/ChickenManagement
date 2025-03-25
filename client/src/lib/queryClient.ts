@@ -36,11 +36,6 @@ async function throwIfResNotOk(res: Response) {
         const defaultMessage = "Debe iniciar sesión para acceder a esta función";
         error.friendlyMessage = errorBody.details || defaultMessage;
         error.actionRequired = "login";
-        
-        // Redirigir a la página de inicio de sesión después de unos segundos
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 3000);
       } else if (res.status === 403) {
         // Error de autorización (permisos)
         const defaultMessage = "No tiene los permisos necesarios para realizar esta acción";
@@ -69,11 +64,6 @@ async function throwIfResNotOk(res: Response) {
         if (res.status === 401) {
           error.friendlyMessage = "Debe iniciar sesión para acceder a esta función";
           error.actionRequired = "login";
-          
-          // Redirigir a la página de inicio de sesión después de unos segundos
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 3000);
         }
         
         console.error(`API Error [${res.status}]:`, text);
@@ -93,11 +83,6 @@ async function throwIfResNotOk(res: Response) {
         if (res.status === 401) {
           error.friendlyMessage = "Sesión expirada o no disponible";
           error.actionRequired = "login";
-          
-          // Redirigir a la página de inicio de sesión después de unos segundos
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 3000);
         }
         
         console.error(`API Error [${res.status}] (no body)`, res.statusText);

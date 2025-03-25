@@ -30,7 +30,7 @@ async function throwIfResNotOk(res: Response) {
       // Incluir el cuerpo completo para referencia
       error.response = errorBody;
       
-      // Personalizar mensajes específicos para errores comunes
+      // Personalizar mensajes específicos para errores comunes - SIN redirecciones
       if (res.status === 401) {
         // Error de autenticación
         const defaultMessage = "Debe iniciar sesión para acceder a esta función";
@@ -107,6 +107,20 @@ export async function apiRequest(
     ...options
   });
 
+  // Manejo especial para rutas públicas - no lanzar errores 401
+  if (res.status === 401 && (
+    url === '/api/auth/me' || 
+    url === '/api/menus/featured' || 
+    url === '/api/stock' || 
+    url === '/api/business-hours'
+  )) {
+    try {
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  }
+
   await throwIfResNotOk(res);
   
   try {
@@ -123,9 +137,20 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const url = queryKey[0] as string;
+    const res = await fetch(url, {
       credentials: "include",
     });
+
+    // Siempre devolver null para errores 401 en la ruta de auth/me
+    if (res.status === 401 && (
+      url === '/api/auth/me' || 
+      url === '/api/menus/featured' || 
+      url === '/api/stock' || 
+      url === '/api/business-hours'
+    )) {
+      return null;
+    }
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
@@ -138,7 +163,7 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
+      queryFn: getQueryFn({ on401: "returnNull" }), // Cambiado para no lanzar errores 401
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,

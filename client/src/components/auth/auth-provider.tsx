@@ -44,23 +44,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Consulta para obtener información del usuario actual
-  const { data: user, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        const data = await apiRequest('/api/auth/me');
-        return data as User;
-      } catch (error) {
-        // Si hay un error 401, significa que no está autenticado
-        if ((error as any).status === 401) {
-          return null;
+        const response = await apiRequest('/api/auth/me');
+        if (response && response.id) {
+          return response as User;
         }
-        throw error;
+        return null;
+      } catch (error) {
+        // Si hay un error, devolver null en lugar de lanzar el error
+        return null;
       }
     },
     retry: false, // No reintentar si falla
     refetchOnWindowFocus: true, // Recargar cuando la ventana tenga foco
   });
+  
+  // Asegurarnos de que user sea siempre User | null
+  const user: User | null = data || null;
 
   // Función para cerrar sesión
   const logout = async () => {

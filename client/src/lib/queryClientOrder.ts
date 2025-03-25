@@ -19,6 +19,16 @@ export async function apiRequest(
     credentials: "include",
   });
 
+  // Manejo especial para rutas públicas - no lanzar errores 401
+  if (res.status === 401 && (
+    url === '/api/auth/me' || 
+    url === '/api/menus/featured' || 
+    url === '/api/stock' || 
+    url === '/api/business-hours'
+  )) {
+    return res;
+  }
+
   await throwIfResNotOk(res);
   return res;
 }
@@ -29,9 +39,20 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const url = queryKey[0] as string;
+    const res = await fetch(url, {
       credentials: "include",
     });
+
+    // Siempre devolver null para errores 401 en rutas públicas
+    if (res.status === 401 && (
+      url === '/api/auth/me' || 
+      url === '/api/menus/featured' || 
+      url === '/api/stock' || 
+      url === '/api/business-hours'
+    )) {
+      return null;
+    }
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
@@ -44,7 +65,7 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
+      queryFn: getQueryFn({ on401: "returnNull" }), // Cambiado para no lanzar errores 401
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,

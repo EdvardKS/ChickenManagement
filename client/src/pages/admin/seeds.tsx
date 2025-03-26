@@ -1009,7 +1009,13 @@ export default function AdminSeeds() {
                         </Tooltip>
                       </TooltipProvider>
                     ) : (
-                      `${product.price.toFixed(2)}€`
+                      `${(() => {
+                        try {
+                          return product.price.toFixed(2);
+                        } catch (e) {
+                          return Number(product.price).toFixed(2);
+                        }
+                      })()}€`
                     )}
                   </TableCell>
                   <TableCell>

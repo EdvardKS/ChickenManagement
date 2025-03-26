@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 
 async function hashPassword() {
-  // Generar un hash para la contraseña "edu123"
-  const password = 'edu123';
+  // Generar un hash para la contraseña "bmw15"
+  const password = 'bmw15';
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
   
@@ -14,5 +14,5 @@ async function hashPassword() {
 
 hashPassword().then(hash => {
   console.log('\nSentencia SQL para insertar usuario:');
-  console.log(`INSERT INTO users (username, password, role, name, email, active) VALUES ('edu', '${hash}', 'haykakan', 'Eduardo', 'edu@example.com', true);`);
+  console.log(`INSERT INTO users (username, password, role, name, email, active) VALUES ('edvardks', '${hash}', 'haykakan', 'Edvard', 'edvard@example.com', true);`);
 });

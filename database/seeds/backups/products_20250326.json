@@ -364,7 +364,7 @@
     "category_id": 6
   },
   {
-    "price": 1,
+    "price": 1.5,
     "name": "Media berenjena a la rustidera",
     "description": "Asado al horno y rellenada con un sofrito de tomate y verduras picadas. Se hornea hasta que esté dorada y suave.",
     "image": "DSC_0023.jpg",
@@ -378,126 +378,126 @@
     "category_id": 6
   },
   {
-    "price": 1,
+    "price": 5,
     "name": "Macarrones",
     "description": "Prueba nuestros macarrones a la boloñesa con carne picada, o con atún, o si prefieres con otros ingredientes. ¡Ven a probarlos!",
     "image": "DSC_0025.jpg",
     "category_id": 6
   },
   {
-    "price": 1,
+    "price": 8,
     "name": "Menú 1",
     "description": "Medio pollo con una ración de patatas y 4 Croquetas 8€",
     "image": "menu_uno.jpg",
     "category_id": 1
   },
   {
-    "price": 1,
+    "price": 13,
     "name": "Menú 2",
     "description": "Un pollo con una ración de patatas y 4 Croquetas 12€",
     "image": "menu_dos.jpg",
     "category_id": 1
   },
   {
-    "price": 1,
+    "price": 21.5,
     "name": "Menú 3",
-    "description": "Un pollo y medio con tres raciones de patatas y 6 Croquetas 20€",
+    "description": "Un pollo y medio con tres raciones de patatas y 6 Croquetas ",
     "image": "menu_tres.jpg",
     "category_id": 1
   },
   {
-    "price": 1,
+    "price": 28,
     "name": "Menú 4",
-    "description": "Dos pollos con cuatro raciones patatas y 8 Croquetas 26½",
+    "description": "Dos pollos con cuatro raciones patatas y 8 Croquetas ",
     "image": "menu_cuatro.jpg",
     "category_id": 1
   },
   {
-    "price": 1,
+    "price": 6.5,
     "name": "Menú Vegetariano",
-    "description": "Una berenjena al horno (Dos mitades), una ración de patatas y 4 Croquetas (Setas o Espinacas) 5€",
+    "description": "Una berenjena al horno (Dos mitades), una ración de patatas y 4 Croquetas (Setas o Espinacas) ",
     "image": "menu_vegetariano.jpg",
     "category_id": 1
   },
   {
-    "price": 1,
+    "price": 7,
     "name": "Menú Paella",
-    "description": "Una ración de paella, con verduras rebozadas y dos croquetas 6€",
+    "description": "Una ración de paella, con verduras rebozadas y dos croquetas ",
     "image": "menu_cinco.jpg",
     "category_id": 1
   },
   {
-    "price": 1,
+    "price": 12,
     "name": "Rustidera de Cochinillo",
     "description": "Con patatas y verduras es un plato clásico de la gastronomía española, que combina la textura crujiente de la piel del cochinillo con el sabor y aroma de las patatas y verduras asadas.",
     "image": "cochinillo.jpg",
     "category_id": 3
   },
   {
-    "price": 1,
+    "price": 11,
     "name": "Rustidera de Codillo",
     "description": "Plato delicioso y tradicional de la cocina alemana, en el que se asa lentamente el codillo de cerdo en su propio jugo hasta que queda tierno y jugoso. Se suele servir con patatas y chucrut para completar un plato reconfortante y sabroso.",
     "image": "rustidera_codillo",
     "category_id": 3
   },
   {
-    "price": 1,
+    "price": 13,
     "name": "Rustidera de Pulpo",
     "description": "Preparación típica de la gastronomía gallega, donde se cocina el pulpo con patatas y cebolla en una cazuela de barro a fuego lento, hasta que todo queda tierno y jugoso. Se puede degustar como plato principal o como tapa acompañada de un buen vino blanco.",
     "image": "rustidera_pulpo.jpg",
     "category_id": 3
   },
   {
-    "price": 1,
+    "price": 13,
     "name": "Rustidera de Sepia",
     "description": "Rustidera de Sepia, si no lo habías imaginado, ahora puedes probarlo! Encárgalo y en a Asador la Morenica.",
     "image": "rustidera_sepia.jpg",
     "category_id": 3
   },
   {
-    "price": 1,
+    "price": 12,
     "name": "Rustidera de Cordero",
     "description": "Se cocina lentamente la paletilla de cordero en su propio jugo junto con patatas y verduras, creando un plato sabroso y jugoso con una textura suave y tierna. Es perfecto para compartir en una comida en familia o con amigos.",
     "image": "rustidera_cordero.jpg",
     "category_id": 3
   },
   {
-    "price": 1,
+    "price": 12,
     "name": "Rustidera de Pollo",
     "description": "Se asa el pollo con patatas y cebolla en una cazuela de barro, creando un plato lleno de sabor y aroma. La textura crujiente de la piel del pollo y la suavidad de la carne se combinan perfectamente con las patatas y cebolla asadas, resultando en un plato reconfortante y delicioso.",
     "image": "rustidera_pollo",
     "category_id": 3
   },
   {
-    "price": 1,
+    "price": 13,
     "name": "Rustidera de Lubina o Dorada",
     "description": "La elección entre lubina o dorada dependerá del gusto personal o disponibilidad en el mercado. Ambas opciones son deliciosas y combinan perfectamente con las patatas y verduras asadas en la rustidera.",
     "image": "rustidera_pescado",
     "category_id": 3
   },
   {
-    "price": 1,
+    "price": 6,
     "name": "Costillar",
     "description": "El costillar a la brasa de leña es un plato delicioso que se asa lentamente en una parrilla alimentada con leña, creando un sabor ahumado único. Ideal para disfrutar en compañía.",
     "image": "brasa_costillar",
     "category_id": 7
   },
   {
-    "price": 1,
+    "price": 6,
     "name": "Chuletón",
     "description": "El chuletón de cerdo a la brasa es un plato jugoso y crujiente que se cocina a fuego lento en una parrilla.",
     "image": "brasa_chuleton",
     "category_id": 7
   },
   {
-    "price": 1,
+    "price": 4,
     "name": "Kebab a Espada",
     "description": "Receta Armenia que consiste en trozos de carne marinados ensartados en una espada y directos puestos a la brasa, servido en pan de la casa.",
     "image": "brasa_kebab",
     "category_id": 7
   },
   {
-    "price": 1,
+    "price": 0.5,
     "name": "Muslos y Alitas",
     "description": "¡No hay nada mejor que unos muslos de pollo o alitas a la brasa para una barbacoa deliciosa y divertida! Con su irresistible sabor ahumado y crujiente, se convertirán en el plato estrella de cualquier reunión. ",
     "image": "brasa_muslos",

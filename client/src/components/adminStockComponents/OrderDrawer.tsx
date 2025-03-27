@@ -112,7 +112,13 @@ export function OrderDrawer({
     try {
       console.log('📄 Generating invoice for order:', order.id, 'with data:', data);
 
-      const response = await apiRequest("POST", `/api/orders/${order.id}/invoice`, data);
+      const response = await apiRequest(`/api/orders/${order.id}/invoice`, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
 
       if (!response.ok) {
         let errorMessage = "Error al generar la factura";
@@ -139,13 +145,19 @@ export function OrderDrawer({
       document.body.removeChild(a);
 
       // Actualizar el pedido con la información de la factura
-      await apiRequest("PATCH", `/api/orders/${order.id}`, {
-        invoiceNumber: generateInvoiceNumber(order.id),
-        customerEmail: data.customerEmail,
-        customerPhone: data.customerPhone,
-        customerDNI: data.customerDNI,
-        customerAddress: data.customerAddress,
-        totalAmount: data.totalAmount
+      const updateResponse = await apiRequest(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          invoiceNumber: generateInvoiceNumber(order.id),
+          customerEmail: data.customerEmail,
+          customerPhone: data.customerPhone,
+          customerDNI: data.customerDNI,
+          customerAddress: data.customerAddress,
+          totalAmount: data.totalAmount
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       toast({
@@ -180,29 +192,32 @@ export function OrderDrawer({
         return;
       }
 
-      // Solución para evitar problemas de fecha
-      // Utilizamos la fecha original si hay algún problema
-      let pickupTimeISO;
-      try {
-        pickupTimeISO = pickupTime.toISOString();
-      } catch (e) {
-        console.error("Error convirtiendo fecha a ISO:", e);
-        pickupTimeISO = order!.pickupTime; // Usamos la fecha original
-      }
+      // Aseguramos que la fecha esté formateada correctamente en ISO 8601
+      let pickupTimeISO = pickupTime.toISOString();
 
-      const updatedOrder = {
-        ...order!,
+      // Creamos un nuevo objeto para la actualización, utilizando solo los campos necesarios
+      // Creamos un objeto de pedido actualizado con todos los campos requeridos
+      const updatedOrderData = {
+        id: order!.id,
         customerName: data.customerName,
         quantity: selectedQuantity,
         details: data.details || null,
         pickupTime: pickupTimeISO,
         customerPhone: data.customerPhone || null,
-        status: order!.status,
-        deleted: order!.deleted
+        customerEmail: order!.customerEmail || null,
+        customerDNI: order!.customerDNI || null,
+        customerAddress: order!.customerAddress || null,
+        status: order!.status || null,
+        deleted: order!.deleted || null,
+        totalAmount: order!.totalAmount || null,
+        invoicePDF: order!.invoicePDF || null,
+        invoiceNumber: order!.invoiceNumber || null,
+        createdAt: order!.createdAt || null,
+        updatedAt: order!.updatedAt || null
       };
 
-      console.log('📤 OrderDrawer - Edit Submit - Sending updated order:', updatedOrder);
-      await onUpdate(updatedOrder);
+      console.log('📤 OrderDrawer - Edit Submit - Sending updated order:', updatedOrderData);
+      await onUpdate(updatedOrderData);
 
       setIsEditing(false);
       toast({

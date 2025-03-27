@@ -38,7 +38,13 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       }
 
       // Simplificamos la llamada para evitar errores de fecha
-      await apiRequest("PATCH", `/api/orders/${orderId}/confirm`, {});
+      const response = await apiRequest(`/api/orders/${orderId}/confirm`, {
+        method: "PATCH"
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al confirmar el pedido');
+      }
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -65,7 +71,13 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       }
 
       // Simplificamos la llamada para evitar errores de fecha
-      await apiRequest("PATCH", `/api/orders/${orderId}/cancel`, {});
+      const response = await apiRequest(`/api/orders/${orderId}/cancel`, {
+        method: "PATCH"
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cancelar el pedido');
+      }
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -92,7 +104,13 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       }
 
       // Simplificamos la llamada para evitar errores de fecha
-      await apiRequest("PATCH", `/api/orders/${orderId}/error`, {});
+      const response = await apiRequest(`/api/orders/${orderId}/error`, {
+        method: "PATCH"
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al marcar el pedido como error');
+      }
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -119,14 +137,37 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       }
 
       // Calculate stock difference for update
-      const quantityDiff = parseFloat(order.quantity) - parseFloat(originalOrder.quantity);
+      const quantityDiff = parseFloat(order.quantity.toString()) - parseFloat(originalOrder.quantity.toString());
 
-      await apiRequest("PATCH", `/api/orders/${order.id}`, {
-        ...order,
+      // Datos a enviar en la solicitud PATCH
+      const updateData = {
+        customerName: order.customerName,
+        quantity: order.quantity.toString(),
+        details: order.details,
+        pickupTime: order.pickupTime,
+        customerPhone: order.customerPhone,
+        customerEmail: order.customerEmail,
+        status: order.status,
+        deleted: order.deleted,
+        // Información adicional para la actualización del stock
         quantityDiff,
-        updateType: "order_update",
-        pickupTime: new Date(order.pickupTime).toISOString()
+        updateType: "order_update"
+      };
+
+      console.log('📤 OrdersTable - handleUpdate - Sending update:', updateData);
+
+      const response = await apiRequest(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(updateData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar el pedido');
+      }
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -138,7 +179,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       console.error('Error al actualizar pedido:', error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el pedido",
+        description: error instanceof Error ? error.message : "No se pudo actualizar el pedido",
         variant: "destructive",
       });
     }

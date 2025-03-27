@@ -16,7 +16,10 @@ const updateOrderSchema = z.object({
   customerPhone: z.string().nullable(),
   customerEmail: z.string().nullable(),
   status: z.string().nullable(),
-  deleted: z.boolean().nullable()
+  deleted: z.boolean().nullable(),
+  // Fields for stock update
+  quantityDiff: z.number().optional(),
+  updateType: z.string().optional()
 });
 
 // Update order status
@@ -53,6 +56,7 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
 
       console.log('📤 Update Order - Preparing to update with data:', updatedOrderData);
 
+      // Handle stock updates
       if (req.body.status === 'cancelled' && currentOrder.status !== 'cancelled') {
         req.stockUpdate = await prepareStockUpdate(
           'cancel_order',
@@ -66,7 +70,32 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
             else resolve(undefined);
           });
         });
+      } 
+      // Handle order_update type (when quantity changes)
+      else if (req.body.updateType === 'order_update' && req.body.quantityDiff !== undefined) {
+        // Only update stock if quantity changed
+        if (req.body.quantityDiff !== 0) {
+          console.log('📊 Update Order - Updating stock due to quantity change:', req.body.quantityDiff);
+          req.stockUpdate = await prepareStockUpdate(
+            'order_update',
+            Math.abs(req.body.quantityDiff),
+            'admin'
+          );
+
+          await new Promise((resolve, reject) => {
+            stockMiddleware(req, res, (err) => {
+              if (err) reject(err);
+              else resolve(undefined);
+            });
+          });
+        } else {
+          console.log('ℹ️ Update Order - No quantity change, skipping stock update');
+        }
       }
+
+      // Remove additional fields before updating the order
+      delete updatedOrderData.quantityDiff;
+      delete updatedOrderData.updateType;
 
       const updated = await storage.updateOrder(id, updatedOrderData);
       console.log('✨ Update Order - Successfully updated:', updated);

@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -94,7 +94,7 @@ export function OrderDrawer({
       setSelectedQuantity(order.quantity?.toString() || "1");
     }
   }, [order]);
-  
+
   // Reset menu state when the drawer opens or when order changes
   useEffect(() => {
     if (isOpen || order) {
@@ -110,8 +110,23 @@ export function OrderDrawer({
     if (!order) return;
 
     try {
+      console.log('📄 Generating invoice for order:', order.id, 'with data:', data);
+
       const response = await apiRequest("POST", `/api/orders/${order.id}/invoice`, data);
-      if (!response.ok) throw new Error("Error al generar la factura");
+
+      if (!response.ok) {
+        let errorMessage = "Error al generar la factura";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          console.error('❌ Invoice generation error details:', errorData);
+        } catch (e) {
+          console.error('❌ Could not parse error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      console.log('✅ Invoice generated successfully, downloading PDF...');
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -123,18 +138,29 @@ export function OrderDrawer({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
+      // Actualizar el pedido con la información de la factura
+      await apiRequest("PATCH", `/api/orders/${order.id}`, {
+        invoiceNumber: generateInvoiceNumber(order.id),
+        customerEmail: data.customerEmail,
+        customerPhone: data.customerPhone,
+        customerDNI: data.customerDNI,
+        customerAddress: data.customerAddress,
+        totalAmount: data.totalAmount
+      });
+
       toast({
         title: "Factura generada",
-        description: "La factura se ha generado y enviado correctamente",
+        description: "La factura se ha generado y descargado correctamente",
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setIsGeneratingInvoice(false);
       setIsPreviewingInvoice(false);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Error handling invoice generation:', error);
       toast({
         title: "Error",
-        description: "No se pudo generar la factura",
+        description: error.message || "No se pudo generar la factura",
         variant: "destructive",
       });
     }
@@ -272,9 +298,10 @@ export function OrderDrawer({
 
   const quantityOptions = [
     "0.5", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5",
-    "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10"
+    "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10",
+    "11", "11.5", "12", "12.5", "13", "13.5", "14", "14.5",
+    "15", "15.5", "16", "16.5", "17", "17.5"
   ];
-
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="min-h-[85vh] sm:min-h-[auto] font-['Poppins']">
@@ -300,21 +327,30 @@ export function OrderDrawer({
 
                 <DropdownMenuContent align="end" className="text-xl">
                   <DropdownMenuItem
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsEditing(true);
+                    }}
                     className="text-xl py-4 px-6"
                   >
                     ✏️ Editar Pedido
                   </DropdownMenuItem>
                   {!order.invoicePDF && (
                     <DropdownMenuItem
-                      onClick={() => setIsGeneratingInvoice(true)}
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsGeneratingInvoice(true);
+                      }}
                       className="text-xl py-4 px-6"
                     >
                       🧾 Generar Factura
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
-                    onClick={() => onError(order.id)}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onError(order.id);
+                    }}
                     className="text-xl py-4 px-6"
                   >
                     ⚠️ Marcar como Error
@@ -439,131 +475,60 @@ export function OrderDrawer({
               </div>
               <div className="flex gap-2 pt-4">
                 <Button type="submit" className="flex-1">
-                  Guardar
+                  Guardar Cambios
                 </Button>
-                <Button type="button" variant="outline" onClick={() => {
-                  setIsEditing(false);
-                  if (order) {
-                    editForm.reset({
-                      customerName: order.customerName || '',
-                      details: order.details || '',
-                      pickupTime: format(new Date(order.pickupTime), "yyyy-MM-dd'T'HH:mm"),
-                      customerPhone: order.customerPhone || ''
-                    });
-                    setSelectedQuantity(order.quantity?.toString() || "1");
-                  }
-                }} className="flex-1">
+                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
                   Cancelar
                 </Button>
               </div>
             </form>
           ) : (
             <>
-              <div className="border-b pb-4 space-y-2">
-                <h3 className="text-xl font-semibold mb-2">Datos del Cliente</h3>
+              <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-lg font-semibold">Nombre</span>
+                  <span className="text-lg font-semibold">Cliente:</span>
                   <span className="text-lg">{order.customerName}</span>
                 </div>
-                {order.customerPhone && (
-                  <div className="flex justify-between">
-                    <span className="text-lg font-semibold">Teléfono</span>
-                    <span className="text-lg">{order.customerPhone}</span>
-                  </div>
-                )}
-                {order.customerEmail && (
-                  <div className="flex justify-between">
-                    <span className="text-lg font-semibold">Email</span>
-                    <span className="text-lg">{order.customerEmail}</span>
-                  </div>
-                )}
-                {order.customerDNI && (
-                  <div className="flex justify-between">
-                    <span className="text-lg font-semibold">DNI/NIF</span>
-                    <span className="text-lg">{order.customerDNI}</span>
-                  </div>
-                )}
-                {order.customerAddress && (
-                  <div className="flex justify-between">
-                    <span className="text-lg font-semibold">Dirección</span>
-                    <span className="text-lg">{order.customerAddress}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="border-b pb-4 space-y-2">
-                <h3 className="text-xl font-semibold mb-2">Detalles del Pedido</h3>
                 <div className="flex justify-between">
-                  <span className="text-lg font-semibold">Cantidad</span>
-                  <span className="text-lg">{order.quantity} pollos</span>
+                  <span className="text-lg font-semibold">Pollos:</span>
+                  <span className="text-lg">{order.quantity}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-lg font-semibold">Fecha</span>
+                  <span className="text-lg font-semibold">Fecha:</span>
                   <span className="text-lg">
-                    {format(new Date(order.pickupTime), "d 'de' MMMM", { locale: es })}
+                    {format(new Date(order.pickupTime), "dd/MM/yyyy", { locale: es })}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-lg font-semibold">Hora</span>
+                  <span className="text-lg font-semibold">Hora:</span>
                   <span className="text-lg">
                     {format(new Date(order.pickupTime), "HH:mm")}
                   </span>
                 </div>
-                {order.details && (
-                  <div className="flex justify-between">
-                    <span className="text-lg font-semibold">Detalles</span>
-                    <span className="text-lg">{order.details}</span>
-                  </div>
-                )}
-                {order.totalAmount && (
-                  <div className="flex justify-between mt-4">
-                    <span className="text-xl font-bold">Total (IVA incluido)</span>
-                    <span className="text-xl font-bold">
-                      {parseFloat(order.totalAmount.toString()).toFixed(2)}€
-                    </span>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span className="text-lg font-semibold">Teléfono:</span>
+                  <span className="text-lg">{order.customerPhone || '-'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-lg font-semibold">Detalles:</span>
+                  <span className="text-lg text-right">{order.details || '-'}</span>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-4 pt-4">
+              <div className="grid grid-cols-2 gap-4 mt-8">
                 <Button
                   onClick={() => onConfirm(order.id)}
-                  className="w-full text-2xl py-8 bg-green-600 hover:bg-green-700 text-white"
-                  variant="outline"
+                  className="w-full py-6 text-lg"
                 >
-                  ✔️ Confirmar Pedido
+                  ✅ Entregado
                 </Button>
-
-
                 <Button
                   onClick={() => onDelete(order.id)}
-                  className="w-full text-2xl py-8"
                   variant="outline"
-                  style={{
-                    borderColor: 'rgb(71 85 105)',
-                    color: 'rgb(71 85 105)',
-                  }}
+                  className="w-full py-6 text-lg border border-red-500 text-red-500 hover:bg-red-50"
                 >
-                  ❌ Cancelar Pedido
+                  ❌ Cancelar
                 </Button>
-
-                {order.customerPhone && (
-                  <Button
-                    onClick={() => {
-                      const message = encodeURIComponent(
-                        `Hola *${order.customerName}*, soy de [NOMBRE_NEGOCIO].\n` +
-                        `Tu pedido de *${order.quantity}* pollo(s) está registrado para recogida el *${format(new Date(order.pickupTime), "d 'de' MMMM", { locale: es })}* a las *${format(new Date(order.pickupTime), "HH:mm")}*.\n` +
-                        `Si necesitas modificar algo, avísanos.\n` +
-                        `¡Gracias por tu compra! 🐔`
-                      );
-                      window.open(`https://wa.me/34${order.customerPhone}?text=${message}`, '_blank');
-                    }}
-                    className="w-full text-2xl py-8"
-                    variant="outline"
-                  >
-                    💬 Enviar WhatsApp
-                  </Button>
-                )}
               </div>
             </>
           )}

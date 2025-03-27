@@ -7,7 +7,6 @@ import authRoutes from './routes/authRoutes';
 import { storage } from "./storage";
 import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema, insertSettingsSchema } from "@shared/schema";
-import { scrapeGoogleBusinessHours, updateGoogleBusinessHours } from "./scraper";
 import { format } from "date-fns";
 import nodemailer from "nodemailer";
 import PDFDocument from "pdfkit";

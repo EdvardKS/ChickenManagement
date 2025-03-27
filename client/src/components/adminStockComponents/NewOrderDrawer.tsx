@@ -41,16 +41,21 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
   const createOrder = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/orders", {
-        customerName: data.customerName,
-        customerPhone: data.customerPhone || null,
-        quantity: parseFloat(data.quantity),
-        pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}:00`),
-        details: data.details,
-        totalAmount: 0, // Required field, set to 0 for now
-        is_manual_entry: true,
+      return await apiRequest("/api/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          customerName: data.customerName,
+          customerPhone: data.customerPhone || null,
+          quantity: parseFloat(data.quantity),
+          pickupTime: new Date(`${data.pickupDate}T${data.pickupTime}:00`),
+          details: data.details,
+          totalAmount: 0,
+          is_manual_entry: true,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -66,14 +71,14 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
         pickupDate: today.toISOString().split('T')[0],
         pickupTime: "13:30",
         details: "",
-        totalAmount: 0, // Added totalAmount field
+        totalAmount: 0,
       });
       onOpenChange(false);
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "No se pudo crear el encargo",
+        description: error?.message || "No se pudo crear el encargo",
         variant: "destructive",
       });
     },

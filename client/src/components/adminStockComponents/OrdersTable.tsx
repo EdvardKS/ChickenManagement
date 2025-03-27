@@ -32,151 +32,94 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     setIsDrawerOpen(true);
   };
 
-  const handleConfirm = async (orderId: number) => {
-    try {
-      setIsLoading(true);
-      const order = orders?.find(o => o.id === orderId);
-      if (!order) {
-        throw new Error('Pedido no encontrado');
-      }
+const handleConfirm = async (orderId: number) => {
+  try {
+    setIsLoading(true);
+    await apiRequest(`/api/orders/${orderId}/confirm`, {
+      method: "PATCH"
+    });
 
-      // Simplificamos la llamada para evitar errores de fecha
-      const response = await apiRequest(`/api/orders/${orderId}/confirm`, {
-        method: "PATCH"
-      });
+    queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    setIsDrawerOpen(false);
+    toast({
+      title: "Pedido entregado",
+      description: "El pedido ha sido marcado como entregado y el stock ha sido actualizado",
+    });
+  } catch (error) {
+    console.error('Error al confirmar pedido:', error);
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "No se pudo marcar el pedido como entregado",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-      if (!response.ok) {
-        // Solo intentamos parsear como JSON si hay una respuesta de error
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al confirmar el pedido');
-      }
-      
-      // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
-      // Si llegamos aquí, todo ha salido bien
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
-      setIsDrawerOpen(false);
-      toast({
-        title: "Pedido entregado",
-        description: "El pedido ha sido marcado como entregado y el stock ha sido actualizado",
-      });
-    } catch (error) {
-      console.error('Error al confirmar pedido:', error);
-      // Mostrar un mensaje más específico si está disponible
-      if (error instanceof Error && error.message) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "No se pudo marcar el pedido como entregado",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsLoading(false);
+const handleDelete = async (orderId: number) => {
+  try {
+    setIsLoading(true);
+    const order = orders?.find(o => o.id === orderId);
+    if (!order) {
+      throw new Error('Pedido no encontrado');
     }
-  };
 
-  const handleDelete = async (orderId: number) => {
-    try {
-      setIsLoading(true);
-      const order = orders?.find(o => o.id === orderId);
-      if (!order) {
-        throw new Error('Pedido no encontrado');
-      }
+    await apiRequest(`/api/orders/${orderId}/cancel`, {
+      method: "PATCH"
+    });
 
-      // Simplificamos la llamada para evitar errores de fecha
-      const response = await apiRequest(`/api/orders/${orderId}/cancel`, {
-        method: "PATCH"
-      });
+    queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    setIsDrawerOpen(false);
+    toast({
+      title: "Pedido cancelado",
+      description: "El pedido ha sido cancelado y el stock ha sido actualizado",
+    });
+  } catch (error) {
+    console.error('Error al cancelar pedido:', error);
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "No se pudo cancelar el pedido",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-      if (!response.ok) {
-        // Solo intentamos parsear como JSON si hay una respuesta de error
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al cancelar el pedido');
-      }
-      
-      // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
-
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
-      setIsDrawerOpen(false);
-      toast({
-        title: "Pedido cancelado",
-        description: "El pedido ha sido cancelado y el stock ha sido actualizado",
-      });
-    } catch (error) {
-      console.error('Error al cancelar pedido:', error);
-      if (error instanceof Error && error.message) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "No se pudo cancelar el pedido",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsLoading(false);
+const handleError = async (orderId: number) => {
+  try {
+    setIsLoading(true);
+    const order = orders?.find(o => o.id === orderId);
+    if (!order) {
+      throw new Error('Pedido no encontrado');
     }
-  };
 
-  const handleError = async (orderId: number) => {
-    try {
-      setIsLoading(true);
-      const order = orders?.find(o => o.id === orderId);
-      if (!order) {
-        throw new Error('Pedido no encontrado');
-      }
+    await apiRequest(`/api/orders/${orderId}/error`, {
+      method: "PATCH"
+    });
 
-      // Simplificamos la llamada para evitar errores de fecha
-      const response = await apiRequest(`/api/orders/${orderId}/error`, {
-        method: "PATCH"
-      });
-
-      if (!response.ok) {
-        // Solo intentamos parsear como JSON si hay una respuesta de error
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al marcar el pedido como error');
-      }
-      
-      // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
-
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
-      setIsDrawerOpen(false);
-      toast({
-        title: "Pedido marcado como error",
-        description: "El pedido ha sido marcado como error y el stock ha sido actualizado",
-      });
-    } catch (error) {
-      console.error('Error al marcar pedido como error:', error);
-      if (error instanceof Error && error.message) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "No se pudo marcar el pedido como error",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    setIsDrawerOpen(false);
+    toast({
+      title: "Pedido marcado como error",
+      description: "El pedido ha sido marcado como error y el stock ha sido actualizado",
+    });
+  } catch (error) {
+    console.error('Error al marcar pedido como error:', error);
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "No se pudo marcar el pedido como error",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleUpdate = async (order: Order) => {
     try {

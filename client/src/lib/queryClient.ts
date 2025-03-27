@@ -97,40 +97,27 @@ async function throwIfResNotOk(res: Response) {
     throw error;
   }
 }
-
 export async function apiRequest(
   url: string,
-  options?: RequestInit,
+  options?: RequestInit
 ): Promise<any> {
-  const res = await fetch(url, {
-    credentials: "include",
-    ...options
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options?.headers,
+    },
   });
 
-  // Manejo especial para rutas públicas - no lanzar errores 401
-  if (res.status === 401 && (
-    url === '/api/auth/me' || 
-    url === '/api/menus/featured' || 
-    url === '/api/stock' || 
-    url === '/api/business-hours' ||
-    url.startsWith('/api/business-hours')
-  )) {
-    try {
-      return await res.json();
-    } catch (e) {
-      return null;
-    }
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new Error(json?.error || 'Error en la petición');
   }
 
-  await throwIfResNotOk(res);
-  
-  try {
-    return await res.json();
-  } catch (e) {
-    // Si no se puede parsear como JSON, devuelve la respuesta directa
-    return res;
-  }
+  return json;
 }
+
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {

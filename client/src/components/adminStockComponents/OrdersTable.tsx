@@ -43,9 +43,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Error al confirmar el pedido');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al confirmar el pedido');
       }
 
+      // Si llegamos aquí, todo ha salido bien
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
       setIsDrawerOpen(false);
@@ -55,11 +57,20 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
     } catch (error) {
       console.error('Error al confirmar pedido:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo marcar el pedido como entregado",
-        variant: "destructive",
-      });
+      // Mostrar un mensaje más específico si está disponible
+      if (error instanceof Error && error.message) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo marcar el pedido como entregado",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -76,7 +87,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Error al cancelar el pedido');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al cancelar el pedido');
       }
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -88,11 +100,19 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
     } catch (error) {
       console.error('Error al cancelar pedido:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo cancelar el pedido",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo cancelar el pedido",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -109,7 +129,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Error al marcar el pedido como error');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al marcar el pedido como error');
       }
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -121,11 +142,19 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
     } catch (error) {
       console.error('Error al marcar pedido como error:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo marcar el pedido como error",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo marcar el pedido como error",
+          variant: "destructive",
+        });
+      }
     }
   };
 

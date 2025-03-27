@@ -221,19 +221,31 @@ export function OrderDrawer({
 
       console.log('📤 OrderDrawer - Edit Submit - Sending updated order:', updatedOrderData);
       await onUpdate(updatedOrderData);
-
+      
+      // Solo cerramos el drawer y mostramos éxito si no hubo excepciones
       setIsEditing(false);
+      onOpenChange(false); // Cerrar el drawer después de la actualización exitosa
+      
       toast({
         title: "Éxito",
         description: "Pedido actualizado correctamente"
       });
     } catch (error) {
       console.error('❌ OrderDrawer - Edit Submit - Error:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el pedido",
-        variant: "destructive"
-      });
+      // Manejamos el error de forma más robusta
+      if (error instanceof Error && error.message) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar el pedido. Inténtalo de nuevo.",
+          variant: "destructive"
+        });
+      }
     }
   };
 

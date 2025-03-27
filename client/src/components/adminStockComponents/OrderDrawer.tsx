@@ -210,6 +210,8 @@ export function OrderDrawer({
         customerAddress: order!.customerAddress || null,
         status: "pending", // Mantenemos estado pending para ediciones normales
         deleted: false,    // Siempre mantenemos deleted en false
+        confirmado: false, // Nuevo campo añadido
+        error: false,      // Nuevo campo añadido
         totalAmount: order!.totalAmount || null,
         invoicePDF: order!.invoicePDF || null,
         invoiceNumber: order!.invoiceNumber || null,

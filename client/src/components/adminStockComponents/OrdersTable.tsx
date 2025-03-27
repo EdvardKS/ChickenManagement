@@ -149,6 +149,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         customerEmail: order.customerEmail,
         status: "pending",  // Siempre mantenemos el estado como pending
         deleted: false,     // Siempre mantenemos deleted como false
+        confirmado: false,  // Añadido campo confirmado
+        error: false,       // Añadido campo error
         // Información adicional para la actualización del stock
         quantityDiff,
         updateType: "order_update"
@@ -194,8 +196,18 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
   };
 
-  // Filter out deleted orders and group remaining ones by date
-  const ordersByDate = orders?.filter(order => !order.deleted && order.status !== 'cancelled' && order.status !== 'error')
+  // Filtrar pedidos según los nuevos criterios:
+  // - Si deleted=true, no mostrar (cancelado)
+  // - Si confirmado=true, no mostrar (entregado)
+  // - Si error=true, no mostrar (marcado como error)
+  const ordersByDate = orders?.filter(order => 
+      !order.deleted && 
+      !order.confirmado && 
+      !order.error && 
+      order.status !== 'cancelled' && 
+      order.status !== 'error' && 
+      order.status !== 'delivered'
+    )
     .reduce((acc, order) => {
       const date = format(new Date(order.pickupTime), 'yyyy-MM-dd');
       if (!acc[date]) {

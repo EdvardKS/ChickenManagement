@@ -177,10 +177,11 @@ router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) =
       });
     });
 
-    // Actualizar estado y marcar como eliminado
+    // Actualizar estado como entregado y confirmado
     const updatedOrder = await storage.updateOrder(id, {
       status: "delivered",
-      deleted: true
+      confirmado: true,  // Marcamos como confirmado
+      deleted: true      // Mantenemos deleted=true para compatibilidad anterior
     });
 
     res.json(updatedOrder);
@@ -249,10 +250,11 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
       });
     });
 
-    // Actualizar estado y marcar como eliminado
+    // Actualizar estado como error
     const updatedOrder = await storage.updateOrder(id, {
       status: "error",
-      deleted: true
+      error: true,  // Marcamos el campo error como true
+      deleted: true // Mantenemos deleted=true para compatibilidad anterior
     });
 
     res.json(updatedOrder);

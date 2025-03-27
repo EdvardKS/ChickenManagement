@@ -37,6 +37,8 @@ export const orders = pgTable("orders", {
   invoicePDF: text("invoice_pdf"),
   invoiceNumber: text("invoice_number"),
   deleted: boolean("deleted").default(false),
+  confirmado: boolean("confirmado").default(false), // Añadido para marcar pedidos entregados
+  error: boolean("error").default(false), // Añadido para marcar pedidos con error
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -116,11 +118,18 @@ export const insertOrderSchema = createInsertSchema(orders)
   .omit({ 
     id: true, 
     deleted: true, 
+    confirmado: true, // Omitimos el campo confirmado
+    error: true, // Omitimos el campo error
     status: true, 
     createdAt: true, 
     updatedAt: true,
     invoiceNumber: true,
     invoicePDF: true
+  })
+  .extend({
+    deleted: z.boolean().optional().default(false),
+    confirmado: z.boolean().optional().default(false),
+    error: z.boolean().optional().default(false)
   })
   .extend({
     pickupTime: z.string().transform((val) => new Date(val)),

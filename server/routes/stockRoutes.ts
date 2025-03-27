@@ -181,4 +181,27 @@ router.post("/reset", isHaykakan, async (req: Request & { stockUpdate?: any }, r
   }
 });
 
+// Get stock history
+router.get("/history", isAuthenticated, async (_req, res) => {
+  try {
+    const history = await storage.getStockHistory();
+    res.json(history);
+  } catch (error) {
+    console.error('Error getting stock history:', error);
+    res.status(500).json({ error: 'Error al obtener el historial de stock' });
+  }
+});
+
+// Get stock history by stock ID
+router.get("/history/:stockId", isAuthenticated, async (req, res) => {
+  try {
+    const stockId = parseInt(req.params.stockId);
+    const history = await storage.getStockHistory(stockId);
+    res.json(history);
+  } catch (error) {
+    console.error('Error getting stock history by ID:', error);
+    res.status(500).json({ error: 'Error al obtener el historial de stock por ID' });
+  }
+});
+
 export default router;

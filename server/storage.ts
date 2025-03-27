@@ -41,6 +41,7 @@ export interface IStorage {
   getCurrentStock(): Promise<Stock | undefined>;
   updateStock(stockData: Partial<Stock>): Promise<Stock>;
   createStockHistory(history: StockHistory): Promise<StockHistory>;
+  getStockHistory(stockId?: number): Promise<StockHistory[]>;
 
   // Business Hours
   getBusinessHours(): Promise<BusinessHours[]>;
@@ -410,6 +411,16 @@ export class DatabaseStorage implements IStorage {
 
     console.log('Created stock history:', newHistory);
     return newHistory;
+  }
+
+  async getStockHistory(stockId?: number): Promise<StockHistory[]> {
+    let query = db.select().from(stockHistory);
+    
+    if (stockId) {
+      query = query.where(eq(stockHistory.stockId, stockId));
+    }
+    
+    return await query.orderBy(desc(stockHistory.createdAt));
   }
 
   // Business Hours

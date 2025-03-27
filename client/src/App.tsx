@@ -29,6 +29,7 @@ import FesteroPage from "@/pages/fiestas";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
+import StockHistory from "@/pages/admin/dashboards/stock-history";
 import AdminUsers from "@/pages/admin/users";
 import NotFound from "@/pages/not-found";
 import { ReactNode } from "react";
@@ -209,6 +210,11 @@ function AdminRoutes() {
                     <Route path="/admin/dashboards/stock-levels">
                       <HaykakanRoute>
                         <StockLevels />
+                      </HaykakanRoute>
+                    </Route>
+                    <Route path="/admin/dashboards/stock-history">
+                      <HaykakanRoute>
+                        <StockHistory />
                       </HaykakanRoute>
                     </Route>
                   </Switch>

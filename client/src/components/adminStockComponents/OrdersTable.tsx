@@ -43,9 +43,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
 
       if (!response.ok) {
+        // Solo intentamos parsear como JSON si hay una respuesta de error
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Error al confirmar el pedido');
       }
+      
+      // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
       // Si llegamos aquí, todo ha salido bien
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -87,9 +90,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
 
       if (!response.ok) {
+        // Solo intentamos parsear como JSON si hay una respuesta de error
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Error al cancelar el pedido');
       }
+      
+      // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -129,9 +135,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
 
       if (!response.ok) {
+        // Solo intentamos parsear como JSON si hay una respuesta de error
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Error al marcar el pedido como error');
       }
+      
+      // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
@@ -196,9 +205,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        // Solo intentamos parsear como JSON si hay una respuesta de error
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Error al actualizar el pedido');
       }
+      
+      // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });

@@ -243,8 +243,18 @@ export function OrderDrawer({
     setIsPreviewingInvoice(false);
     setIsMenuOpen(false); // Asegurarnos de que el menú está cerrado
     reset();
-    editForm.reset();
-    setSelectedQuantity(""); 
+    if (order) {
+      editForm.reset({
+        customerName: order.customerName || '',
+        details: order.details || '',
+        pickupTime: format(new Date(order.pickupTime), "yyyy-MM-dd'T'HH:mm"),
+        customerPhone: order.customerPhone || ''
+      });
+      setSelectedQuantity(order.quantity?.toString() || "1");
+    } else {
+      editForm.reset();
+      setSelectedQuantity("");
+    }
   };
 
   if (!order) return null;

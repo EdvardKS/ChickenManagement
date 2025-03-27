@@ -181,7 +181,6 @@ router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) =
     const updatedOrder = await storage.updateOrder(id, {
       status: "delivered",
       confirmado: true,  // Marcamos como confirmado
-      deleted: true      // Mantenemos deleted=true para compatibilidad anterior
     });
 
     res.json(updatedOrder);
@@ -254,7 +253,6 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
     const updatedOrder = await storage.updateOrder(id, {
       status: "error",
       error: true,  // Marcamos el campo error como true
-      deleted: true // Mantenemos deleted=true para compatibilidad anterior
     });
 
     res.json(updatedOrder);

@@ -147,8 +147,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         pickupTime: order.pickupTime,
         customerPhone: order.customerPhone,
         customerEmail: order.customerEmail,
-        status: order.status,
-        deleted: order.deleted,
+        status: "pending",  // Siempre mantenemos el estado como pending
+        deleted: false,     // Siempre mantenemos deleted como false
         // Información adicional para la actualización del stock
         quantityDiff,
         updateType: "order_update"

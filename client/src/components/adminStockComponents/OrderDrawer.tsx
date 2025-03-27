@@ -192,23 +192,24 @@ export function OrderDrawer({
         return;
       }
 
-      // Aseguramos que la fecha esté formateada correctamente en ISO 8601
-      let pickupTimeISO = pickupTime.toISOString();
+      // Aseguramos que usamos el objeto Date directamente, no una cadena
+      // para evitar incompatibilidades de tipo
 
       // Creamos un nuevo objeto para la actualización, utilizando solo los campos necesarios
       // Creamos un objeto de pedido actualizado con todos los campos requeridos
+      // Asegurando que los campos de estado siempre se mantengan false
       const updatedOrderData = {
         id: order!.id,
         customerName: data.customerName,
         quantity: selectedQuantity,
         details: data.details || null,
-        pickupTime: pickupTimeISO,
+        pickupTime: pickupTime, // Usamos el objeto Date directamente
         customerPhone: data.customerPhone || null,
         customerEmail: order!.customerEmail || null,
         customerDNI: order!.customerDNI || null,
         customerAddress: order!.customerAddress || null,
-        status: order!.status || null,
-        deleted: order!.deleted || null,
+        status: "pending", // Mantenemos estado pending para ediciones normales
+        deleted: false,    // Siempre mantenemos deleted en false
         totalAmount: order!.totalAmount || null,
         invoicePDF: order!.invoicePDF || null,
         invoiceNumber: order!.invoiceNumber || null,

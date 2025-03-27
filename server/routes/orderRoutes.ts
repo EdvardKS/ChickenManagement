@@ -48,9 +48,12 @@ router.patch("/:id", async (req: Request & { stockUpdate?: any }, res) => {
         throw new Error('Invalid pickup time');
       }
 
+      // Actualizar datos y garantizar que los campos de estado estén correctos
       const updatedOrderData = {
         ...validatedData,
         pickupTime,
+        status: validatedData.status === "pending" ? "pending" : validatedData.status, // Mantener pending si viene como pending
+        deleted: validatedData.deleted === false ? false : validatedData.deleted, // Mantener false si viene como false
         updatedAt: new Date()
       };
 

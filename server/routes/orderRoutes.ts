@@ -183,7 +183,12 @@ router.patch("/:id/confirm", async (req: Request & { stockUpdate?: any }, res) =
       confirmado: true,  // Marcamos como confirmado
     });
 
-    res.json(updatedOrder);
+    // Enviamos un mensaje de éxito con el objeto actualizado
+    res.json({
+      success: true,
+      message: "Pedido entregado correctamente",
+      order: updatedOrder
+    });
   } catch (error) {
     console.error('Error confirming order:', error);
     res.status(500).json({ error: 'Error al confirmar el pedido' });
@@ -219,7 +224,12 @@ router.patch("/:id/cancel", async (req: Request & { stockUpdate?: any }, res) =>
       deleted: true
     });
 
-    res.json(updatedOrder);
+    // Enviamos un mensaje de éxito con el objeto actualizado
+    res.json({
+      success: true,
+      message: "Pedido cancelado correctamente",
+      order: updatedOrder
+    });
   } catch (error) {
     console.error('Error cancelling order:', error);
     res.status(500).json({ error: 'Error al cancelar el pedido' });
@@ -255,7 +265,12 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
       error: true,  // Marcamos el campo error como true
     });
 
-    res.json(updatedOrder);
+    // Enviamos un mensaje de éxito con el objeto actualizado
+    res.json({
+      success: true,
+      message: "Pedido marcado como error correctamente",
+      order: updatedOrder
+    });
   } catch (error) {
     console.error('Error marking order as error:', error);
     res.status(500).json({ error: 'Error al marcar el pedido como error' });

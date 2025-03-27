@@ -7,6 +7,7 @@ import { OrderDrawer } from "./OrderDrawer";
 import type { Order } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface OrdersTableProps {
   orders: Order[] | undefined;
@@ -15,6 +16,7 @@ interface OrdersTableProps {
 export function OrdersTable({ orders }: OrdersTableProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const formatQuantity = (quantity: any) => {
@@ -32,6 +34,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   const handleConfirm = async (orderId: number) => {
     try {
+      setIsLoading(true);
       const order = orders?.find(o => o.id === orderId);
       if (!order) {
         throw new Error('Pedido no encontrado');
@@ -74,11 +77,14 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           variant: "destructive",
         });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDelete = async (orderId: number) => {
     try {
+      setIsLoading(true);
       const order = orders?.find(o => o.id === orderId);
       if (!order) {
         throw new Error('Pedido no encontrado');
@@ -119,11 +125,14 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           variant: "destructive",
         });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleError = async (orderId: number) => {
     try {
+      setIsLoading(true);
       const order = orders?.find(o => o.id === orderId);
       if (!order) {
         throw new Error('Pedido no encontrado');
@@ -164,11 +173,14 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           variant: "destructive",
         });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleUpdate = async (order: Order) => {
     try {
+      setIsLoading(true);
       const originalOrder = orders?.find(o => o.id === order.id);
       if (!originalOrder) {
         throw new Error('Pedido original no encontrado');
@@ -214,6 +226,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+      setIsDrawerOpen(false);
       toast({
         title: "Pedido actualizado",
         description: "El pedido ha sido actualizado y el stock ha sido ajustado",
@@ -225,6 +238,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         description: error instanceof Error ? error.message : "No se pudo actualizar el pedido",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -293,9 +308,10 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                       variant="outline"
                       onClick={() => handleOrderClick(order)}
                       className="relative w-20 p-4 text-lg hover:bg-gray-200"
+                      disabled={isLoading}
                     >
-                      🔘
-                      {order.customerPhone && (
+                      {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : '🔘'}
+                      {order.customerPhone && !isLoading && (
                         <span className="absolute -top-1 -right-1 flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -318,6 +334,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         onDelete={handleDelete}
         onError={handleError}
         onUpdate={handleUpdate}
+        isLoading={isLoading}
       />
     </div>
   );

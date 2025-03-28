@@ -18,6 +18,32 @@ const pgPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL
 });
 
+// Configurar middleware para agregar encabezados CORS
+app.use((req, res, next) => {
+  // Permitir credenciales en solicitudes cross-origin
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Establecer origen permitido (en producción ajustar al dominio exacto)
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  
+  // Permitir métodos HTTP
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH');
+  
+  // Permitir encabezados personalizados
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Manejar solicitudes preflight OPTIONS
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
+// Determinar si estamos en producción
+const isProduction = process.env.NODE_ENV === 'production';
+console.log(`🔐 Configurando sesión - Entorno: ${isProduction ? 'producción' : 'desarrollo'}`);
+
 app.use(session({
   store: new PgStore({
     pool: pgPool,
@@ -27,13 +53,24 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'asador_la_morenica_secret',
   resave: false,
   saveUninitialized: false,
+  name: 'asador.sid', // Nombre de cookie personalizado
+  proxy: isProduction, // Confiar en encabezados proxy en producción
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction, // Solo HTTPS en producción
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    sameSite: isProduction ? 'none' as const : 'lax' as const,
+    domain: isProduction ? process.env.COOKIE_DOMAIN : undefined // Dominio específico en producción
   }
 }));
+
+// Registrar middleware para depurar sesiones
+app.use((req, res, next) => {
+  console.log(`🍪 Session - Request cookie headers: ${JSON.stringify(req.headers.cookie)}`);
+  console.log(`🍪 Session - Session ID: ${req.session.id}`);
+  console.log(`🍪 Session - User ID: ${req.session.userId || 'no autenticado'}`);
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

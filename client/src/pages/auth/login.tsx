@@ -33,30 +33,59 @@ export default function Login() {
   
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      return await apiRequest('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
+      console.log('🔒 LOGIN - Enviando credenciales al servidor:', credentials.username);
+      
+      try {
+        // Asegurarse de incluir credentials para enviar cookies
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(credentials),
+          credentials: 'include' // Importante para las cookies
+        });
+        
+        if (!response.ok) {
+          console.error(`🔒 LOGIN - Error HTTP: ${response.status} ${response.statusText}`);
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        console.log('🔒 LOGIN - Respuesta del servidor recibida');
+        console.log('🔒 LOGIN - Cookies disponibles:', document.cookie ? 'Sí' : 'No');
+        
+        // Devolver los datos para onSuccess
+        return await response.json();
+      } catch (error) {
+        console.error('🔒 LOGIN - Error en fetch:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log('✅ LOGIN - Inicio de sesión exitoso para:', data.user.username);
+      
       toast({
         title: 'Inicio de sesión exitoso',
         description: `Bienvenido, ${data.user.username}`,
       });
       
-      // Redirigir según el rol del usuario usando navegación forzada
-      if (data.user.role === 'haykakan') {
-        window.location.href = '/admin/orders'; // Ruta por defecto para administradores
-      } else if (data.user.role === 'festero') {
-        window.location.href = '/fiestas'; // Ruta exclusiva para festeros
-      } else {
-        window.location.href = '/admin'; // Ruta genérica como fallback
-      }
+      // Pequeña espera para asegurar que la cookie se guarde correctamente
+      setTimeout(() => {
+        console.log('🔄 LOGIN - Redirigiendo al usuario según rol:', data.user.role);
+        
+        // Redirigir según el rol del usuario usando navegación forzada
+        if (data.user.role === 'haykakan') {
+          window.location.href = '/admin/orders'; // Ruta por defecto para administradores
+        } else if (data.user.role === 'festero') {
+          window.location.href = '/fiestas'; // Ruta exclusiva para festeros
+        } else {
+          window.location.href = '/admin'; // Ruta genérica como fallback
+        }
+      }, 500);
     },
     onError: (error: any) => {
+      console.error('❌ LOGIN - Error en la autenticación:', error);
+      
       if (error.status === 401) {
         setLoginError('Usuario o contraseña incorrectos');
       } else {

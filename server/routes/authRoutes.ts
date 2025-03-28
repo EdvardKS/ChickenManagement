@@ -74,17 +74,33 @@ router.post('/login', async (req: Request, res: Response) => {
 
 // Logout
 router.post('/logout', (req: Request, res: Response) => {
+  // Determinar si estamos en producción
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  console.log('🔒 Logout - Cerrando sesión del usuario:', req.session.username);
+  console.log('🔒 Logout - Sesión actual:', req.session);
+  
   req.session.destroy((err) => {
     if (err) {
-      console.error('Error al cerrar sesión:', err);
+      console.error('❌ Error al cerrar sesión:', err);
       return res.status(500).json({ message: 'Error al cerrar sesión' });
     }
+    
     // Configurar las mismas opciones que en la creación de la cookie para su eliminación
-    res.clearCookie('connect.sid', {
+    const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-    });
+      secure: isProduction,
+      sameSite: isProduction ? 'none' as const : 'lax' as const,
+      domain: isProduction ? process.env.COOKIE_DOMAIN : undefined
+    };
+    
+    console.log('🍪 Logout - Eliminando cookie con opciones:', cookieOptions);
+    
+    // Eliminar tanto el nombre de cookie personalizado como el predeterminado
+    res.clearCookie('asador.sid', cookieOptions);
+    res.clearCookie('connect.sid', cookieOptions); // Por si acaso queda alguna
+    
+    console.log('✅ Logout - Sesión cerrada correctamente');
     res.json({ message: 'Sesión cerrada correctamente' });
   });
 });

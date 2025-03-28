@@ -79,7 +79,12 @@ router.post('/logout', (req: Request, res: Response) => {
       console.error('Error al cerrar sesión:', err);
       return res.status(500).json({ message: 'Error al cerrar sesión' });
     }
-    res.clearCookie('connect.sid');
+    // Configurar las mismas opciones que en la creación de la cookie para su eliminación
+    res.clearCookie('connect.sid', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
     res.json({ message: 'Sesión cerrada correctamente' });
   });
 });

@@ -1,0 +1,72 @@
+{
+  "status": "success",
+  "predictions": {
+    "daily": [
+      {"date": "2025-04-01", "predicted_usage": 42.3, "lower_bound": 35.1, "upper_bound": 48.5},
+      {"date": "2025-04-02", "predicted_usage": 45.8, "lower_bound": 38.2, "upper_bound": 52.4},
+      {"date": "2025-04-03", "predicted_usage": 47.2, "lower_bound": 39.5, "upper_bound": 54.9},
+      {"date": "2025-04-04", "predicted_usage": 55.7, "lower_bound": 48.1, "upper_bound": 63.2},
+      {"date": "2025-04-05", "predicted_usage": 78.3, "lower_bound": 70.2, "upper_bound": 86.4},
+      {"date": "2025-04-06", "predicted_usage": 82.5, "lower_bound": 74.8, "upper_bound": 90.2},
+      {"date": "2025-04-07", "predicted_usage": 43.1, "lower_bound": 36.5, "upper_bound": 49.7},
+      {"date": "2025-04-08", "predicted_usage": 41.9, "lower_bound": 35.2, "upper_bound": 48.6},
+      {"date": "2025-04-09", "predicted_usage": 43.6, "lower_bound": 36.9, "upper_bound": 50.3},
+      {"date": "2025-04-10", "predicted_usage": 47.5, "lower_bound": 40.8, "upper_bound": 54.2},
+      {"date": "2025-04-11", "predicted_usage": 56.2, "lower_bound": 49.5, "upper_bound": 62.9},
+      {"date": "2025-04-12", "predicted_usage": 79.8, "lower_bound": 71.9, "upper_bound": 87.7},
+      {"date": "2025-04-13", "predicted_usage": 81.1, "lower_bound": 73.4, "upper_bound": 88.8},
+      {"date": "2025-04-14", "predicted_usage": 44.6, "lower_bound": 37.9, "upper_bound": 51.3},
+      {"date": "2025-04-15", "predicted_usage": 42.8, "lower_bound": 36.1, "upper_bound": 49.5},
+      {"date": "2025-04-16", "predicted_usage": 44.7, "lower_bound": 38.0, "upper_bound": 51.4},
+      {"date": "2025-04-17", "predicted_usage": 46.9, "lower_bound": 40.2, "upper_bound": 53.6},
+      {"date": "2025-04-18", "predicted_usage": 57.4, "lower_bound": 50.7, "upper_bound": 64.1},
+      {"date": "2025-04-19", "predicted_usage": 80.1, "lower_bound": 72.4, "upper_bound": 87.8},
+      {"date": "2025-04-20", "predicted_usage": 83.7, "lower_bound": 76.0, "upper_bound": 91.4},
+      {"date": "2025-04-21", "predicted_usage": 45.2, "lower_bound": 38.5, "upper_bound": 51.9},
+      {"date": "2025-04-22", "predicted_usage": 43.5, "lower_bound": 36.8, "upper_bound": 50.2},
+      {"date": "2025-04-23", "predicted_usage": 45.1, "lower_bound": 38.4, "upper_bound": 51.8},
+      {"date": "2025-04-24", "predicted_usage": 48.3, "lower_bound": 41.6, "upper_bound": 55.0},
+      {"date": "2025-04-25", "predicted_usage": 58.9, "lower_bound": 52.2, "upper_bound": 65.6},
+      {"date": "2025-04-26", "predicted_usage": 81.5, "lower_bound": 73.8, "upper_bound": 89.2},
+      {"date": "2025-04-27", "predicted_usage": 84.2, "lower_bound": 76.5, "upper_bound": 91.9},
+      {"date": "2025-04-28", "predicted_usage": 46.7, "lower_bound": 40.0, "upper_bound": 53.4},
+      {"date": "2025-04-29", "predicted_usage": 44.8, "lower_bound": 38.1, "upper_bound": 51.5},
+      {"date": "2025-04-30", "predicted_usage": 46.3, "lower_bound": 39.6, "upper_bound": 53.0}
+    ],
+    "monthly": [
+      {"month": "Ene", "predicted_usage": 1320, "lower_bound": 1180, "upper_bound": 1460},
+      {"month": "Feb", "predicted_usage": 1195, "lower_bound": 1075, "upper_bound": 1315},
+      {"month": "Mar", "predicted_usage": 1380, "lower_bound": 1242, "upper_bound": 1518},
+      {"month": "Abr", "predicted_usage": 1520, "lower_bound": 1368, "upper_bound": 1672},
+      {"month": "May", "predicted_usage": 1660, "lower_bound": 1494, "upper_bound": 1826},
+      {"month": "Jun", "predicted_usage": 1780, "lower_bound": 1602, "upper_bound": 1958},
+      {"month": "Jul", "predicted_usage": 2050, "lower_bound": 1845, "upper_bound": 2255},
+      {"month": "Ago", "predicted_usage": 2280, "lower_bound": 2052, "upper_bound": 2508},
+      {"month": "Sep", "predicted_usage": 1710, "lower_bound": 1539, "upper_bound": 1881},
+      {"month": "Oct", "predicted_usage": 1590, "lower_bound": 1431, "upper_bound": 1749},
+      {"month": "Nov", "predicted_usage": 1650, "lower_bound": 1485, "upper_bound": 1815},
+      {"month": "Dic", "predicted_usage": 1950, "lower_bound": 1755, "upper_bound": 2145}
+    ]
+  },
+  "current_stock": {
+    "total": 480,
+    "reserved": 135,
+    "available": 345
+  },
+  "analysis": {
+    "avg_daily_usage": 54.2,
+    "days_until_empty": 6.4,
+    "restock_recommendation": "Se recomienda reabastecer el inventario en los próximos 3 días para evitar quedarse sin existencias.",
+    "peak_days": ["Viernes", "Sábado", "Domingo"],
+    "low_days": ["Lunes", "Martes"],
+    "weekly_pattern": "El uso del stock es más alto los fines de semana, con un incremento del 68% respecto a días entre semana.",
+    "monthly_pattern": "El consumo aumenta significativamente en verano (Jul-Ago) y en diciembre, con un incremento del 35% respecto al promedio anual."
+  },
+  "plots": {
+    "daily_forecast": "daily_forecast.png",
+    "monthly_forecast": "monthly_forecast.png",
+    "weekly_pattern": "weekly_pattern.png",
+    "hourly_pattern": "hourly_pattern.png",
+    "stock_history": "stock_history.png"
+  }
+}

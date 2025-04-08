@@ -19,6 +19,7 @@ const dashboardGroups = [
       { id: "stock-ai-prediction", label: "IA Predicción", path: "/admin/dashboards/stock-ai-prediction" },
       { id: "stock-forecast", label: "Pronóstico Detallado", path: "/admin/dashboards/stock-forecast" },
       { id: "stock-patterns", label: "Patrones de Stock", path: "/admin/dashboards/stock-patterns" },
+      { id: "model-metrics", label: "Métricas de Modelos", path: "/admin/dashboards/model-metrics" },
     ]
   },
   {

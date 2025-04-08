@@ -201,6 +201,31 @@ router.get('/business-intelligence', isHaykakan, async (req: Request, res: Respo
   }
 });
 
+// Model metrics and training data endpoint
+router.get('/model-metrics', isHaykakan, async (req: Request, res: Response) => {
+  try {
+    try {
+      // En un caso real, aquí obtendríamos las métricas directamente desde los modelos entrenados
+      // Para el ejemplo, usamos datos estáticos
+      throw new Error('Using static data for model metrics');
+    } catch (error) {
+      console.warn('Using static data for model metrics:', error);
+      
+      // Usar datos estáticos
+      const staticDataPath = path.join(process.cwd(), 'ai_prediction', 'outputs', 'data', 'model_metrics.json');
+      if (fs.existsSync(staticDataPath)) {
+        const staticData = JSON.parse(fs.readFileSync(staticDataPath, 'utf-8'));
+        res.json(staticData);
+      } else {
+        throw new Error('Static data for model metrics not available');
+      }
+    }
+  } catch (error) {
+    console.error('Error getting model metrics data:', error);
+    res.status(500).json({ error: 'Error al obtener métricas de los modelos de IA' });
+  }
+});
+
 // Get generated plots endpoint
 router.get('/plots/:filename', isHaykakan, async (req: Request, res: Response) => {
   try {

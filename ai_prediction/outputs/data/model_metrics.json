@@ -1,0 +1,320 @@
+{
+  "model_training": {
+    "last_trained": "2025-04-05T14:32:18",
+    "models": [
+      {
+        "name": "Prophet",
+        "type": "Series Temporales",
+        "metrics": {
+          "mae": 12.45,
+          "mse": 242.3,
+          "rmse": 15.57,
+          "mape": 8.73,
+          "training_time": 23.4,
+          "cross_validation_scores": [
+            {"fold": 1, "mae": 13.21, "mse": 251.8},
+            {"fold": 2, "mae": 12.34, "mse": 238.9},
+            {"fold": 3, "mae": 11.82, "mse": 236.2}
+          ],
+          "training_parameters": {
+            "changepoint_prior_scale": 0.05,
+            "seasonality_prior_scale": 10,
+            "seasonality_mode": "multiplicative",
+            "interval_width": 0.95
+          }
+        },
+        "feature_importance": null,
+        "hyperparameter_tuning": [
+          {"changepoint_prior_scale": 0.01, "mae": 14.37},
+          {"changepoint_prior_scale": 0.05, "mae": 12.45},
+          {"changepoint_prior_scale": 0.1, "mae": 13.06},
+          {"changepoint_prior_scale": 0.5, "mae": 15.21}
+        ]
+      },
+      {
+        "name": "RandomForest",
+        "type": "Machine Learning",
+        "metrics": {
+          "mae": 13.82,
+          "mse": 285.6,
+          "rmse": 16.90,
+          "mape": 9.45,
+          "training_time": 5.7,
+          "cross_validation_scores": [
+            {"fold": 1, "mae": 14.32, "mse": 291.2},
+            {"fold": 2, "mae": 13.51, "mse": 280.1},
+            {"fold": 3, "mae": 13.64, "mse": 285.5}
+          ],
+          "training_parameters": {
+            "n_estimators": 100,
+            "max_depth": 10,
+            "min_samples_split": 5,
+            "min_samples_leaf": 2
+          }
+        },
+        "feature_importance": [
+          {"feature": "day_of_week", "importance": 0.32},
+          {"feature": "month", "importance": 0.27},
+          {"feature": "is_holiday", "importance": 0.21},
+          {"feature": "temperature", "importance": 0.12},
+          {"feature": "previous_day_sales", "importance": 0.08}
+        ],
+        "hyperparameter_tuning": [
+          {"n_estimators": 50, "max_depth": 8, "mae": 14.85},
+          {"n_estimators": 100, "max_depth": 10, "mae": 13.82},
+          {"n_estimators": 150, "max_depth": 12, "mae": 13.95},
+          {"n_estimators": 200, "max_depth": 15, "mae": 14.01}
+        ]
+      },
+      {
+        "name": "ARIMA",
+        "type": "Series Temporales",
+        "metrics": {
+          "mae": 14.37,
+          "mse": 302.4,
+          "rmse": 17.39,
+          "mape": 9.87,
+          "training_time": 8.2,
+          "cross_validation_scores": [
+            {"fold": 1, "mae": 14.94, "mse": 310.5},
+            {"fold": 2, "mae": 14.13, "mse": 295.8},
+            {"fold": 3, "mae": 14.04, "mse": 301.0}
+          ],
+          "training_parameters": {
+            "p": 2,
+            "d": 1,
+            "q": 2,
+            "seasonal_order": [1, 1, 1, 7]
+          }
+        },
+        "feature_importance": null,
+        "hyperparameter_tuning": [
+          {"p": 1, "d": 1, "q": 1, "mae": 15.32},
+          {"p": 2, "d": 1, "q": 2, "mae": 14.37},
+          {"p": 3, "d": 1, "q": 2, "mae": 14.59},
+          {"p": 2, "d": 1, "q": 3, "mae": 14.86}
+        ]
+      }
+    ]
+  },
+  "prediction_performance": {
+    "accuracy_over_time": [
+      {"date": "2025-01-05", "accuracy": 91.2, "mae": 13.42},
+      {"date": "2025-01-12", "accuracy": 92.1, "mae": 12.85},
+      {"date": "2025-01-19", "accuracy": 90.8, "mae": 13.75},
+      {"date": "2025-01-26", "accuracy": 91.5, "mae": 13.21},
+      {"date": "2025-02-02", "accuracy": 92.7, "mae": 12.32},
+      {"date": "2025-02-09", "accuracy": 93.2, "mae": 11.94},
+      {"date": "2025-02-16", "accuracy": 92.8, "mae": 12.25},
+      {"date": "2025-02-23", "accuracy": 91.9, "mae": 12.98},
+      {"date": "2025-03-02", "accuracy": 92.3, "mae": 12.64},
+      {"date": "2025-03-09", "accuracy": 93.5, "mae": 11.82},
+      {"date": "2025-03-16", "accuracy": 94.1, "mae": 11.35},
+      {"date": "2025-03-23", "accuracy": 93.8, "mae": 11.57},
+      {"date": "2025-03-30", "accuracy": 92.9, "mae": 12.14}
+    ],
+    "real_vs_predicted": [
+      {"date": "2025-03-30", "real": 354, "predicted": 372, "error": 18},
+      {"date": "2025-03-31", "real": 367, "predicted": 381, "error": 14},
+      {"date": "2025-04-01", "real": 389, "predicted": 401, "error": 12},
+      {"date": "2025-04-02", "real": 412, "predicted": 398, "error": -14},
+      {"date": "2025-04-03", "real": 378, "predicted": 392, "error": 14},
+      {"date": "2025-04-04", "real": 425, "predicted": 435, "error": 10},
+      {"date": "2025-04-05", "real": 467, "predicted": 451, "error": -16},
+      {"date": "2025-04-06", "real": 432, "predicted": 442, "error": 10},
+      {"date": "2025-04-07", "real": 387, "predicted": 395, "error": 8}
+    ],
+    "error_distribution": {
+      "histogram": [
+        {"range": "-30 a -20", "count": 2},
+        {"range": "-20 a -10", "count": 8},
+        {"range": "-10 a 0", "count": 32},
+        {"range": "0 a 10", "count": 37},
+        {"range": "10 a 20", "count": 18},
+        {"range": "20 a 30", "count": 3}
+      ],
+      "statistics": {
+        "mean_error": 1.24,
+        "median_error": 0.87,
+        "std_error": 12.35,
+        "min_error": -28.4,
+        "max_error": 26.8
+      }
+    }
+  },
+  "model_comparisons": {
+    "time_horizons": [
+      {
+        "horizon": "Diario",
+        "models": [
+          {"name": "Prophet", "mae": 12.45, "rmse": 15.57, "training_time": 23.4},
+          {"name": "RandomForest", "mae": 13.82, "rmse": 16.90, "training_time": 5.7},
+          {"name": "ARIMA", "mae": 14.37, "rmse": 17.39, "training_time": 8.2}
+        ]
+      },
+      {
+        "horizon": "Semanal",
+        "models": [
+          {"name": "Prophet", "mae": 28.32, "rmse": 35.64, "training_time": 18.9},
+          {"name": "RandomForest", "mae": 32.15, "rmse": 38.42, "training_time": 4.8},
+          {"name": "ARIMA", "mae": 31.58, "rmse": 37.91, "training_time": 7.5}
+        ]
+      },
+      {
+        "horizon": "Mensual",
+        "models": [
+          {"name": "Prophet", "mae": 87.45, "rmse": 102.37, "training_time": 15.2},
+          {"name": "RandomForest", "mae": 95.62, "rmse": 112.84, "training_time": 4.2},
+          {"name": "ARIMA", "mae": 92.37, "rmse": 108.59, "training_time": 6.8}
+        ]
+      }
+    ],
+    "scenario_analysis": [
+      {
+        "scenario": "Días Normales",
+        "models": [
+          {"name": "Prophet", "accuracy": 93.2},
+          {"name": "RandomForest", "accuracy": 92.1},
+          {"name": "ARIMA", "accuracy": 91.5}
+        ]
+      },
+      {
+        "scenario": "Festivos",
+        "models": [
+          {"name": "Prophet", "accuracy": 88.7},
+          {"name": "RandomForest", "accuracy": 90.5},
+          {"name": "ARIMA", "accuracy": 85.3}
+        ]
+      },
+      {
+        "scenario": "Eventos Especiales",
+        "models": [
+          {"name": "Prophet", "accuracy": 86.4},
+          {"name": "RandomForest", "accuracy": 89.2},
+          {"name": "ARIMA", "accuracy": 83.1}
+        ]
+      },
+      {
+        "scenario": "Cambios Climáticos",
+        "models": [
+          {"name": "Prophet", "accuracy": 90.1},
+          {"name": "RandomForest", "accuracy": 92.8},
+          {"name": "ARIMA", "accuracy": 89.4}
+        ]
+      }
+    ]
+  },
+  "ensemble_model": {
+    "weights": [
+      {"model": "Prophet", "weight": 0.45},
+      {"model": "RandomForest", "weight": 0.35},
+      {"model": "ARIMA", "weight": 0.2}
+    ],
+    "performance": {
+      "mae": 11.23,
+      "mse": 201.5,
+      "rmse": 14.19,
+      "mape": 7.85
+    },
+    "improvement_over_best": {
+      "mae_improvement": "9.8%",
+      "rmse_improvement": "8.9%",
+      "mape_improvement": "10.1%"
+    }
+  },
+  "feature_engineering": {
+    "original_features": [
+      "date",
+      "day_of_week",
+      "month",
+      "is_holiday"
+    ],
+    "engineered_features": [
+      {"name": "rolling_avg_7d", "description": "Media móvil de los últimos 7 días", "importance": 0.28},
+      {"name": "day_of_month", "description": "Día del mes (1-31)", "importance": 0.18},
+      {"name": "is_weekend", "description": "Indicador de fin de semana", "importance": 0.22},
+      {"name": "days_to_holiday", "description": "Días hasta el próximo festivo", "importance": 0.15},
+      {"name": "temperature", "description": "Temperatura ambiente del día", "importance": 0.12},
+      {"name": "seasonality_index", "description": "Índice de estacionalidad", "importance": 0.05}
+    ],
+    "improvement_with_engineering": {
+      "mae_improvement": "15.3%",
+      "feature_importance_gain": "23.7%"
+    }
+  },
+  "anomaly_detection": {
+    "detected_anomalies": [
+      {"date": "2025-01-15", "expected": 342, "actual": 487, "z_score": 3.2, "cause": "Evento especial no registrado"},
+      {"date": "2025-02-14", "expected": 378, "actual": 512, "z_score": 3.7, "cause": "San Valentín"},
+      {"date": "2025-03-19", "expected": 365, "actual": 298, "z_score": -2.8, "cause": "Cierre parcial por mantenimiento"}
+    ],
+    "sensitivity_analysis": {
+      "threshold_values": [
+        {"z_score": 2.0, "detection_rate": 0.92, "false_positives": 0.08},
+        {"z_score": 2.5, "detection_rate": 0.85, "false_positives": 0.04},
+        {"z_score": 3.0, "detection_rate": 0.78, "false_positives": 0.02}
+      ],
+      "recommended_threshold": 2.5
+    }
+  },
+  "seasonal_decomposition": {
+    "components": [
+      {
+        "name": "Tendencia",
+        "description": "Componente de tendencia a largo plazo",
+        "strength": 0.35,
+        "pattern": "Crecimiento consistente de aproximadamente 2.5% mensual"
+      },
+      {
+        "name": "Estacionalidad Semanal",
+        "description": "Patrón repetitivo semanal",
+        "strength": 0.28,
+        "pattern": "Picos los viernes y sábados, valores mínimos los lunes"
+      },
+      {
+        "name": "Estacionalidad Mensual",
+        "description": "Patrón repetitivo mensual",
+        "strength": 0.18,
+        "pattern": "Picos a mitad y final de mes, coincidiendo con días de pago"
+      },
+      {
+        "name": "Estacionalidad Anual",
+        "description": "Patrón repetitivo anual",
+        "strength": 0.12,
+        "pattern": "Mayor consumo en verano y fechas festivas"
+      },
+      {
+        "name": "Residual",
+        "description": "Componente aleatorio no explicado",
+        "strength": 0.07,
+        "pattern": "Ruido aleatorio sin patrón identificable"
+      }
+    ],
+    "visualization_data": {
+      "trend": [
+        {"date": "2025-01", "value": 352},
+        {"date": "2025-02", "value": 361},
+        {"date": "2025-03", "value": 370},
+        {"date": "2025-04", "value": 379}
+      ],
+      "weekly_seasonality": [
+        {"day": "Lunes", "effect": -42},
+        {"day": "Martes", "effect": -18},
+        {"day": "Miércoles", "effect": -5},
+        {"day": "Jueves", "effect": 12},
+        {"day": "Viernes", "effect": 28},
+        {"day": "Sábado", "effect": 35},
+        {"day": "Domingo", "effect": -10}
+      ],
+      "monthly_seasonality": [
+        {"day": 1, "effect": -15},
+        {"day": 5, "effect": -10},
+        {"day": 10, "effect": 5},
+        {"day": 15, "effect": 25},
+        {"day": 20, "effect": 10},
+        {"day": 25, "effect": -5},
+        {"day": 30, "effect": 20}
+      ]
+    }
+  }
+}

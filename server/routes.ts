@@ -4,6 +4,7 @@ import stockRoutes from './routes/stockRoutes';
 import orderRoutes from './routes/orderRoutes';
 import menuRoutes from './routes/menuRoutes';
 import authRoutes from './routes/authRoutes';
+import predictionsRoutes from './routes/predictionsRoutes';
 import { storage } from "./storage";
 import cron from "node-cron";
 import { insertOrderSchema, insertProductSchema, insertCategorySchema, insertSettingsSchema } from "@shared/schema";
@@ -88,6 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/orders', orderRoutes);
   app.use('/api/menus', menuRoutes);
   app.use('/api/auth', authRoutes);
+  app.use('/api/predictions', predictionsRoutes);
 
 
   // Categories

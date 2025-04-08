@@ -1,5 +1,13 @@
 {pkgs}: {
   deps = [
+    pkgs.tk
+    pkgs.tcl
+    pkgs.qhull
+    pkgs.pkg-config
+    pkgs.gobject-introspection
+    pkgs.ghostscript
+    pkgs.ffmpeg-full
+    pkgs.glibcLocales
     pkgs.chromium
     pkgs.expat
     pkgs.cups

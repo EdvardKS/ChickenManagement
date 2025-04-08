@@ -13,9 +13,11 @@ const dashboardGroups = [
   {
     name: "Gestión de Stock",
     items: [
-      { id: "stock-levels", label: "Niveles de Stock", path: "/admin/dashboards/stock-levels" },
+      { id: "stock-levels-basic", label: "Niveles de Stock", path: "/admin/dashboards/stock-levels-basic" },
       { id: "stock-history", label: "Historial de Stock", path: "/admin/dashboards/stock-history" },
-      { id: "stock-predictions", label: "Predicciones de Stock", path: "/admin/dashboards/stock-predictions" },
+      { id: "stock-ai-prediction", label: "IA Predicción", path: "/admin/dashboards/stock-ai-prediction" },
+      { id: "stock-forecast", label: "Pronóstico Detallado", path: "/admin/dashboards/stock-forecast" },
+      { id: "stock-patterns", label: "Patrones de Stock", path: "/admin/dashboards/stock-patterns" },
     ]
   },
   {

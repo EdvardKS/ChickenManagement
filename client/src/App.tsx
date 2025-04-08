@@ -29,6 +29,10 @@ import FesteroPage from "@/pages/fiestas";
 import DashboardLayout from "@/pages/admin/dashboards/layout";
 import OrdersOverview from "@/pages/admin/dashboards/orders-overview";
 import StockLevels from "@/pages/admin/dashboards/stock-levels";
+import StockLevelsBasic from "@/pages/admin/dashboards/stock-levels-basic";
+import StockAIPrediction from "@/pages/admin/dashboards/stock-ai-prediction";
+import StockForecast from "@/pages/admin/dashboards/stock-forecast";
+import StockPatterns from "@/pages/admin/dashboards/stock-patterns";
 import StockHistory from "@/pages/admin/dashboards/stock-history";
 import AdminUsers from "@/pages/admin/users";
 import NotFound from "@/pages/not-found";
@@ -210,6 +214,26 @@ function AdminRoutes() {
                     <Route path="/admin/dashboards/stock-levels">
                       <HaykakanRoute>
                         <StockLevels />
+                      </HaykakanRoute>
+                    </Route>
+                    <Route path="/admin/dashboards/stock-levels-basic">
+                      <HaykakanRoute>
+                        <StockLevelsBasic />
+                      </HaykakanRoute>
+                    </Route>
+                    <Route path="/admin/dashboards/stock-ai-prediction">
+                      <HaykakanRoute>
+                        <StockAIPrediction />
+                      </HaykakanRoute>
+                    </Route>
+                    <Route path="/admin/dashboards/stock-forecast">
+                      <HaykakanRoute>
+                        <StockForecast />
+                      </HaykakanRoute>
+                    </Route>
+                    <Route path="/admin/dashboards/stock-patterns">
+                      <HaykakanRoute>
+                        <StockPatterns />
                       </HaykakanRoute>
                     </Route>
                     <Route path="/admin/dashboards/stock-history">

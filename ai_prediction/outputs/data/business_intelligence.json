@@ -1,0 +1,125 @@
+{
+  "sales_by_month": [
+    { "month": "Enero", "value": 32450, "growth": 5.2 },
+    { "month": "Febrero", "value": 30200, "growth": -6.9 },
+    { "month": "Marzo", "value": 33600, "growth": 11.3 },
+    { "month": "Abril", "value": 35100, "growth": 4.5 },
+    { "month": "Mayo", "value": 36500, "growth": 4.0 },
+    { "month": "Junio", "value": 42300, "growth": 15.9 },
+    { "month": "Julio", "value": 51200, "growth": 21.0 },
+    { "month": "Agosto", "value": 53400, "growth": 4.3 },
+    { "month": "Septiembre", "value": 42100, "growth": -21.2 },
+    { "month": "Octubre", "value": 37800, "growth": -10.2 },
+    { "month": "Noviembre", "value": 39200, "growth": 3.7 },
+    { "month": "Diciembre", "value": 48700, "growth": 24.2 }
+  ],
+  "sales_by_day_of_week": [
+    { "day": "Lunes", "value": 8500, "percent": 12.5 },
+    { "day": "Martes", "value": 7200, "percent": 10.6 },
+    { "day": "Miércoles", "value": 7800, "percent": 11.5 },
+    { "day": "Jueves", "value": 8900, "percent": 13.1 },
+    { "day": "Viernes", "value": 11500, "percent": 16.9 },
+    { "day": "Sábado", "value": 13200, "percent": 19.4 },
+    { "day": "Domingo", "value": 10900, "percent": 16.0 }
+  ],
+  "sales_by_hour": [
+    { "hour": "08:00", "value": 320, "percent": 2.1 },
+    { "hour": "09:00", "value": 550, "percent": 3.6 },
+    { "hour": "10:00", "value": 720, "percent": 4.8 },
+    { "hour": "11:00", "value": 950, "percent": 6.3 },
+    { "hour": "12:00", "value": 1320, "percent": 8.7 },
+    { "hour": "13:00", "value": 1750, "percent": 11.6 },
+    { "hour": "14:00", "value": 1520, "percent": 10.1 },
+    { "hour": "15:00", "value": 980, "percent": 6.5 },
+    { "hour": "16:00", "value": 730, "percent": 4.8 },
+    { "hour": "17:00", "value": 650, "percent": 4.3 },
+    { "hour": "18:00", "value": 890, "percent": 5.9 },
+    { "hour": "19:00", "value": 1250, "percent": 8.3 },
+    { "hour": "20:00", "value": 1670, "percent": 11.1 },
+    { "hour": "21:00", "value": 1430, "percent": 9.5 },
+    { "hour": "22:00", "value": 370, "percent": 2.4 }
+  ],
+  "top_products": [
+    { "name": "Pollo Asado Entero", "value": 42350, "percent": 35.8 },
+    { "name": "Pollo Asado Medio", "value": 25620, "percent": 21.7 },
+    { "name": "Paella Familiar", "value": 18450, "percent": 15.6 },
+    { "name": "Patatas Asadas", "value": 12780, "percent": 10.8 },
+    { "name": "Ensalada Completa", "value": 9530, "percent": 8.1 },
+    { "name": "Otros", "value": 9420, "percent": 8.0 }
+  ],
+  "customer_retention": {
+    "new_customers": 320,
+    "returning_customers": 750,
+    "retention_rate": 68.2,
+    "monthly_trend": [
+      { "month": "Enero", "new": 240, "returning": 580, "rate": 70.7 },
+      { "month": "Febrero", "new": 220, "returning": 540, "rate": 71.1 },
+      { "month": "Marzo", "new": 260, "returning": 590, "rate": 69.4 },
+      { "month": "Abril", "new": 270, "returning": 620, "rate": 69.7 },
+      { "month": "Mayo", "new": 290, "returning": 650, "rate": 69.1 },
+      { "month": "Junio", "new": 340, "returning": 720, "rate": 67.9 },
+      { "month": "Julio", "new": 390, "returning": 780, "rate": 66.7 },
+      { "month": "Agosto", "new": 410, "returning": 810, "rate": 66.4 },
+      { "month": "Septiembre", "new": 320, "returning": 690, "rate": 68.3 },
+      { "month": "Octubre", "new": 290, "returning": 640, "rate": 68.8 },
+      { "month": "Noviembre", "new": 300, "returning": 670, "rate": 69.1 },
+      { "month": "Diciembre", "new": 380, "returning": 780, "rate": 67.2 }
+    ]
+  },
+  "operational_metrics": {
+    "avg_preparation_time": 12.5,
+    "avg_delivery_time": 28.3,
+    "on_time_delivery_rate": 92.7,
+    "order_accuracy": 98.2,
+    "monthly_trend": [
+      { "month": "Enero", "prep_time": 13.2, "delivery_time": 30.1, "on_time_rate": 91.2, "accuracy": 97.8 },
+      { "month": "Febrero", "prep_time": 13.0, "delivery_time": 29.5, "on_time_rate": 91.5, "accuracy": 98.0 },
+      { "month": "Marzo", "prep_time": 12.8, "delivery_time": 29.0, "on_time_rate": 92.0, "accuracy": 98.0 },
+      { "month": "Abril", "prep_time": 12.7, "delivery_time": 28.5, "on_time_rate": 92.3, "accuracy": 98.1 },
+      { "month": "Mayo", "prep_time": 12.5, "delivery_time": 28.0, "on_time_rate": 92.8, "accuracy": 98.2 },
+      { "month": "Junio", "prep_time": 12.2, "delivery_time": 27.5, "on_time_rate": 93.0, "accuracy": 98.3 },
+      { "month": "Julio", "prep_time": 12.0, "delivery_time": 27.0, "on_time_rate": 93.5, "accuracy": 98.4 },
+      { "month": "Agosto", "prep_time": 11.8, "delivery_time": 27.0, "on_time_rate": 93.8, "accuracy": 98.5 },
+      { "month": "Septiembre", "prep_time": 12.0, "delivery_time": 27.5, "on_time_rate": 93.2, "accuracy": 98.4 },
+      { "month": "Octubre", "prep_time": 12.3, "delivery_time": 28.0, "on_time_rate": 92.5, "accuracy": 98.2 },
+      { "month": "Noviembre", "prep_time": 12.5, "delivery_time": 28.5, "on_time_rate": 92.0, "accuracy": 98.0 },
+      { "month": "Diciembre", "prep_time": 13.0, "delivery_time": 29.0, "on_time_rate": 91.5, "accuracy": 97.8 }
+    ]
+  },
+  "stock_kpi": {
+    "stock_turnover_rate": 14.2,
+    "avg_stock_level": 245,
+    "out_of_stock_incidents": 5,
+    "stock_efficiency": 92.5,
+    "monthly_trend": [
+      { "month": "Enero", "turnover": 13.5, "avg_level": 260, "incidents": 7, "efficiency": 91.2 },
+      { "month": "Febrero", "turnover": 13.8, "avg_level": 255, "incidents": 6, "efficiency": 91.5 },
+      { "month": "Marzo", "turnover": 14.0, "avg_level": 250, "incidents": 6, "efficiency": 91.8 },
+      { "month": "Abril", "turnover": 14.2, "avg_level": 248, "incidents": 5, "efficiency": 92.0 },
+      { "month": "Mayo", "turnover": 14.3, "avg_level": 245, "incidents": 5, "efficiency": 92.3 },
+      { "month": "Junio", "turnover": 14.5, "avg_level": 240, "incidents": 4, "efficiency": 92.8 },
+      { "month": "Julio", "turnover": 14.8, "avg_level": 235, "incidents": 4, "efficiency": 93.2 },
+      { "month": "Agosto", "turnover": 15.0, "avg_level": 230, "incidents": 3, "efficiency": 93.5 },
+      { "month": "Septiembre", "turnover": 14.7, "avg_level": 235, "incidents": 4, "efficiency": 93.0 },
+      { "month": "Octubre", "turnover": 14.5, "avg_level": 240, "incidents": 4, "efficiency": 92.7 },
+      { "month": "Noviembre", "turnover": 14.2, "avg_level": 245, "incidents": 5, "efficiency": 92.3 },
+      { "month": "Diciembre", "turnover": 14.0, "avg_level": 250, "incidents": 6, "efficiency": 92.0 }
+    ]
+  },
+  "sales_prediction": {
+    "next_30_days": {
+      "total_predicted_sales": 48500,
+      "trend_percentage": 5.3,
+      "confidence_interval": [45800, 51200]
+    },
+    "daily_forecast": [
+      { "date": "2025-04-09", "predicted": 1520, "lower": 1350, "upper": 1690 },
+      { "date": "2025-04-10", "predicted": 1580, "lower": 1410, "upper": 1750 },
+      { "date": "2025-04-11", "predicted": 1790, "lower": 1620, "upper": 1960 },
+      { "date": "2025-04-12", "predicted": 1950, "lower": 1780, "upper": 2120 },
+      { "date": "2025-04-13", "predicted": 1890, "lower": 1720, "upper": 2060 },
+      { "date": "2025-04-14", "predicted": 1520, "lower": 1350, "upper": 1690 },
+      { "date": "2025-04-15", "predicted": 1540, "lower": 1370, "upper": 1710 }
+    ]
+  }
+}

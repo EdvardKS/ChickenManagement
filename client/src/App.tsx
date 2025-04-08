@@ -34,6 +34,7 @@ import StockAIPrediction from "@/pages/admin/dashboards/stock-ai-prediction";
 import StockForecast from "@/pages/admin/dashboards/stock-forecast";
 import StockPatterns from "@/pages/admin/dashboards/stock-patterns";
 import StockHistory from "@/pages/admin/dashboards/stock-history";
+import BusinessIntelligence from "@/pages/admin/dashboards/business-intelligence";
 import AdminUsers from "@/pages/admin/users";
 import NotFound from "@/pages/not-found";
 import { ReactNode } from "react";
@@ -239,6 +240,11 @@ function AdminRoutes() {
                     <Route path="/admin/dashboards/stock-history">
                       <HaykakanRoute>
                         <StockHistory />
+                      </HaykakanRoute>
+                    </Route>
+                    <Route path="/admin/dashboards/business-intelligence">
+                      <HaykakanRoute>
+                        <BusinessIntelligence />
                       </HaykakanRoute>
                     </Route>
                   </Switch>

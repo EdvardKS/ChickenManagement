@@ -8,6 +8,7 @@ const dashboardGroups = [
       { id: "orders-overview", label: "Vista General de Pedidos", path: "/admin/dashboards/orders-overview" },
       { id: "daily-sales", label: "Ventas Diarias", path: "/admin/dashboards/daily-sales" },
       { id: "customer-analysis", label: "Análisis de Clientes", path: "/admin/dashboards/customer-analysis" },
+      { id: "business-intelligence", label: "Business Intelligence", path: "/admin/dashboards/business-intelligence" },
     ]
   },
   {

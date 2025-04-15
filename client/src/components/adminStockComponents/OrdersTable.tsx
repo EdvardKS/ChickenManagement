@@ -186,10 +186,16 @@ const handleError = async (orderId: number) => {
     }
   };
 
-  const handleWhatsApp = (order: Order) => {
+  const handleWhatsApp = (order: Order, messageType: 'ready' | 'confirmed' = 'ready') => {
     if (!order.customerPhone) return;
 
-    const message = `Hola ${order.customerName}, tu pedido de ${formatQuantity(order.quantity)} pollos está listo.`;
+    let message = '';
+    if (messageType === 'ready') {
+      message = `Hola ${order.customerName}, tu pedido de ${formatQuantity(order.quantity)} pollos está listo.`;
+    } else if (messageType === 'confirmed') {
+      message = `Hola ${order.customerName}, su pedido de ${formatQuantity(order.quantity)} pollos ha sido CONFIRMADO. Gracias por su reserva.`;
+    }
+    
     const encodedMessage = encodeURIComponent(message);
     const phone = order.customerPhone.replace(/[^0-9]/g, '');
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
@@ -232,13 +238,24 @@ const handleError = async (orderId: number) => {
                   <TableCell className="w-3/12 text-lg font-medium">
                     {order.customerName}
                     {order.customerPhone && (
-                      <Button
-                        variant="ghost"
-                        className="ml-2 p-1"
-                        onClick={() => handleWhatsApp(order)}
-                      >
-                        📱
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          className="ml-2 p-1"
+                          onClick={() => handleWhatsApp(order)}
+                          title="Pedido listo"
+                        >
+                          📱
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="ml-1 p-1"
+                          onClick={() => handleWhatsApp(order, 'confirmed')}
+                          title="Pedido confirmado"
+                        >
+                          ✅
+                        </Button>
+                      </>
                     )}
                   </TableCell>
                   <TableCell className="w-2/12 text-lg text-center">{formatQuantity(order.quantity)}</TableCell>

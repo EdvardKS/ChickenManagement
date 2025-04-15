@@ -77,9 +77,7 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
         
         const result = await apiRequest("/api/orders", {
           method: "POST",
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
         

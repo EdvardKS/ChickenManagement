@@ -223,18 +223,12 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
     console.log('🧩 FORM SUBMIT - Datos recibidos del formulario:', data);
     console.log('🧩 FORM SUBMIT - Stock actual:', currentStock);
     
-    // Validar stock suficiente
+    // Información sobre stock disponible (solo informativo)
     if (data.quantity > Number(currentStock)) {
-      console.error('❌ FORM SUBMIT - Stock insuficiente:', { 
+      console.log('📝 FORM SUBMIT - Cantidad solicitada mayor que stock disponible:', { 
         requested: data.quantity, 
         available: currentStock 
       });
-      toast({
-        title: "Stock insuficiente",
-        description: `Has solicitado ${data.quantity} pollos, pero solo hay disponibles ${currentStock}`,
-        variant: "destructive",
-      });
-      return;
     }
     
     // Asegurarse de que los datos cumplen con el esquema
@@ -351,7 +345,6 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                       {...field} 
                       type="number" 
                       min="0.5" 
-                      max={currentStock}
                       step="0.5"
                       onChange={(e) => {
                         // Usar parseFloat para permitir decimales

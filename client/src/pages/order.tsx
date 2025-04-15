@@ -14,11 +14,14 @@ export default function Order() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Stock Disponible</CardTitle>
+          <CardTitle>Stock Disponible (Informativo)</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-lg">
             Pollos disponibles hoy: {stock?.currentStock ?? 0}
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Nota: Puedes realizar pedidos sin importar la cantidad disponible.
           </p>
         </CardContent>
       </Card>

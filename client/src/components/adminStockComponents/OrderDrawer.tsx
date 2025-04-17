@@ -465,7 +465,7 @@ export function OrderDrawer({
                 <div className="mt-8 space-y-4">
                   {renderInvoicePreview()}
                   <div className="flex gap-2">
-                    <Button onClick={() => handleGenerateInvoice(formValues)} className="flex-1" style={{ backgroundColor: "#67A4E0", borderColor: "#67A4E0" }}>
+                    <Button onClick={() => handleGenerateInvoice(formValues)} className="flex-1">
                       Generar y Enviar Factura
                     </Button>
                     <Button onClick={() => setIsPreviewingInvoice(false)} variant="outline" className="flex-1">
@@ -516,7 +516,7 @@ export function OrderDrawer({
                 <Input {...editForm.register('customerPhone')} className="mt-2" />
               </div>
               <div className="flex gap-2 pt-4">
-                <Button type="submit" className="flex-1" style={{ backgroundColor: "#67A4E0", borderColor: "#67A4E0" }}>
+                <Button type="submit" className="flex-1">
                   Guardar Cambios
                 </Button>
                 <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
@@ -561,7 +561,6 @@ export function OrderDrawer({
                 <Button
                   onClick={() => onConfirm(order.id)}
                   className="w-full py-6 text-lg"
-                  style={{ backgroundColor: "#67A4E0", borderColor: "#67A4E0" }}
                   disabled={isLoading}
                 >
                   {isLoading ? (

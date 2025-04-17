@@ -284,14 +284,14 @@ const handleError = async (orderId: number) => {
                       disabled={isLoading}
                     >
                       {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : '🔘'}
-                      {order.customerPhone && !isLoading && !notifiedOrders[order.id] && (
+                      {order.customerPhone && !isLoading && !order.notificado && !notifiedOrders[order.id] && (
                         <span className="absolute -top-1 -right-1 flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                         </span>
                       )}
                     </Button>
-                    {order.customerPhone && !notifiedOrders[order.id] && (
+                    {order.customerPhone && !order.notificado && !notifiedOrders[order.id] && (
                       <Button
                         variant="outline"
                         onClick={() => handleWhatsApp(order, 'confirmed')}

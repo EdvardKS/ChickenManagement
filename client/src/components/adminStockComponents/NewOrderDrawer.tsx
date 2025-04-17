@@ -104,9 +104,9 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-screen md:h-auto max-h-screen w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] flex flex-col bg-[#F9F5FF]">
-        <DrawerHeader className="bg-[#E9D7FE] border-b border-purple-200">
-          <DrawerTitle className="text-3xl md:text-4xl lg:text-5xl text-center text-[#9333EA]">Nuevo Encargo</DrawerTitle>
+        <DrawerContent className="h-screen md:h-auto max-h-screen w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] flex flex-col">
+        <DrawerHeader>
+          <DrawerTitle className="text-3xl md:text-4xl lg:text-5xl text-center">Nuevo Encargo</DrawerTitle>
         </DrawerHeader>
         <form onSubmit={handleSubmit} className="p-4 md:p-6 my-2 md:my-4 space-y-4 md:space-y-6 flex-grow overflow-auto text-base md:text-xl lg:text-2xl">
 
@@ -189,7 +189,7 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
           <Button 
             type="submit"
-            className="bg-[#9333EA] hover:bg-[#7E22CE] text-white w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
             disabled={createOrder.isPending}
           >
             {createOrder.isPending ? "Creando..." : "Crear Encargo"}

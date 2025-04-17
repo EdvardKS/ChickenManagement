@@ -230,9 +230,9 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-screen md:h-auto max-h-screen w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] flex flex-col bg-[#F0FDF9]" aria-describedby="drawer-description">
-        <DrawerHeader className="bg-[#CCFBEF] border-b border-teal-200">
-          <DrawerTitle className="text-center text-2xl md:text-3xl lg:text-5xl py-3 md:py-4 lg:py-5 text-teal-700">Stock Actual 🐔</DrawerTitle>
+      <DrawerContent className="h-screen md:h-auto max-h-screen w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] flex flex-col" aria-describedby="drawer-description">
+        <DrawerHeader>
+          <DrawerTitle className="text-center text-2xl md:text-3xl lg:text-5xl py-3 md:py-4 lg:py-5">Stock Actual 🐔</DrawerTitle>
           <DrawerDescription id="drawer-description" className="sr-only">
             Gestión del stock de pollos actual. Permite añadir o quitar pollos del stock montado y registrar ventas directas.
           </DrawerDescription>
@@ -245,17 +245,17 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
               <Label className="text-base md:text-lg font-semibold">Total de pollos Montado:</Label>
               <div className="flex justify-between items-center mt-2">
                 <Button 
-                  className="text-xl md:text-2xl p-3 md:p-5 bg-teal-100 border-teal-300 text-teal-700 hover:bg-teal-200" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(-1)}
                 >
                   -1
                 </Button>
-                <span className="text-2xl md:text-4xl font-bold text-teal-700">
+                <span className="text-2xl md:text-4xl font-bold">
                   {formatQuantity(stock?.initialStock || 0)}
                 </span>
                 <Button 
-                  className="text-xl md:text-2xl p-3 md:p-5 bg-teal-100 border-teal-300 text-teal-700 hover:bg-teal-200" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(1)}
                 >
@@ -264,14 +264,14 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
               </div>
               <div className="flex justify-between mt-3 md:mt-4">
                 <Button 
-                  className="text-xl md:text-2xl p-3 md:p-5 bg-teal-100 border-teal-300 text-teal-700 hover:bg-teal-200" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(-6)}
                 >
                   -6
                 </Button>
                 <Button 
-                  className="text-xl md:text-2xl p-3 md:p-5 bg-teal-100 border-teal-300 text-teal-700 hover:bg-teal-200" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(6)}
                 >
@@ -314,25 +314,25 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
             <Label className="text-base md:text-lg font-semibold">Venta de SIN encargo:</Label>
             <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
               <Button 
-                className="bg-teal-700 hover:bg-teal-800 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12 font-semibold" 
+                className="bg-slate-700 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 onClick={() => handleDirectSale(-0.5)}
               >
                 -0.5
               </Button>
               <Button 
-                className="bg-teal-600 hover:bg-teal-700 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12 font-semibold" 
+                className="bg-slate-700 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 onClick={() => handleDirectSale(0.5)}
               >
                 +0.5
               </Button>
               <Button 
-                className="bg-teal-800 hover:bg-teal-900 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12 font-semibold" 
+                className="bg-blue-600 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 onClick={() => handleDirectSale(-1)}
               >
                 -1
               </Button>
               <Button 
-                className="text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12 border-teal-600 text-teal-700 hover:bg-teal-50 font-semibold" 
+                className="text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 variant="outline" 
                 onClick={() => handleDirectSale(1)}
               >
@@ -345,7 +345,7 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
           <div className="p-2 md:p-4">
             <Button
               variant="outline"
-              className="w-full border border-teal-700 text-teal-800 hover:bg-teal-50 hover:text-teal-900 text-base md:text-lg py-2 md:py-3 font-semibold"
+              className="w-full border border-slate-700 text-slate-700 hover:bg-slate-700 hover:text-white text-base md:text-lg py-2 md:py-3"
               onClick={handleResetStock}
             >
               Resetear Valores

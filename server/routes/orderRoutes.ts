@@ -281,22 +281,23 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
 router.patch("/:id/notificado", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const order = await storage.getOrder(id);
+    
+    // Actualizamos el pedido directamente sin verificación previa para más velocidad
+    // Esta operación es segura ya que solo estamos actualizando el campo 'notificado'
+    const updatedOrder = await storage.updateOrder(id, {
+      notificado: true,  // Marcamos el campo notificado como true
+      updatedAt: new Date()
+    });
 
-    if (!order) {
+    if (!updatedOrder) {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
-    // Actualizar el pedido como notificado
-    const updatedOrder = await storage.updateOrder(id, {
-      notificado: true  // Marcamos el campo notificado como true
-    });
-
-    // Enviamos un mensaje de éxito con el objeto actualizado
+    // Enviamos respuesta más ligera para responder más rápido
     res.json({
       success: true,
-      message: "Pedido marcado como notificado correctamente",
-      order: updatedOrder
+      id: updatedOrder.id,
+      notificado: updatedOrder.notificado
     });
   } catch (error) {
     console.error('Error marking order as notified:', error);

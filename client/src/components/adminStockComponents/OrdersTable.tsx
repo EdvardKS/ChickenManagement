@@ -190,6 +190,12 @@ const handleError = async (orderId: number) => {
   const handleWhatsApp = async (order: Order, messageType: 'ready' | 'confirmed' = 'ready') => {
     if (!order.customerPhone) return;
 
+    // Actualizar inmediatamente el estado local para mejorar la respuesta de la UI
+    setNotifiedOrders(prev => ({
+      ...prev,
+      [order.id]: true
+    }));
+
     let message = '';
     if (messageType === 'ready') {
       message = `Hola ${order.customerName}, tu pedido de ${formatQuantity(order.quantity)} pollos está listo.`;
@@ -199,30 +205,31 @@ const handleError = async (orderId: number) => {
     
     const encodedMessage = encodeURIComponent(message);
     const phone = order.customerPhone.replace(/[^0-9]/g, '');
+    
+    // Mostrar confirmación inmediatamente
+    toast({
+      title: "Enviando mensaje",
+      description: `Abriendo WhatsApp para ${order.customerName}...`,
+    });
+    
+    // Abrir WhatsApp
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
     
     try {
-      // Actualizar la base de datos para marcar el pedido como notificado
-      await apiRequest(`/api/orders/${order.id}/notificado`, {
+      // Actualizar la base de datos para marcar el pedido como notificado en paralelo
+      const response = await apiRequest(`/api/orders/${order.id}/notificado`, {
         method: "PATCH",
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      // Actualizar el estado local
-      setNotifiedOrders(prev => ({
-        ...prev,
-        [order.id]: true
-      }));
-      
-      // Invalidar consultas para refrescar los datos
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      
-      // Mostrar confirmación
-      toast({
-        title: "Mensaje enviado",
-        description: `Se ha abierto WhatsApp para enviar mensaje a ${order.customerName}`,
+      // Actualizar la caché de React Query sin hacer una nueva solicitud
+      queryClient.setQueryData(['/api/orders'], (oldData: Order[] | undefined) => {
+        if (!oldData) return oldData;
+        return oldData.map(item => 
+          item.id === order.id ? { ...item, notificado: true } : item
+        );
       });
     } catch (error) {
       console.error('Error al marcar pedido como notificado:', error);

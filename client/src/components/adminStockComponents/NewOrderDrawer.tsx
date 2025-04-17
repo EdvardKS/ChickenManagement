@@ -104,49 +104,49 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-screen w-full sm:w-[74%] flex flex-col">
+        <DrawerContent className="h-screen md:h-auto max-h-screen w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] flex flex-col">
         <DrawerHeader>
-          <DrawerTitle className="text-5xl text-center">Nuevo Encargo</DrawerTitle>
+          <DrawerTitle className="text-3xl md:text-4xl lg:text-5xl text-center">Nuevo Encargo</DrawerTitle>
         </DrawerHeader>
-        <form onSubmit={handleSubmit} className="p-6 my-4 space-y-6 flex-grow overflow-auto text-2xl">
+        <form onSubmit={handleSubmit} className="p-4 md:p-6 my-2 md:my-4 space-y-4 md:space-y-6 flex-grow overflow-auto text-base md:text-xl lg:text-2xl">
 
           <div>
-            <Label className="text-2xl">Nombre</Label>
+            <Label className="text-base md:text-xl lg:text-2xl">Nombre</Label>
             <Input 
               type="text" 
               placeholder=" " 
               value={formData.customerName}
               onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-              className="w-full p-6 my-4 text-2xl"
+              className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
             />
           </div>
 
           <div>
-            <Label className="text-2xl">Teléfono (opcional)</Label>
+            <Label className="text-base md:text-xl lg:text-2xl">Teléfono (opcional)</Label>
             <Input 
               type="tel" 
               placeholder=" "
               value={formData.customerPhone}
               onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-              className="w-full p-6 my-4 text-2xl"
+              className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
             />
           </div>
 
           <div>
-            <Label className="text-2xl">Pollos</Label>
+            <Label className="text-base md:text-xl lg:text-2xl">Pollos</Label>
             <Select
               value={formData.quantity}
               onValueChange={(value) => setFormData({ ...formData, quantity: value })}
             >
-              <SelectTrigger className="w-full p-6 my-4 text-2xl">
+              <SelectTrigger className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl">
                 <SelectValue placeholder="Selecciona la cantidad" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0" className="text-2xl">0 pollos</SelectItem>
+                <SelectItem value="0" className="text-base md:text-xl lg:text-2xl">0 pollos</SelectItem>
                 {Array.from({ length: 20 }, (_, i) => {
                   const value = (i + 1) / 2;
                   return (
-                    <SelectItem key={value} value={value.toString()} className="text-2xl">
+                    <SelectItem key={value} value={value.toString()} className="text-base md:text-xl lg:text-2xl">
                       {value === 1 ? "1 pollo" : `${value} pollos`}
                     </SelectItem>
                   );
@@ -155,39 +155,41 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
             </Select>
           </div>
 
-          <div>
-            <Label className="text-2xl">Fecha</Label>
-            <Input 
-              type="date" 
-              value={formData.pickupDate}
-              onChange={(e) => setFormData({ ...formData, pickupDate: e.target.value })}
-              className="w-full p-6 my-4 text-2xl"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-base md:text-xl lg:text-2xl">Fecha</Label>
+              <Input 
+                type="date" 
+                value={formData.pickupDate}
+                onChange={(e) => setFormData({ ...formData, pickupDate: e.target.value })}
+                className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
+              />
+            </div>
+
+            <div>
+              <Label className="text-base md:text-xl lg:text-2xl">Hora</Label>
+              <Input 
+                type="time" 
+                value={formData.pickupTime}
+                onChange={(e) => setFormData({ ...formData, pickupTime: e.target.value })}
+                className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
+              />
+            </div>
           </div>
 
           <div>
-            <Label className="text-2xl">Hora </Label>
-            <Input 
-              type="time" 
-              value={formData.pickupTime}
-              onChange={(e) => setFormData({ ...formData, pickupTime: e.target.value })}
-              className="w-full p-6 my-4 text-2xl"
-            />
-          </div>
-
-          <div>
-            <Label className="text-2xl">Detalles del pedido</Label>
+            <Label className="text-base md:text-xl lg:text-2xl">Detalles del pedido</Label>
             <Textarea 
               placeholder="¿Algo más?..." 
               value={formData.details}
               onChange={(e) => setFormData({ ...formData, details: e.target.value })}
-              className="w-full p-6 my-4 text-2xl"
+              className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
             />
           </div>
 
           <Button 
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full p-6 my-4 text-2xl"
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
             disabled={createOrder.isPending}
           >
             {createOrder.isPending ? "Creando..." : "Crear Encargo"}

@@ -294,26 +294,28 @@ const handleError = async (orderId: number) => {
                     <TableCell className="hidden md:table-cell w-[0%] md:w-[30%] text-base md:text-lg">
                       {order.details || '-'}
                     </TableCell>
-                    <TableCell className="w-[40%] md:w-[15%] flex flex-wrap md:flex-nowrap gap-2 items-center">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleOrderClick(order)}
-                        className="relative w-[40px] md:w-[60px] p-2 md:p-3 text-base md:text-lg hover:bg-gray-200"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : '🔘'}
-                        {order.customerPhone && !isLoading && !order.notificado && !notifiedOrders[order.id] && (
-                          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                          </span>
-                        )}
-                      </Button>
+                    <TableCell className="w-[40%] md:w-[15%] relative">
+                      <div className="flex flex-wrap md:flex-nowrap gap-2 items-center">
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOrderClick(order)}
+                          className="relative w-[40px] md:w-[60px] p-2 md:p-3 text-base md:text-lg hover:bg-gray-200"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : '🔘'}
+                          {order.customerPhone && !isLoading && !order.notificado && !notifiedOrders[order.id] && (
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                            </span>
+                          )}
+                        </Button>
+                      </div>
                       {order.customerPhone && !order.notificado && !notifiedOrders[order.id] && (
                         <Button
                           variant="outline"
                           onClick={() => handleWhatsApp(order, 'confirmed')}
-                          className="w-[40px] md:w-[40px] p-2 text-base md:text-lg hover:bg-green-100"
+                          className="absolute top-3 right-3 w-[40px] md:w-[40px] p-2 text-base md:text-lg hover:bg-green-100 shadow-md"
                           title="Enviar mensaje de confirmación por WhatsApp"
                         >
                           <span className="text-green-600 text-base md:text-xl">

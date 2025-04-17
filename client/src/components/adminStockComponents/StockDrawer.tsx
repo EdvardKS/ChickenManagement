@@ -230,109 +230,109 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-screen w-full sm:w-[74%] flex flex-col" aria-describedby="drawer-description">
+      <DrawerContent className="h-screen md:h-auto max-h-screen w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] flex flex-col" aria-describedby="drawer-description">
         <DrawerHeader>
-          <DrawerTitle className="text-center text-5xl py-5">Stock Actual 🐔</DrawerTitle>
+          <DrawerTitle className="text-center text-2xl md:text-3xl lg:text-5xl py-3 md:py-4 lg:py-5">Stock Actual 🐔</DrawerTitle>
           <DrawerDescription id="drawer-description" className="sr-only">
             Gestión del stock de pollos actual. Permite añadir o quitar pollos del stock montado y registrar ventas directas.
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="p-4 space-y-4 flex-grow overflow-auto">
+        <div className="p-2 md:p-4 space-y-3 md:space-y-4 flex-grow overflow-auto">
           {/* Total de pollos Montado - Solo se edita con los botones de esta card */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="border p-5 rounded-lg text-center">
-              <Label className="text-lg font-semibold">Total de pollos Montado:</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div className="border p-3 md:p-5 rounded-lg text-center">
+              <Label className="text-base md:text-lg font-semibold">Total de pollos Montado:</Label>
               <div className="flex justify-between items-center mt-2">
                 <Button 
-                  className="text-2xl p-5" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(-1)}
                 >
                   -1
                 </Button>
-                <span className="text-4xl font-bold">
+                <span className="text-2xl md:text-4xl font-bold">
                   {formatQuantity(stock?.initialStock || 0)}
                 </span>
                 <Button 
-                  className="text-2xl p-5" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(1)}
                 >
                   +1
                 </Button>
               </div>
-              <div className="flex justify-between mt-4">
+              <div className="flex justify-between mt-3 md:mt-4">
                 <Button 
-                  className="text-2xl p-5" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(-6)}
                 >
                   -6
                 </Button>
                 <Button 
-                  className="text-2xl p-5" 
+                  className="text-xl md:text-2xl p-3 md:p-5" 
                   variant="outline" 
                   onClick={() => handleMountedStock(6)}
                 >
                   +6
                 </Button>
               </div>
-              <div className="mt-4 font-semibold">
+              <div className="mt-3 md:mt-4 font-semibold">
                 {calculateBars(parseFloat(stock?.initialStock || "0"))}
               </div>
             </div>
 
             {/* Total de pollos Actual - Se actualiza automáticamente, no se edita directamente */}
-            <div className="border p-5 rounded-lg text-center">
-              <Label className="text-lg font-semibold">Total de pollos Actual:</Label>
-              <div className="text-4xl font-bold mt-2">
+            <div className="border p-3 md:p-5 rounded-lg text-center">
+              <Label className="text-base md:text-lg font-semibold">Total de pollos Actual:</Label>
+              <div className="text-2xl md:text-4xl font-bold mt-2">
                 {formatQuantity(stock?.currentStock || 0)}
               </div>
             </div>
           </div>
 
           {/* Mostrar valores de stock con encargos y sin encargos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="border p-5 rounded-lg text-center">
-              <Label className="text-lg font-semibold">Con Encargos:</Label>
-              <div className="text-4xl font-bold mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div className="border p-3 md:p-5 rounded-lg text-center">
+              <Label className="text-base md:text-lg font-semibold">Con Encargos:</Label>
+              <div className="text-2xl md:text-4xl font-bold mt-2">
                 {formatQuantity(stock?.reservedStock || 0)}
               </div>
             </div>
 
-            <div className="border p-5 rounded-lg text-center">
-              <Label className="text-lg font-semibold">Sin Encargo:</Label>
-              <div className="text-4xl font-bold mt-2">
+            <div className="border p-3 md:p-5 rounded-lg text-center">
+              <Label className="text-base md:text-lg font-semibold">Sin Encargo:</Label>
+              <div className="text-2xl md:text-4xl font-bold mt-2">
                 {formatQuantity(stock?.unreservedStock || 0)}
               </div>
             </div>
           </div>
 
           {/* Sección para ventas sin encargo */}
-          <div className="border p-5 rounded-lg text-center">
-            <Label className="text-lg font-semibold">Venta de SIN encargo:</Label>
-            <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="border p-3 md:p-5 rounded-lg text-center">
+            <Label className="text-base md:text-lg font-semibold">Venta de SIN encargo:</Label>
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
               <Button 
-                className="bg-slate-700 text-white text-2xl p-6 py-12" 
+                className="bg-slate-700 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 onClick={() => handleDirectSale(-0.5)}
               >
                 -0.5
               </Button>
               <Button 
-                className="bg-slate-700 text-white text-2xl p-6 py-12" 
+                className="bg-slate-700 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 onClick={() => handleDirectSale(0.5)}
               >
                 +0.5
               </Button>
               <Button 
-                className="bg-blue-600 text-white text-2xl p-6 py-12" 
+                className="bg-blue-600 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 onClick={() => handleDirectSale(-1)}
               >
                 -1
               </Button>
               <Button 
-                className="text-2xl p-6 py-12" 
+                className="text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
                 variant="outline" 
                 onClick={() => handleDirectSale(1)}
               >
@@ -342,10 +342,10 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
           </div>
 
           {/* Botón para resetear valores */}
-          <div className="p-4">
+          <div className="p-2 md:p-4">
             <Button
               variant="outline"
-              className="w-full border border-slate-700 text-slate-700 hover:bg-slate-700 hover:text-white"
+              className="w-full border border-slate-700 text-slate-700 hover:bg-slate-700 hover:text-white text-base md:text-lg py-2 md:py-3"
               onClick={handleResetStock}
             >
               Resetear Valores

@@ -164,22 +164,15 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
     setShowConfirmDialog(true);
   };
 
-  // Manejador para ventas sin encargo y correcciones
+  // Manejador para ventas sin encargo y correcciones - sin mostrar confirmación
   const handleDirectSale = (quantity: number) => {
     if (quantity < 0) {
-      // Venta directa sin encargo
-      setPendingAction({ 
-        action: 'direct_sale', 
-        quantity: Math.abs(quantity) 
-      });
+      // Venta directa sin encargo - ejecutar inmediatamente
+      directSale.mutate(Math.abs(quantity));
     } else {
-      // Corrección de venta
-      setPendingAction({ 
-        action: 'direct_sale_correction', 
-        quantity
-      });
+      // Corrección de venta - ejecutar inmediatamente
+      directSaleCorrection.mutate(quantity);
     }
-    setShowConfirmDialog(true);
   };
 
   // Manejador para resetear stock

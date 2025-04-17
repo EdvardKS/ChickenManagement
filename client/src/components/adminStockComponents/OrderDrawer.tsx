@@ -346,7 +346,7 @@ export function OrderDrawer({
   ];
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="min-h-[85vh] sm:min-h-[auto] font-['Poppins']">
+      <DrawerContent className="min-h-[85vh] sm:min-h-[auto] max-w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] font-['Poppins']">
         <DrawerHeader className="text-center border-b pb-4">
           <div className="flex justify-between items-center px-4">
             <div className="flex-1"></div>

@@ -17,6 +17,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [notifiedOrders, setNotifiedOrders] = useState<Record<number, boolean>>({});
   const { toast } = useToast();
 
   const formatQuantity = (quantity: any) => {
@@ -199,6 +200,18 @@ const handleError = async (orderId: number) => {
     const encodedMessage = encodeURIComponent(message);
     const phone = order.customerPhone.replace(/[^0-9]/g, '');
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+    
+    // Marcar el pedido como notificado para ocultar el punto y el botón de WhatsApp
+    setNotifiedOrders(prev => ({
+      ...prev,
+      [order.id]: true
+    }));
+    
+    // Mostrar confirmación
+    toast({
+      title: "Mensaje enviado",
+      description: `Se ha abierto WhatsApp para enviar mensaje a ${order.customerName}`,
+    });
   };
 
   // Filtrar pedidos para mostrar solo los pendientes:
@@ -237,26 +250,6 @@ const handleError = async (orderId: number) => {
                 <TableRow key={order.id} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
                   <TableCell className="w-3/12 text-lg font-medium">
                     {order.customerName}
-                    {order.customerPhone && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          className="ml-2 p-1"
-                          onClick={() => handleWhatsApp(order)}
-                          title="Pedido listo"
-                        >
-                          📱
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          className="ml-1 p-1"
-                          onClick={() => handleWhatsApp(order, 'confirmed')}
-                          title="Pedido confirmado"
-                        >
-                          ✅
-                        </Button>
-                      </>
-                    )}
                   </TableCell>
                   <TableCell className="w-2/12 text-lg text-center">{formatQuantity(order.quantity)}</TableCell>
                   <TableCell className="w-2/12 text-lg text-center">
@@ -271,14 +264,14 @@ const handleError = async (orderId: number) => {
                       disabled={isLoading}
                     >
                       {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : '🔘'}
-                      {order.customerPhone && !isLoading && (
+                      {order.customerPhone && !isLoading && !notifiedOrders[order.id] && (
                         <span className="absolute -top-1 -right-1 flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                         </span>
                       )}
                     </Button>
-                    {order.customerPhone && (
+                    {order.customerPhone && !notifiedOrders[order.id] && (
                       <Button
                         variant="outline"
                         onClick={() => handleWhatsApp(order, 'confirmed')}

@@ -314,26 +314,29 @@ export function StockDrawer({ isOpen, onOpenChange }: StockDrawerProps) {
             <Label className="text-base md:text-lg font-semibold">Venta de SIN encargo:</Label>
             <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
               <Button 
-                className="bg-slate-600/90 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
+                className="text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
+                style={{ backgroundColor: "#67A4E0", borderColor: "#67A4E0" }}
                 onClick={() => handleDirectSale(-0.5)}
               >
                 -0.5
               </Button>
               <Button 
-                className="bg-slate-600/90 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
+                className="text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
+                style={{ backgroundColor: "#67A4E0", borderColor: "#67A4E0" }}
                 onClick={() => handleDirectSale(0.5)}
               >
                 +0.5
               </Button>
               <Button 
-                className="bg-blue-500/80 text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
+                className="text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
+                style={{ backgroundColor: "#67A4E0", borderColor: "#67A4E0" }}
                 onClick={() => handleDirectSale(-1)}
               >
                 -1
               </Button>
               <Button 
-                className="text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
-                variant="outline" 
+                className="text-white text-base md:text-xl lg:text-2xl p-3 md:p-4 lg:p-6 py-6 md:py-8 lg:py-12" 
+                style={{ backgroundColor: "#67A4E0", borderColor: "#67A4E0" }}
                 onClick={() => handleDirectSale(1)}
               >
                 +1

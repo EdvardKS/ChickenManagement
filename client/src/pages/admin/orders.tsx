@@ -26,7 +26,7 @@ export default function AdminOrders() {
         <Button 
           onClick={() => setIsStockDrawerOpen(true)}
           variant="outline"
-          className="btn-outline-brown flex items-center gap-2"
+          className="border-teal-600 text-teal-700 hover:bg-teal-50 flex items-center gap-2 font-semibold"
         >
           <img src="/img/corporativa/logo-negro.png" alt="Stock" className="h-6" />
           Stock
@@ -34,7 +34,7 @@ export default function AdminOrders() {
 
         <Button 
           onClick={() => setIsNewOrderOpen(true)} 
-          className="bg-[#E61D2A] hover:bg-[#c91824] text-white px-4 py-2 rounded-lg font-semibold"
+          className="bg-[#9333EA] hover:bg-[#7E22CE] text-white px-4 py-2 rounded-lg font-semibold"
         >
           Nuevo Encargo
         </Button>

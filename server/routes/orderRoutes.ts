@@ -277,4 +277,31 @@ router.patch("/:id/error", async (req: Request & { stockUpdate?: any }, res) => 
   }
 });
 
+// Mark order as notified (WhatsApp notification)
+router.patch("/:id/notificado", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const order = await storage.getOrder(id);
+
+    if (!order) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    // Actualizar el pedido como notificado
+    const updatedOrder = await storage.updateOrder(id, {
+      notificado: true  // Marcamos el campo notificado como true
+    });
+
+    // Enviamos un mensaje de éxito con el objeto actualizado
+    res.json({
+      success: true,
+      message: "Pedido marcado como notificado correctamente",
+      order: updatedOrder
+    });
+  } catch (error) {
+    console.error('Error marking order as notified:', error);
+    res.status(500).json({ error: 'Error al marcar el pedido como notificado' });
+  }
+});
+
 export default router;

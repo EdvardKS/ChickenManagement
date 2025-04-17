@@ -187,7 +187,7 @@ const handleError = async (orderId: number) => {
     }
   };
 
-  const handleWhatsApp = (order: Order, messageType: 'ready' | 'confirmed' = 'ready') => {
+  const handleWhatsApp = async (order: Order, messageType: 'ready' | 'confirmed' = 'ready') => {
     if (!order.customerPhone) return;
 
     let message = '';
@@ -201,17 +201,37 @@ const handleError = async (orderId: number) => {
     const phone = order.customerPhone.replace(/[^0-9]/g, '');
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
     
-    // Marcar el pedido como notificado para ocultar el punto y el botón de WhatsApp
-    setNotifiedOrders(prev => ({
-      ...prev,
-      [order.id]: true
-    }));
-    
-    // Mostrar confirmación
-    toast({
-      title: "Mensaje enviado",
-      description: `Se ha abierto WhatsApp para enviar mensaje a ${order.customerName}`,
-    });
+    try {
+      // Actualizar la base de datos para marcar el pedido como notificado
+      await apiRequest(`/api/orders/${order.id}/notificado`, {
+        method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Actualizar el estado local
+      setNotifiedOrders(prev => ({
+        ...prev,
+        [order.id]: true
+      }));
+      
+      // Invalidar consultas para refrescar los datos
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      
+      // Mostrar confirmación
+      toast({
+        title: "Mensaje enviado",
+        description: `Se ha abierto WhatsApp para enviar mensaje a ${order.customerName}`,
+      });
+    } catch (error) {
+      console.error('Error al marcar pedido como notificado:', error);
+      toast({
+        title: "Error",
+        description: "El mensaje se envió pero no se pudo actualizar el estado de notificación",
+        variant: "destructive",
+      });
+    }
   };
 
   // Filtrar pedidos para mostrar solo los pendientes:

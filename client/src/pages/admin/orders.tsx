@@ -92,14 +92,6 @@ export default function AdminOrders() {
         >
           Nuevo Encargo
         </Button>
-
-        <Button
-          onClick={handleRefresh}
-          variant="ghost"
-          className="ml-2"
-        >
-          🔄 Actualizar
-        </Button>
       </div>
 
       {/* Only load these components when they're needed */}

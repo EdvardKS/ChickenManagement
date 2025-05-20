@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -11,9 +11,11 @@ import { Loader2 } from "lucide-react";
 
 interface OrdersTableProps {
   orders: Order[] | undefined;
+  onDataChanged?: () => void;
 }
 
-export function OrdersTable({ orders }: OrdersTableProps) {
+// Utilizamos memo para evitar renderizados innecesarios
+export const OrdersTable = memo(function OrdersTable({ orders, onDataChanged }: OrdersTableProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

@@ -14,7 +14,7 @@ export default function AdminOrders() {
     queryKey: ['/api/orders'],
     refetchInterval: 5000 // Poll every 5 seconds
   });
-
+ 
   const { data: stock } = useQuery<Stock>({ 
     queryKey: ['/api/stock'],
     refetchInterval: 5000 // Poll every 5 seconds

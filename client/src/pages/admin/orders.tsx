@@ -45,18 +45,34 @@ export default function AdminOrders() {
     setLastRefreshTime(Date.now());
   }, []);
 
+  // Event handler para detectar clicks en cualquier botón de la interfaz
+  const handlePageInteraction = useCallback((event: MouseEvent) => {
+    // Solo actualizamos datos si el usuario ha hecho clic en un botón
+    if (event.target && 
+        (event.target instanceof HTMLButtonElement || 
+         (event.target instanceof HTMLElement && event.target.closest('button')))) {
+      handleRefresh();
+    }
+  }, [handleRefresh]);
+
+  // Añadimos el listener global para detectar interacciones
+  useEffect(() => {
+    document.addEventListener('click', handlePageInteraction);
+    
+    // Limpieza al desmontar componente
+    return () => {
+      document.removeEventListener('click', handlePageInteraction);
+    };
+  }, [handlePageInteraction]);
+
   // Callbacks wrapped in useCallback to prevent recreating functions on each render
   const handleOpenNewOrder = useCallback(() => {
     setIsNewOrderOpen(true);
-    // Ensure data is fresh when opening the drawer
-    handleRefresh();
-  }, [handleRefresh]);
+  }, []);
 
   const handleOpenStockDrawer = useCallback(() => {
     setIsStockDrawerOpen(true);
-    // Ensure data is fresh when opening the drawer
-    handleRefresh();
-  }, [handleRefresh]);
+  }, []);
 
   const handleNewOrderClose = useCallback((open: boolean) => {
     setIsNewOrderOpen(open);

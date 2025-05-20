@@ -1,9 +1,10 @@
 import { useState, lazy, Suspense, useCallback } from "react";
-import { useQuery, queryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { OrdersTable } from "@/components/adminStockComponents/OrdersTable";
 import type { Order, Stock } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { queryClient } from "@/lib/queryClient";
 
 // Lazy load components to improve initial page load time
 const StockDrawer = lazy(() => import("@/components/adminStockComponents/StockDrawer").then(mod => ({ default: mod.StockDrawer })));

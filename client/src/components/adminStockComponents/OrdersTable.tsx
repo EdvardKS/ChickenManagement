@@ -1,4 +1,4 @@
-import { useState, memo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -14,8 +14,7 @@ interface OrdersTableProps {
   onDataChanged?: () => void;
 }
 
-// Utilizamos memo para evitar renderizados innecesarios
-export const OrdersTable = memo(function OrdersTable({ orders, onDataChanged }: OrdersTableProps) {
+export function OrdersTable({ orders, onDataChanged }: OrdersTableProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,8 +41,13 @@ const handleConfirm = async (orderId: number) => {
       method: "PATCH"
     });
 
+    // Usa las funciones directamente de queryClient para evitar múltiples renderizados
     queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
     queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    
+    // Notificar al componente padre que los datos han cambiado
+    if (onDataChanged) onDataChanged();
+    
     setIsDrawerOpen(false);
     toast({
       title: "Pedido entregado",
@@ -76,6 +80,10 @@ const handleDelete = async (orderId: number) => {
 
     queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
     queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    
+    // Notificar al componente padre que los datos han cambiado
+    if (onDataChanged) onDataChanged();
+    
     setIsDrawerOpen(false);
     toast({
       title: "Pedido cancelado",
@@ -107,6 +115,10 @@ const handleError = async (orderId: number) => {
 
     queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
     queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    
+    // Notificar al componente padre que los datos han cambiado
+    if (onDataChanged) onDataChanged();
+    
     setIsDrawerOpen(false);
     toast({
       title: "Pedido marcado como error",

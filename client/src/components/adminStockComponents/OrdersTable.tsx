@@ -164,8 +164,6 @@ const handleError = async (orderId: number) => {
         updateType: "order_update"
       };
 
-      console.log('📤 OrdersTable - handleUpdate - Sending update:', updateData);
-
       const response = await apiRequest(`/api/orders/${order.id}`, {
         method: "PATCH",
         body: JSON.stringify(updateData),
@@ -182,8 +180,13 @@ const handleError = async (orderId: number) => {
       
       // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
+      // Actualizamos la caché de consultas
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+      
+      // Notificar al componente padre que los datos han cambiado
+      if (onDataChanged) onDataChanged();
+      
       setIsDrawerOpen(false);
       toast({
         title: "Pedido actualizado",
@@ -210,6 +213,7 @@ const handleError = async (orderId: number) => {
       [order.id]: true
     }));
 
+    // Preparamos el mensaje a enviar
     let message = '';
     if (messageType === 'ready') {
       message = `Hola ${order.customerName}, tu pedido de ${formatQuantity(order.quantity)} pollos está listo.`;
@@ -226,25 +230,29 @@ const handleError = async (orderId: number) => {
       description: `Abriendo WhatsApp para ${order.customerName}...`,
     });
     
-    // Abrir WhatsApp
+    // Abrir WhatsApp en una nueva pestaña
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
     
     try {
-      // Actualizar la base de datos para marcar el pedido como notificado en paralelo
-      const response = await apiRequest(`/api/orders/${order.id}/notificado`, {
+      // Actualizar la base de datos para marcar el pedido como notificado
+      await apiRequest(`/api/orders/${order.id}/notificado`, {
         method: "PATCH",
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      // Actualizar la caché de React Query sin hacer una nueva solicitud
+      // Actualización optimizada usando setQueryData para evitar refetch
       queryClient.setQueryData(['/api/orders'], (oldData: Order[] | undefined) => {
         if (!oldData) return oldData;
         return oldData.map(item => 
           item.id === order.id ? { ...item, notificado: true } : item
         );
       });
+      
+      // Notificar al componente padre que los datos han cambiado
+      if (onDataChanged) onDataChanged();
+      
     } catch (error) {
       console.error('Error al marcar pedido como notificado:', error);
       toast({

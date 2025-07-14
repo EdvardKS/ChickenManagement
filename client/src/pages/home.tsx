@@ -67,36 +67,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Especialidades */}
-      <section className={`${sectionBaseClasses} bg-[#2C2C2C] text-white`}>
-        <div className={containerBaseClasses}>
-          <motion.div 
-            className={`${maxWidthBaseClasses} space-y-12`}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-dancing text-center">Nuestros Menús</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
-              {featuredMenus.map((menu, index) => (
-                <div key={menu.id} className="text-center space-y-6">
-                  <div className="overflow-hidden rounded-xl aspect-video">
-                    <img 
-                      src={menu.imageUrl ? `/img/products/${menu.imageUrl}` : "/img/products/image-not-found.svg"} 
-                      alt={menu.name} 
-                      className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                    />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-dancing text-[#D4AF37]">{menu.name}</h3>
-                  <p className="text-sm sm:text-base lg:text-lg text-gray-300">{menu.description || "Sin descripción"}</p>
-                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#D4AF37]">{menu.price}€</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* Fusión Culinaria */}
       <section className={sectionBaseClasses}>

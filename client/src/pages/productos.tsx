@@ -20,15 +20,15 @@ export default function Productos() {
     if (categories && categories.length > 0) {
       // Buscar categoría con nombre "Menús" o similar
       const menuCategory = categories.find(cat => 
-        cat.name.toLowerCase().includes("menú") || 
-        cat.name.toLowerCase().includes("menu")
+        cat.name.toLowerCase().includes("aperitivo") || 
+        cat.name.toLowerCase().includes("aperitivo")
       );
       
       if (menuCategory) {
         setDefaultCategory(menuCategory.id.toString());
       } else {
         // Si no hay categoría de menús, usar la primera
-        setDefaultCategory(categories[0].id.toString());
+        setDefaultCategory(categories[1].id.toString());
       }
     }
   }, [categories]);
@@ -44,20 +44,31 @@ export default function Productos() {
       <Tabs defaultValue={defaultCategory}>
         <TabsList className="w-full justify-start overflow-x-auto">
           {categories?.map(category => (
-            <TabsTrigger key={category.id} value={category.id.toString()}>
-              {category.name}
-            </TabsTrigger>
+            category.name !== "Menús" && (
+              <TabsTrigger
+                key={category.id}
+                value={category.id.toString()}
+              >
+                {category.name}
+              </TabsTrigger>
+            )
           ))}
         </TabsList>
 
         {categories?.map(category => (
           <TabsContent key={category.id} value={category.id.toString()}>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products
-                ?.filter(product => product.categoryId === category.id)
-                .map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+              {
+                products
+                  ?.filter(product =>
+                    product.categoryId === category.id
+                    && product.categoryId !== 1
+                  )
+                  .map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))
+              }
+
             </div>
           </TabsContent>
         ))}

@@ -25,6 +25,8 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { TimeSelector } from "@/components/ui/time-selector";
+import { QuantitySelector } from "@/components/ui/quantity-selector";
 
 interface OrderFormProps {
   currentStock: number | string;
@@ -48,6 +50,7 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
       details: "",
       totalAmount: 0,
       pickupTime: today.toISOString(),
+      selectedTime: "", // Para el selector de tiempo
     },
   });
 
@@ -337,35 +340,25 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cantidad de pollos</FormLabel>
                   <FormControl>
-                    <Input 
-                      {...field} 
-                      type="number" 
-                      min="0.5" 
-                      step="0.5"
-                      onChange={(e) => {
-                        // Usar parseFloat para permitir decimales
-                        const quantityValue = e.target.value;
-                        const quantity = parseFloat(quantityValue);
-                        
-                        // Validar que sea un múltiplo de 0.5
-                        const validQuantity = Math.round(quantity * 2) / 2;
-                        
-                        field.onChange(validQuantity);
-                        form.setValue("totalAmount", validQuantity * 1200); // 12€ per chicken
+                    <QuantitySelector
+                      value={field.value}
+                      onChange={(quantity) => {
+                        field.onChange(quantity);
+                        form.setValue("totalAmount", quantity * 1200); // 12€ per chicken
                         
                         // Formatear el mensaje para mostrar enteros o fracciones correctamente
-                        const quantityText = validQuantity === 1 
+                        const quantityText = quantity === 1 
                           ? '1 pollo' 
-                          : validQuantity === 0.5 
+                          : quantity === 0.5 
                             ? 'medio pollo'
-                            : `${validQuantity} pollos`;
+                            : `${quantity} pollos`;
                             
                         form.setValue("details", quantityText);
                         
-                        console.log('Cantidad seleccionada:', validQuantity);
+                        console.log('Cantidad seleccionada:', quantity);
                       }}
+                      disabled={createOrder.isPending}
                     />
                   </FormControl>
                   <FormMessage />
@@ -373,12 +366,13 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
               )}
             />
 
+            {/* Date Selection */}
             <FormField
               control={form.control}
               name="pickupTime"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Hora de recogida</FormLabel>
+                  <FormLabel>Fecha de recogida</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -390,7 +384,7 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP", { locale: es })
+                            format(new Date(field.value), "PPP", { locale: es })
                           ) : (
                             <span>Selecciona una fecha</span>
                           )}
@@ -403,10 +397,10 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                         mode="single"
                         selected={field.value ? new Date(field.value) : undefined}
                         onSelect={(date: Date | undefined) => {
-                          // Convierte la fecha a ISO string al seleccionarla
                           if (date) {
-                            // Asignar una hora por defecto a las 12:00
-                            date.setHours(12, 0, 0, 0);
+                            // Preserve existing time or use current time from TimeSelector
+                            const currentDateTime = field.value ? new Date(field.value) : new Date();
+                            date.setHours(currentDateTime.getHours(), currentDateTime.getMinutes(), 0, 0);
                             field.onChange(date.toISOString());
                             console.log('Fecha seleccionada:', date.toISOString());
                           }
@@ -415,6 +409,31 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Time Selection */}
+            <FormField
+              control={form.control}
+              name="pickupTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <TimeSelector
+                      value={field.value ? format(new Date(field.value), "HH:mm") : undefined}
+                      onChange={(time) => {
+                        // Combine selected date with selected time
+                        const currentDate = field.value ? new Date(field.value) : new Date();
+                        const [hours, minutes] = time.split(':').map(Number);
+                        currentDate.setHours(hours, minutes, 0, 0);
+                        field.onChange(currentDate.toISOString());
+                        console.log('Hora seleccionada:', time, 'DateTime completo:', currentDate.toISOString());
+                      }}
+                      disabled={createOrder.isPending}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

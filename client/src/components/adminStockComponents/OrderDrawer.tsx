@@ -16,13 +16,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsAppMessage, isValidWhatsAppNumber } from "@/lib/whatsapp";
 import type { Order } from "@shared/schema";
 import * as z from "zod";
 
@@ -214,6 +215,7 @@ export function OrderDrawer({
         deleted: false,    // Siempre mantenemos deleted en false
         confirmado: false, // Nuevo campo añadido
         error: false,      // Nuevo campo añadido
+        notificado: order!.notificado || false, // Campo requerido añadido
         totalAmount: order!.totalAmount || null,
         invoicePDF: order!.invoicePDF || null,
         invoiceNumber: order!.invoiceNumber || null,
@@ -377,6 +379,21 @@ export function OrderDrawer({
                   >
                     ✏️ Editar Pedido
                   </DropdownMenuItem>
+                  {order.customerPhone && isValidWhatsAppNumber(order.customerPhone) && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        sendWhatsAppMessage(order, order.customerPhone, 'confirmation');
+                        toast({
+                          title: "WhatsApp enviado",
+                          description: "Se ha abierto WhatsApp con el mensaje de confirmación del pedido",
+                        });
+                      }}
+                      className="text-xl py-4 px-6"
+                    >
+                      📱 Confirmar por WhatsApp
+                    </DropdownMenuItem>
+                  )}
                   {!order.invoicePDF && (
                     <DropdownMenuItem
                       onClick={() => {

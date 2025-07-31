@@ -1,0 +1,61 @@
+1. Para seleccionar la hora: poner 3 botones por defecto 13:00, 13:30, 14:00, 14:30 y selector
+
+Descripción técnica desarrollada:
+
+El componente que permite seleccionar la hora debe mostrar cuatro botones con valores fijos predeterminados (13:00, 13:30, 14:00, 14:30), y además mantener un selector manual (<input type="time"> o similar) para permitir al usuario elegir cualquier otra hora.
+
+Desde el punto de vista de React, esto implica que:
+	•	Debe existir un estado centralizado (por ejemplo selectedTime) que controle el valor actual de la hora, independientemente de si fue seleccionado mediante botón o selector manual.
+	•	Los botones al pulsarse deben actualizar ese estado, y a su vez el selector debe reflejar ese estado.
+	•	El selector manual, al modificarse, debe también actualizar el estado para reflejar la elección personalizada.
+
+Esto debe implementarse de forma unificada y reactiva, para evitar inconsistencias en la UI.
+
+No se necesitan componentes externos. Basta con usar el sistema de estado (useState) y eventos de React (onClick, onChange), asegurando que ambos controles (botones y selector) modifican la misma fuente de verdad.
+
+⸻
+
+✅ 2. Para seleccionar pollo: igual, 0.5, 1, 1.5, 2 y selector
+
+Descripción técnica desarrollada:
+
+Este componente debe seguir exactamente el mismo patrón que el de la hora. La única diferencia es el tipo de datos: cantidades numéricas, probablemente en kilogramos.
+
+Debe:
+	•	Mostrar botones predefinidos con los valores 0.5, 1, 1.5, 2.
+	•	Permitir introducir manualmente otro valor mediante un <input type="number">.
+	•	Sincronizar el valor entre botones y el input, utilizando un estado común (selectedAmount o similar).
+	•	Convertir correctamente el valor a número (parseFloat si fuera necesario) para que el input acepte decimales y para que el valor se pueda utilizar directamente en cálculos o envíos.
+
+Este comportamiento también debe estar encapsulado de forma limpia, idealmente en su propio componente reutilizable.
+
+⸻
+
+✅ 3. Que el tiempo por defecto seleccionado vaya cambiando según la hora
+
+Descripción técnica desarrollada:
+
+La lógica aquí consiste en que el valor preseleccionado de la hora (antes de que el usuario elija nada) se determine dinámicamente en función de la hora actual del sistema.
+
+Esto implica:
+	•	Capturar la hora actual mediante new Date() al cargar el componente.
+	•	Evaluar esa hora contra ciertos tramos definidos (por ejemplo: si son las 12:45, sugerir por defecto las 13:00; si son las 13:10, sugerir 13:30…).
+	•	Asignar ese valor como el selectedTime inicial antes de que el usuario interactúe.
+	•	Si el usuario luego selecciona otro valor, se sobrescribe ese valor inicial como cualquier otra interacción.
+
+La lógica debe ejecutarse solo una vez al montar el componente, sin cambiar después salvo interacción del usuario.
+
+⸻
+
+✅ 4. Botón de “volver a confirmar por WhatsApp” en el menú de cada encargo
+
+Descripción técnica desarrollada:
+
+Cada encargo tiene un menú o sección de opciones. Dentro de ese menú, debe añadirse un botón que reenvíe los datos del encargo por WhatsApp (presumiblemente al cliente o encargado).
+
+Esto implica:
+	•	Que el botón esté presente y visible dentro del renderizado de cada encargo, probablemente en un componente como <OrderCard> o similar.
+	•	Que al pulsarlo, se genere un enlace https://wa.me/34XXXXXXXXX?text=... con los datos del pedido formateados en el texto del mensaje.
+	•	Este botón no envía el mensaje automáticamente, sino que redirige al usuario a WhatsApp Web o la app de WhatsApp con el mensaje precargado.
+
+No se requiere ninguna API de WhatsApp ni servicio externo; solo un window.open con la URL construida correctamente.

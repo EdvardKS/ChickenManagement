@@ -91,45 +91,56 @@ export default function AdminOrders() {
   }, [handleRefresh]);
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <Button 
-          onClick={handleOpenStockDrawer}
-          variant="outline"
-          className="btn-outline-brown flex items-center gap-2"
-        >
-          <img src="/img/corporativa/logo-negro.png" alt="Stock" className="h-6" />
-          Stock
-        </Button>
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex justify-between items-center bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center gap-4">
+            <img src="/img/corporativa/slogan-negro.png" alt="Logo" className="h-12" />
+            <h1 className="text-2xl font-bold text-gray-800">Gestión de Pedidos</h1>
+          </div>
+          
+          <div className="flex gap-4">
+            <Button 
+              onClick={handleOpenStockDrawer}
+              variant="outline"
+              className="btn-outline-brown flex items-center gap-2 h-12 px-6"
+            >
+              <img src="/img/corporativa/logo-negro.png" alt="Stock" className="h-6" />
+              Stock
+            </Button>
 
-        <Button 
-          onClick={handleOpenNewOrder} 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-        >
-          Nuevo Encargo
-        </Button>
+            <Button 
+              onClick={handleOpenNewOrder} 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg h-12 text-lg font-semibold"
+            >
+              Nuevo Encargo
+            </Button>
+          </div>
+        </div>
+
+        {/* Only load these components when they're needed */}
+        {isStockDrawerOpen && (
+          <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+            <StockDrawer 
+              isOpen={isStockDrawerOpen} 
+              onOpenChange={handleStockDrawerClose} 
+            />
+          </Suspense>
+        )}
+
+        {isNewOrderOpen && (
+          <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+            <NewOrderDrawer 
+              isOpen={isNewOrderOpen} 
+              onOpenChange={handleNewOrderClose} 
+            />
+          </Suspense>
+        )}
+
+        <div className="bg-white rounded-lg shadow-md overflow-hidden flex-1">
+          <OrdersTable orders={orders} onDataChanged={handleRefresh} />
+        </div>
       </div>
-
-      {/* Only load these components when they're needed */}
-      {isStockDrawerOpen && (
-        <Suspense fallback={<Skeleton className="h-12 w-full" />}>
-          <StockDrawer 
-            isOpen={isStockDrawerOpen} 
-            onOpenChange={handleStockDrawerClose} 
-          />
-        </Suspense>
-      )}
-
-      {isNewOrderOpen && (
-        <Suspense fallback={<Skeleton className="h-12 w-full" />}>
-          <NewOrderDrawer 
-            isOpen={isNewOrderOpen} 
-            onOpenChange={handleNewOrderClose} 
-          />
-        </Suspense>
-      )}
-
-      <OrdersTable orders={orders} onDataChanged={handleRefresh} />
     </div>
   );
 }

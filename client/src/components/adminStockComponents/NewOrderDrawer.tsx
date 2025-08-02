@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { TimeSelector } from "@/components/ui/time-selector";
+import { QuantitySelector } from "@/components/ui/quantity-selector";
+import { sendWhatsAppMessage, isValidWhatsAppNumber } from "@/lib/whatsapp";
 import type { Stock } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 
@@ -133,31 +136,23 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
           </div>
 
           <div>
-            <Label className="text-base md:text-xl lg:text-2xl">Pollos</Label>
-            <Select
-              value={formData.quantity}
-              onValueChange={(value) => setFormData({ ...formData, quantity: value })}
-            >
-              <SelectTrigger className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl">
-                <SelectValue placeholder="Selecciona la cantidad" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0" className="text-base md:text-xl lg:text-2xl">0 pollos</SelectItem>
-                {Array.from({ length: 20 }, (_, i) => {
-                  const value = (i + 1) / 2;
-                  return (
-                    <SelectItem key={value} value={value.toString()} className="text-base md:text-xl lg:text-2xl">
-                      {value === 1 ? "1 pollo" : `${value} pollos`}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+            <Label className="text-base md:text-xl lg:text-2xl">Cantidad de pollos</Label>
+            <QuantitySelector
+              value={parseFloat(formData.quantity) || 0}
+              onChange={(quantity) => {
+                setFormData({ 
+                  ...formData, 
+                  quantity: quantity.toString(),
+                  totalAmount: quantity * 1200 // 12€ per chicken
+                });
+              }}
+              disabled={createOrder.isPending}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-base md:text-xl lg:text-2xl">Fecha</Label>
+              <Label className="text-base md:text-xl lg:text-2xl">Fecha de recogida</Label>
               <Input 
                 type="date" 
                 value={formData.pickupDate}
@@ -167,12 +162,11 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
             </div>
 
             <div>
-              <Label className="text-base md:text-xl lg:text-2xl">Hora</Label>
-              <Input 
-                type="time" 
+              <Label className="text-base md:text-xl lg:text-2xl">Hora de recogida</Label>
+              <TimeSelector
                 value={formData.pickupTime}
-                onChange={(e) => setFormData({ ...formData, pickupTime: e.target.value })}
-                className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
+                onChange={(time) => setFormData({ ...formData, pickupTime: time })}
+                disabled={createOrder.isPending}
               />
             </div>
           </div>

@@ -2,6 +2,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChefHat } from "lucide-react";
 
 interface QuantitySelectorProps {
@@ -26,14 +33,21 @@ export function QuantitySelector({
   step = 0.5
 }: QuantitySelectorProps) {
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
+  const [isManualSelection, setIsManualSelection] = useState<boolean>(false);
+
+  // Generate all possible quantities for the selector (0.5 to 10 in 0.5 increments)
+  const allQuantities = Array.from({ length: 20 }, (_, i) => (i + 1) * 0.5);
 
   // Initialize with default value
   useEffect(() => {
     if (value !== undefined) {
       setSelectedQuantity(value);
+      // Check if the value is one of the preset buttons
+      setIsManualSelection(!PRESET_QUANTITIES.includes(value));
     } else {
       // Default to 1 pollo
       setSelectedQuantity(1);
+      setIsManualSelection(false);
       onChange(1);
     }
   }, []);
@@ -42,11 +56,20 @@ export function QuantitySelector({
   useEffect(() => {
     if (value !== undefined && value !== selectedQuantity) {
       setSelectedQuantity(value);
+      setIsManualSelection(!PRESET_QUANTITIES.includes(value));
     }
   }, [value]);
 
   const handlePresetQuantityClick = (quantity: number) => {
     setSelectedQuantity(quantity);
+    setIsManualSelection(false);
+    onChange(quantity);
+  };
+
+  const handleSelectorChange = (quantityStr: string) => {
+    const quantity = parseFloat(quantityStr);
+    setSelectedQuantity(quantity);
+    setIsManualSelection(!PRESET_QUANTITIES.includes(quantity));
     onChange(quantity);
   };
 
@@ -73,58 +96,53 @@ export function QuantitySelector({
   };
 
   return (
-    <div className="space-y-3">
-      <Label className="flex items-center gap-2">
-        <ChefHat className="h-4 w-4" />
-        {label}
-      </Label>
-      
-      {/* Preset quantity buttons */}
-      <div className="grid grid-cols-2 gap-2">
-        {PRESET_QUANTITIES.map((quantity) => (
-          <Button
-            key={quantity}
-            type="button"
-            variant={selectedQuantity === quantity ? "default" : "outline"}
-            onClick={() => handlePresetQuantityClick(quantity)}
-            disabled={disabled}
-            className="h-10"
-          >
-            {formatQuantityText(quantity)}
-          </Button>
-        ))}
+    <div className="space-y-4">
+      {/* Preset Quantity Buttons */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {PRESET_QUANTITIES.map((quantity) => {
+          const isSelected = selectedQuantity === quantity && !isManualSelection;
+          return (
+            <Button
+              key={quantity}
+              type="button"
+              variant={isSelected ? "default" : "outline"}
+              onClick={() => handlePresetQuantityClick(quantity)}
+              disabled={disabled}
+              className={`h-12 text-lg font-medium transition-all duration-200 ${
+                isSelected 
+                  ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md" 
+                  : "border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50"
+              }`}
+            >
+              <ChefHat className="mr-2 h-4 w-4" />
+              {formatQuantityText(quantity)}
+            </Button>
+          );
+        })}
       </div>
 
-      {/* Manual quantity input */}
-      <div className="flex items-center gap-2">
-        <Label htmlFor="manual-quantity" className="text-sm text-muted-foreground whitespace-nowrap">
-          Otra cantidad:
+      {/* Quantity Selector */}
+      <div className="space-y-2">
+        <Label htmlFor="quantity-select" className="text-sm font-medium text-gray-600">
+          Otras cantidades
         </Label>
-        <div className="flex items-center gap-1 flex-1">
-          <Input
-            id="manual-quantity"
-            type="number"
-            value={selectedQuantity > 0 ? selectedQuantity : ""}
-            onChange={handleManualQuantityChange}
-            disabled={disabled}
-            min={min}
-            max={max}
-            step={step}
-            placeholder="1.5"
-            className="flex-1"
-          />
-          <span className="text-sm text-muted-foreground">kg</span>
-        </div>
+        <Select
+          value={selectedQuantity.toString()}
+          onValueChange={handleSelectorChange}
+          disabled={disabled}
+        >
+          <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-orange-400">
+            <SelectValue placeholder="Selecciona cantidad" />
+          </SelectTrigger>
+          <SelectContent>
+            {allQuantities.map((quantity) => (
+              <SelectItem key={quantity} value={quantity.toString()} className="text-lg">
+                {formatQuantityText(quantity)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      
-      {/* Display selected quantity info */}
-      {selectedQuantity > 0 && (
-        <div className="text-sm text-muted-foreground bg-muted/50 rounded-md p-2">
-          {selectedQuantity === 1 ? "1 pollo" : 
-           selectedQuantity === 0.5 ? "Medio pollo" : 
-           `${selectedQuantity} pollos`}
-        </div>
-      )}
     </div>
   );
 }

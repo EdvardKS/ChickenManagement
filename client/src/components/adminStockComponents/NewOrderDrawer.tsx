@@ -152,7 +152,8 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
             <Label className="text-xl font-semibold text-gray-700 block">Fecha y hora de recogida</Label>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <div className="space-y-4">
               <div className="space-y-3">
                 <Label className="text-lg text-gray-600">Fecha</Label>
                 <Input 
@@ -165,11 +166,13 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
               <div className="space-y-3">
                 <Label className="text-lg text-gray-600">Hora</Label>
-                <TimeSelector
-                  value={formData.pickupTime}
-                  onChange={(time) => setFormData({ ...formData, pickupTime: time })}
-                  disabled={createOrder.isPending}
-                />
+                <div className="flex justify-between">
+                  <TimeSelector
+                    value={formData.pickupTime}
+                    onChange={(time) => setFormData({ ...formData, pickupTime: time })}
+                    disabled={createOrder.isPending}
+                  />
+                </div>
               </div>
             </div>
           </div>

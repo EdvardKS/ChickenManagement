@@ -94,7 +94,7 @@ export default function AdminOrders() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       
       {/* Header Section */}
-      <div className="bg-white shadow-sm border-b border-gray-100 p-6">
+      <div className="bg-white shadow-sm border-b border-gray-100 py-1">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">

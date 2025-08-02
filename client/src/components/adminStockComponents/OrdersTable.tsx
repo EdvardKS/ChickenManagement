@@ -277,25 +277,10 @@ const handleError = async (orderId: number) => {
 
   return (
     <div className="w-full">
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-800 italic">Pedidos Pendientes</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          {new Date().toLocaleDateString('es-ES', { 
-            weekday: 'long',
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
-      </div>
 
       {ordersByDate && Object.entries(ordersByDate).map(([date, dateOrders]) => (
         <div key={date} className="w-full">
-          <div className="bg-gray-50 p-4 border-b border-gray-200">
-            <h3 className="text-xl font-medium text-gray-800">
-              {format(new Date(date), "EEEE d 'de' MMMM", { locale: es })}
-            </h3>
-          </div>
+          
           <div className="w-full overflow-x-auto">
             <Table className="w-full">
               <TableHeader>

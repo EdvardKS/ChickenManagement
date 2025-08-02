@@ -289,166 +289,183 @@ export default function OrderForm({ currentStock }: OrderFormProps) {
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="customerName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre completo</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="customerPhone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="tel" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="customerEmail"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email (opcional)</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="email" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <QuantitySelector
-                      value={field.value}
-                      onChange={(quantity) => {
-                        field.onChange(quantity);
-                        form.setValue("totalAmount", quantity * 1200); // 12€ per chicken
-                        
-                        // Formatear el mensaje para mostrar enteros o fracciones correctamente
-                        const quantityText = quantity === 1 
-                          ? '1 pollo' 
-                          : quantity === 0.5 
-                            ? 'medio pollo'
-                            : `${quantity} pollos`;
-                            
-                        form.setValue("details", quantityText);
-                        
-                        console.log('Cantidad seleccionada:', quantity);
-                      }}
-                      disabled={createOrder.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Date Selection */}
-            <FormField
-              control={form.control}
-              name="pickupTime"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Fecha de recogida</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
+    <div className="min-h-screen w-full bg-gradient-to-br from-orange-50 to-red-50 p-4">
+      <div className="max-w-2xl mx-auto">
+        <Card className="shadow-2xl border-0">
+          <CardContent className="p-8">
+            <div className="text-center mb-8">
+              <img
+                src="/img/corporativa/slogan-negro.png"
+                alt="Slogan"
+                className="h-20 mx-auto mb-4"
+              />
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">Nuevo Pedido</h1>
+              <p className="text-gray-600">Completa los datos para tu pedido</p>
+            </div>
+            
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="customerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-medium">Nombre completo</FormLabel>
                       <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(new Date(field.value), "PPP", { locale: es })
-                          ) : (
-                            <span>Selecciona una fecha</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
+                        <Input {...field} className="h-12 text-lg" placeholder="Introduce tu nombre completo" />
                       </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
-                        onSelect={(date: Date | undefined) => {
-                          if (date) {
-                            // Preserve existing time or use current time from TimeSelector
-                            const currentDateTime = field.value ? new Date(field.value) : new Date();
-                            date.setHours(currentDateTime.getHours(), currentDateTime.getMinutes(), 0, 0);
-                            field.onChange(date.toISOString());
-                            console.log('Fecha seleccionada:', date.toISOString());
-                          }
-                        }}
-                        locale={es}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Time Selection */}
-            <FormField
-              control={form.control}
-              name="pickupTime"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <TimeSelector
-                      value={field.value ? format(new Date(field.value), "HH:mm") : undefined}
-                      onChange={(time) => {
-                        // Combine selected date with selected time
-                        const currentDate = field.value ? new Date(field.value) : new Date();
-                        const [hours, minutes] = time.split(':').map(Number);
-                        currentDate.setHours(hours, minutes, 0, 0);
-                        field.onChange(currentDate.toISOString());
-                        console.log('Hora seleccionada:', time, 'DateTime completo:', currentDate.toISOString());
-                      }}
-                      disabled={createOrder.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="customerPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-medium">Teléfono</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="tel" className="h-12 text-lg" placeholder="Número de teléfono" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={createOrder.isPending}
-            >
-              {createOrder.isPending ? "Procesando..." : "Realizar Pedido"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+                <FormField
+                  control={form.control}
+                  name="customerEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-medium">Email (opcional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" className="h-12 text-lg" placeholder="correo@ejemplo.com" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Quantity Selection with new component */}
+                <FormField
+                  control={form.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-medium">Cantidad de pollos</FormLabel>
+                      <FormControl>
+                        <QuantitySelector
+                          value={field.value}
+                          onChange={(quantity) => {
+                            field.onChange(quantity);
+                            form.setValue("totalAmount", quantity * 1200); // 12€ per chicken
+                            
+                            // Formatear el mensaje para mostrar enteros o fracciones correctamente
+                            const quantityText = quantity === 1 
+                              ? '1 pollo' 
+                              : quantity === 0.5 
+                                ? 'medio pollo'
+                                : `${quantity} pollos`;
+                                
+                            form.setValue("details", quantityText);
+                            
+                            console.log('Cantidad seleccionada:', quantity);
+                          }}
+                          disabled={createOrder.isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Date Selection */}
+                <FormField
+                  control={form.control}
+                  name="pickupTime"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-lg font-medium">Fecha de recogida</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full h-12 text-lg pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(new Date(field.value), "PPP", { locale: es })
+                              ) : (
+                                <span>Selecciona una fecha</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                // Preserve existing time or use current time from TimeSelector
+                                const currentDateTime = field.value ? new Date(field.value) : new Date();
+                                date.setHours(currentDateTime.getHours(), currentDateTime.getMinutes(), 0, 0);
+                                field.onChange(date.toISOString());
+                                console.log('Fecha seleccionada:', date.toISOString());
+                              }
+                            }}
+                            locale={es}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Time Selection with new component */}
+                <FormField
+                  control={form.control}
+                  name="pickupTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-medium">Hora de recogida</FormLabel>
+                      <FormControl>
+                        <TimeSelector
+                          value={field.value ? format(new Date(field.value), "HH:mm") : undefined}
+                          onChange={(time) => {
+                            // Combine selected date with selected time
+                            const currentDate = field.value ? new Date(field.value) : new Date();
+                            const [hours, minutes] = time.split(':').map(Number);
+                            currentDate.setHours(hours, minutes, 0, 0);
+                            field.onChange(currentDate.toISOString());
+                            console.log('Hora seleccionada:', time, 'DateTime completo:', currentDate.toISOString());
+                          }}
+                          disabled={createOrder.isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-4 text-xl"
+                  disabled={createOrder.isPending}
+                >
+                  {createOrder.isPending ? "Procesando..." : "Realizar Pedido"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

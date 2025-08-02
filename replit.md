@@ -23,6 +23,8 @@ A comprehensive restaurant management system built with Next.js, TypeScript, Pos
   2. ✅ **Integrated new components**: NewOrderDrawer now uses TimeSelector and QuantitySelector components for consistent UX
   3. ✅ **Improved visual design**: Added gradient background, card layouts, and better spacing for professional appearance
   4. ✅ **WhatsApp integration**: Existing WhatsApp functionality maintained in order management dropdown
+  5. ✅ **Full-screen NewOrderDrawer**: Modal now occupies entire screen with spacious card-based layout
+  6. ✅ **Terminology fix**: Changed from "kg" to "pollos" in quantity selector for accurate chicken ordering
 
 - **New Components Created**:
   - `TimeSelector` component with preset buttons and manual time input

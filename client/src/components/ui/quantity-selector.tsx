@@ -19,7 +19,7 @@ const PRESET_QUANTITIES = [0.5, 1, 1.5, 2];
 export function QuantitySelector({ 
   value, 
   onChange, 
-  label = "Cantidad de pollos (kg)", 
+  label = "Cantidad de pollos", 
   disabled = false,
   min = 0.5,
   max = 50,
@@ -32,7 +32,7 @@ export function QuantitySelector({
     if (value !== undefined) {
       setSelectedQuantity(value);
     } else {
-      // Default to 1 kg
+      // Default to 1 pollo
       setSelectedQuantity(1);
       onChange(1);
     }
@@ -67,9 +67,9 @@ export function QuantitySelector({
   };
 
   const formatQuantityText = (qty: number): string => {
-    if (qty === 0.5) return "0.5 kg";
-    if (qty === 1) return "1 kg";
-    return `${qty} kg`;
+    if (qty === 0.5) return "Medio pollo";
+    if (qty === 1) return "1 pollo";
+    return `${qty} pollos`;
   };
 
   return (

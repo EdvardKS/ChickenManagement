@@ -107,36 +107,36 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-screen md:h-auto max-h-screen w-full md:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%] flex flex-col">
-        <DrawerHeader>
-          <DrawerTitle className="text-3xl md:text-4xl lg:text-5xl text-center">Nuevo Encargo</DrawerTitle>
+        <DrawerContent className="h-screen w-full max-w-none flex flex-col bg-gradient-to-br from-blue-50 to-gray-50">
+        <DrawerHeader className="bg-white shadow-sm border-b p-8">
+          <DrawerTitle className="text-4xl font-bold text-center text-gray-800">Nuevo Encargo</DrawerTitle>
         </DrawerHeader>
-        <form onSubmit={handleSubmit} className="p-4 md:p-6 my-2 md:my-4 space-y-4 md:space-y-6 flex-grow overflow-auto text-base md:text-xl lg:text-2xl">
+        <form onSubmit={handleSubmit} className="flex-grow overflow-auto p-8 space-y-8">
 
-          <div>
-            <Label className="text-base md:text-xl lg:text-2xl">Nombre</Label>
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+            <Label className="text-xl font-semibold text-gray-700">Nombre del cliente</Label>
             <Input 
               type="text" 
-              placeholder=" " 
+              placeholder="Introduce el nombre completo" 
               value={formData.customerName}
               onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-              className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
+              className="w-full h-14 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg px-4"
             />
           </div>
 
-          <div>
-            <Label className="text-base md:text-xl lg:text-2xl">Teléfono (opcional)</Label>
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+            <Label className="text-xl font-semibold text-gray-700">Teléfono (opcional)</Label>
             <Input 
               type="tel" 
-              placeholder=" "
+              placeholder="Número de teléfono"
               value={formData.customerPhone}
               onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-              className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
+              className="w-full h-14 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg px-4"
             />
           </div>
 
-          <div>
-            <Label className="text-base md:text-xl lg:text-2xl">Cantidad de pollos</Label>
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+            <Label className="text-xl font-semibold text-gray-700">Cantidad de pollos</Label>
             <QuantitySelector
               value={parseFloat(formData.quantity) || 0}
               onChange={(quantity) => {
@@ -150,44 +150,49 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-base md:text-xl lg:text-2xl">Fecha de recogida</Label>
-              <Input 
-                type="date" 
-                value={formData.pickupDate}
-                onChange={(e) => setFormData({ ...formData, pickupDate: e.target.value })}
-                className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
-              />
-            </div>
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
+            <Label className="text-xl font-semibold text-gray-700 block">Fecha y hora de recogida</Label>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label className="text-lg text-gray-600">Fecha</Label>
+                <Input 
+                  type="date" 
+                  value={formData.pickupDate}
+                  onChange={(e) => setFormData({ ...formData, pickupDate: e.target.value })}
+                  className="w-full h-14 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg px-4"
+                />
+              </div>
 
-            <div>
-              <Label className="text-base md:text-xl lg:text-2xl">Hora de recogida</Label>
-              <TimeSelector
-                value={formData.pickupTime}
-                onChange={(time) => setFormData({ ...formData, pickupTime: time })}
-                disabled={createOrder.isPending}
-              />
+              <div className="space-y-3">
+                <Label className="text-lg text-gray-600">Hora</Label>
+                <TimeSelector
+                  value={formData.pickupTime}
+                  onChange={(time) => setFormData({ ...formData, pickupTime: time })}
+                  disabled={createOrder.isPending}
+                />
+              </div>
             </div>
           </div>
 
-          <div>
-            <Label className="text-base md:text-xl lg:text-2xl">Detalles del pedido</Label>
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+            <Label className="text-xl font-semibold text-gray-700">Detalles adicionales</Label>
             <Textarea 
-              placeholder="¿Algo más?..." 
+              placeholder="Especificaciones adicionales del pedido..." 
               value={formData.details}
               onChange={(e) => setFormData({ ...formData, details: e.target.value })}
-              className="w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
+              className="w-full min-h-[120px] text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg p-4 resize-none"
             />
           </div>
 
-          <Button 
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full p-3 md:p-4 lg:p-6 my-2 md:my-3 lg:my-4 text-base md:text-xl lg:text-2xl"
-            disabled={createOrder.isPending}
-          >
-            {createOrder.isPending ? "Creando..." : "Crear Encargo"}
-          </Button>
+          <div className="pt-4">
+            <Button 
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white w-full h-16 text-xl font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              disabled={createOrder.isPending}
+            >
+              {createOrder.isPending ? "Creando encargo..." : "Crear Encargo"}
+            </Button>
+          </div>
         </form>
       </DrawerContent>
     </Drawer>

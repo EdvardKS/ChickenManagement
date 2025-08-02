@@ -41,8 +41,8 @@ const handleConfirm = async (orderId: number) => {
       method: "PATCH"
     });
 
-    // Actualización optimista: actualizar solo el pedido específico sin refetch
-    queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+    // Actualización optimista inmediata del estado visual
+    queryClient.setQueriesData({ queryKey: ['/api/dashboard-data'] }, (oldData: any) => {
       if (!oldData?.orders) return oldData;
       return {
         ...oldData,
@@ -86,7 +86,7 @@ const handleDelete = async (orderId: number) => {
     });
 
     // Actualización optimista para cancelación
-    queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+    queryClient.setQueriesData({ queryKey: ['/api/dashboard-data'] }, (oldData: any) => {
       if (!oldData?.orders) return oldData;
       return {
         ...oldData,
@@ -129,7 +129,7 @@ const handleError = async (orderId: number) => {
     });
 
     // Actualización optimista para marcar como error
-    queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+    queryClient.setQueriesData({ queryKey: ['/api/dashboard-data'] }, (oldData: any) => {
       if (!oldData?.orders) return oldData;
       return {
         ...oldData,
@@ -204,7 +204,7 @@ const handleError = async (orderId: number) => {
       // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
       // Actualización optimista para pedido actualizado
-      queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+      queryClient.setQueriesData({ queryKey: ['/api/dashboard-data'] }, (oldData: any) => {
         if (!oldData?.orders) return oldData;
         return {
           ...oldData,
@@ -273,7 +273,7 @@ const handleError = async (orderId: number) => {
       });
       
       // Actualización optimista para notificación WhatsApp
-      queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+      queryClient.setQueriesData({ queryKey: ['/api/dashboard-data'] }, (oldData: any) => {
         if (!oldData?.orders) return oldData;
         return {
           ...oldData,

@@ -12,6 +12,13 @@ A comprehensive restaurant management system built with Next.js, TypeScript, Pos
 - **Authentication**: Passport.js with local strategy
 
 ## Recent Changes
+
+- ✅ **Arreglado el problema de parpadeo de pedidos** (Feb 2, 2025):
+  1. ✅ **Actualizaciones optimistas mejoradas**: Cambio de `setQueryData` a `setQueriesData` para actualizar todas las instancias del cache
+  2. ✅ **Polling inteligente**: Implementado refetch automático cada 30 segundos para sincronización entre dispositivos
+  3. ✅ **Refetch inmediato**: Al cerrar modales de nuevo pedido/stock se actualiza inmediatamente
+  4. ✅ **Eliminado listener global**: Removido el event handler que causaba refetch innecesarios
+  5. ✅ **Sincronización multi-dispositivo**: Los cambios en un dispositivo se reflejan en otros dentro de 30 segundos
 - ✅ **Implemented 4 key UI improvements for order management** (Jan 31, 2025):
   1. ✅ **Time selection component**: Added preset buttons (13:00, 13:30, 14:00, 14:30) plus manual time selector with dynamic default time based on current system time
   2. ✅ **Quantity selection component**: Added preset amount buttons (0.5, 1, 1.5, 2 kg) plus manual numeric input with validation 

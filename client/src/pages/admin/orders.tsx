@@ -32,13 +32,15 @@ export default function AdminOrders() {
   const [isStockDrawerOpen, setIsStockDrawerOpen] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState(Date.now());
 
-  // Query optimizada que obtiene orders y stock en una sola petición
+  // Query optimizada con polling para sincronización automática
   const { data: dashboardData, isLoading, error } = useQuery<DashboardData>({ 
-    queryKey: ['/api/dashboard-data', lastRefreshTime],
-    refetchOnWindowFocus: false,
-    staleTime: 2 * 60 * 1000, // 2 minutos de cache
-    gcTime: 10 * 60 * 1000, // 10 minutos en memoria
+    queryKey: ['/api/dashboard-data'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000, // Polling cada 30 segundos para sincronización entre dispositivos
+    staleTime: 10000, // 10 segundos considera datos frescos
+    gcTime: 5 * 60 * 1000, // 5 minutos en memoria
     retry: 1,
+    refetchIntervalInBackground: true, // Continúa polling en background
   });
 
   // Extraer orders y stock de los datos combinados
@@ -75,10 +77,10 @@ export default function AdminOrders() {
   const handleNewOrderClose = useCallback((open: boolean) => {
     setIsNewOrderOpen(open);
     if (!open) {
-      // Solo invalidar si se creó un nuevo pedido (refetch silencioso)
+      // Refetch inmediato para ver nuevos pedidos creados
       queryClient.invalidateQueries({ 
         queryKey: ['/api/dashboard-data'],
-        refetchType: 'none' // No refetch inmediato
+        refetchType: 'active' // Refetch inmediato
       });
     }
   }, []);
@@ -86,10 +88,10 @@ export default function AdminOrders() {
   const handleStockDrawerClose = useCallback((open: boolean) => {
     setIsStockDrawerOpen(open);
     if (!open) {
-      // Solo invalidar si se cambió el stock (refetch silencioso)
+      // Refetch inmediato para ver cambios de stock
       queryClient.invalidateQueries({ 
         queryKey: ['/api/dashboard-data'],
-        refetchType: 'none' // No refetch inmediato
+        refetchType: 'active' // Refetch inmediato
       });
     }
   }, []);

@@ -58,23 +58,10 @@ export default function AdminOrders() {
     debouncedRefresh();
   }, [debouncedRefresh]);
 
-  // Event handler optimizado para detectar interacciones importantes
-  const handlePageInteraction = useCallback((event: MouseEvent) => {
-    // Solo actualizamos si es una acción que puede cambiar datos
-    const target = event.target as HTMLElement;
-    if (target && target.closest('[data-refresh-trigger]')) {
-      handleRefresh();
-    }
-  }, [handleRefresh]);
+  // Event handler optimizado - removido para evitar refetch innecesarios
+  // Las actualizaciones optimistas manejan los cambios de estado individual
 
-  // Añadimos el listener global para detectar interacciones
-  useEffect(() => {
-    document.addEventListener('click', handlePageInteraction);
-    
-    return () => {
-      document.removeEventListener('click', handlePageInteraction);
-    };
-  }, [handlePageInteraction]);
+  // Listener removido - usando actualizaciones optimistas en lugar de refetch global
 
   // Callbacks wrapped in useCallback to prevent recreating functions on each render
   const handleOpenNewOrder = useCallback(() => {
@@ -88,16 +75,22 @@ export default function AdminOrders() {
   const handleNewOrderClose = useCallback((open: boolean) => {
     setIsNewOrderOpen(open);
     if (!open) {
-      // Invalidar cache del dashboard al cerrar modal (posibles cambios)
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
+      // Solo invalidar si se creó un nuevo pedido (refetch silencioso)
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/dashboard-data'],
+        refetchType: 'none' // No refetch inmediato
+      });
     }
   }, []);
 
   const handleStockDrawerClose = useCallback((open: boolean) => {
     setIsStockDrawerOpen(open);
     if (!open) {
-      // Invalidar cache del dashboard al cerrar modal (posibles cambios)
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
+      // Solo invalidar si se cambió el stock (refetch silencioso)
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/dashboard-data'],
+        refetchType: 'none' // No refetch inmediato
+      });
     }
   }, []);
 

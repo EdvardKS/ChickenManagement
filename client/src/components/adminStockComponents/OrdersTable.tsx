@@ -41,8 +41,16 @@ const handleConfirm = async (orderId: number) => {
       method: "PATCH"
     });
 
-    // Invalidar el cache del dashboard optimizado
-    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
+    // Actualización optimista: actualizar solo el pedido específico sin refetch
+    queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+      if (!oldData?.orders) return oldData;
+      return {
+        ...oldData,
+        orders: oldData.orders.map((item: Order) => 
+          item.id === orderId ? { ...item, status: 'delivered', confirmado: true } : item
+        )
+      };
+    });
     
     // Notificar al componente padre que los datos han cambiado
     if (onDataChanged) onDataChanged();
@@ -77,7 +85,16 @@ const handleDelete = async (orderId: number) => {
       method: "PATCH"
     });
 
-    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
+    // Actualización optimista para cancelación
+    queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+      if (!oldData?.orders) return oldData;
+      return {
+        ...oldData,
+        orders: oldData.orders.map((item: Order) => 
+          item.id === orderId ? { ...item, status: 'cancelled', deleted: true } : item
+        )
+      };
+    });
     
     // Notificar al componente padre que los datos han cambiado
     if (onDataChanged) onDataChanged();
@@ -111,7 +128,16 @@ const handleError = async (orderId: number) => {
       method: "PATCH"
     });
 
-    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
+    // Actualización optimista para marcar como error
+    queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+      if (!oldData?.orders) return oldData;
+      return {
+        ...oldData,
+        orders: oldData.orders.map((item: Order) => 
+          item.id === orderId ? { ...item, status: 'error', error: true } : item
+        )
+      };
+    });
     
     // Notificar al componente padre que los datos han cambiado
     if (onDataChanged) onDataChanged();
@@ -177,8 +203,16 @@ const handleError = async (orderId: number) => {
       
       // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
-      // Actualizar cache del dashboard optimizado
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
+      // Actualización optimista para pedido actualizado
+      queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+        if (!oldData?.orders) return oldData;
+        return {
+          ...oldData,
+          orders: oldData.orders.map((item: Order) => 
+            item.id === order.id ? { ...item, ...order } : item
+          )
+        };
+      });
       
       // Notificar al componente padre que los datos han cambiado
       if (onDataChanged) onDataChanged();
@@ -238,8 +272,16 @@ const handleError = async (orderId: number) => {
         }
       });
       
-      // Actualización optimizada del cache combinado
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
+      // Actualización optimista para notificación WhatsApp
+      queryClient.setQueryData(['/api/dashboard-data'], (oldData: any) => {
+        if (!oldData?.orders) return oldData;
+        return {
+          ...oldData,
+          orders: oldData.orders.map((item: Order) => 
+            item.id === order.id ? { ...item, notificado: true } : item
+          )
+        };
+      });
       
       // Notificar al componente padre que los datos han cambiado
       if (onDataChanged) onDataChanged();

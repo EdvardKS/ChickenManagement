@@ -352,11 +352,11 @@ export function OrderDrawer({
         <DrawerHeader className="text-center border-b pb-4">
           <div className="flex justify-between items-center px-4">
             <div className="flex-1"></div>
-            <img
+            {/* <img
               src="/img/corporativa/slogan-negro.png"
               alt="Slogan"
               className="h-36"
-            />
+            /> */}
             <div className="flex-1 flex justify-end">
               <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <DropdownMenuTrigger asChild>

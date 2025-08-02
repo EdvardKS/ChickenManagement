@@ -41,9 +41,8 @@ const handleConfirm = async (orderId: number) => {
       method: "PATCH"
     });
 
-    // Usa las funciones directamente de queryClient para evitar múltiples renderizados
-    queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    // Invalidar el cache del dashboard optimizado
+    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
     
     // Notificar al componente padre que los datos han cambiado
     if (onDataChanged) onDataChanged();
@@ -78,8 +77,7 @@ const handleDelete = async (orderId: number) => {
       method: "PATCH"
     });
 
-    queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
     
     // Notificar al componente padre que los datos han cambiado
     if (onDataChanged) onDataChanged();
@@ -113,8 +111,7 @@ const handleError = async (orderId: number) => {
       method: "PATCH"
     });
 
-    queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
     
     // Notificar al componente padre que los datos han cambiado
     if (onDataChanged) onDataChanged();
@@ -180,9 +177,8 @@ const handleError = async (orderId: number) => {
       
       // Para respuestas exitosas no intentamos parsear el cuerpo si no es necesario
 
-      // Actualizamos la caché de consultas
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stock'] });
+      // Actualizar cache del dashboard optimizado
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
       
       // Notificar al componente padre que los datos han cambiado
       if (onDataChanged) onDataChanged();
@@ -242,13 +238,8 @@ const handleError = async (orderId: number) => {
         }
       });
       
-      // Actualización optimizada usando setQueryData para evitar refetch
-      queryClient.setQueryData(['/api/orders'], (oldData: Order[] | undefined) => {
-        if (!oldData) return oldData;
-        return oldData.map(item => 
-          item.id === order.id ? { ...item, notificado: true } : item
-        );
-      });
+      // Actualización optimizada del cache combinado
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
       
       // Notificar al componente padre que los datos han cambiado
       if (onDataChanged) onDataChanged();

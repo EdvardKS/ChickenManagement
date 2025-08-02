@@ -84,6 +84,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint optimizado que combina orders y stock para mejor rendimiento
+  app.get("/api/dashboard-data", async (req, res) => {
+    try {
+      console.log('🔄 Obteniendo datos combinados del dashboard...');
+      
+      // Obtener ambos conjuntos de datos en paralelo
+      const [ordersData, stockData] = await Promise.all([
+        storage.getOrders(),
+        storage.getCurrentStock()
+      ]);
+
+      console.log(`📊 Dashboard data - Orders: ${ordersData?.length || 0}, Stock disponible: ${stockData ? 'Sí' : 'No'}`);
+
+      res.json({
+        orders: ordersData || [],
+        stock: stockData || null,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Error obteniendo datos del dashboard:', error);
+      res.status(500).json({ 
+        error: "Error al obtener datos del dashboard",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
+
   // Register routes
   app.use('/api/stock', stockRoutes);
   app.use('/api/orders', orderRoutes);

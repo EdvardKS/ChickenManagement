@@ -1,10 +1,10 @@
-import { useState, lazy, Suspense, useCallback, useEffect } from "react";
+import { useState, lazy, Suspense, useCallback, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { OrdersTable } from "@/components/adminStockComponents/OrdersTable";
 import type { Order, Stock } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, debounce } from "@/lib/queryClient";
 
 // Lazy load components to improve initial page load time
 const StockDrawer = lazy(() => import("@/components/adminStockComponents/StockDrawer").then(mod => ({ default: mod.StockDrawer })));
@@ -20,37 +20,49 @@ if (!window.localStorage.getItem(logoCacheKey)) {
   };
 }
 
+// Definir tipo para datos combinados
+interface DashboardData {
+  orders: Order[];
+  stock: Stock | null;
+  lastUpdated: string;
+}
+
 export default function AdminOrders() {
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
   const [isStockDrawerOpen, setIsStockDrawerOpen] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState(Date.now());
 
-  // Optimized queries - only fetch when needed instead of constant polling
-  const { data: orders } = useQuery<Order[]>({ 
-    queryKey: ['/api/orders', lastRefreshTime],
+  // Query optimizada que obtiene orders y stock en una sola petición
+  const { data: dashboardData, isLoading, error } = useQuery<DashboardData>({ 
+    queryKey: ['/api/dashboard-data', lastRefreshTime],
     refetchOnWindowFocus: false,
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    gcTime: 5 * 60 * 1000, // Keep data in cache for 5 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutos de cache
+    gcTime: 10 * 60 * 1000, // 10 minutos en memoria
+    retry: 1,
   });
- 
-  const { data: stock } = useQuery<Stock>({ 
-    queryKey: ['/api/stock', lastRefreshTime],
-    refetchOnWindowFocus: false,
-    staleTime: 30000,
-    gcTime: 5 * 60 * 1000,
-  });
+
+  // Extraer orders y stock de los datos combinados
+  const orders = useMemo(() => dashboardData?.orders || [], [dashboardData]);
+  const stock = useMemo(() => dashboardData?.stock || null, [dashboardData]);
+
+  // Debounced refresh para evitar múltiples llamadas rápidas
+  const debouncedRefresh = useMemo(
+    () => debounce(() => {
+      setLastRefreshTime(Date.now());
+    }, 300), // 300ms de delay
+    []
+  );
 
   // Use callback to prevent recreation on each render
   const handleRefresh = useCallback(() => {
-    setLastRefreshTime(Date.now());
-  }, []);
+    debouncedRefresh();
+  }, [debouncedRefresh]);
 
-  // Event handler para detectar clicks en cualquier botón de la interfaz
+  // Event handler optimizado para detectar interacciones importantes
   const handlePageInteraction = useCallback((event: MouseEvent) => {
-    // Solo actualizamos datos si el usuario ha hecho clic en un botón
-    if (event.target && 
-        (event.target instanceof HTMLButtonElement || 
-         (event.target instanceof HTMLElement && event.target.closest('button')))) {
+    // Solo actualizamos si es una acción que puede cambiar datos
+    const target = event.target as HTMLElement;
+    if (target && target.closest('[data-refresh-trigger]')) {
       handleRefresh();
     }
   }, [handleRefresh]);
@@ -59,7 +71,6 @@ export default function AdminOrders() {
   useEffect(() => {
     document.addEventListener('click', handlePageInteraction);
     
-    // Limpieza al desmontar componente
     return () => {
       document.removeEventListener('click', handlePageInteraction);
     };
@@ -77,18 +88,18 @@ export default function AdminOrders() {
   const handleNewOrderClose = useCallback((open: boolean) => {
     setIsNewOrderOpen(open);
     if (!open) {
-      // Refresh data when drawer closes to reflect any changes
-      handleRefresh();
+      // Invalidar cache del dashboard al cerrar modal (posibles cambios)
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
     }
-  }, [handleRefresh]);
+  }, []);
 
   const handleStockDrawerClose = useCallback((open: boolean) => {
     setIsStockDrawerOpen(open);
     if (!open) {
-      // Refresh data when drawer closes to reflect any changes
-      handleRefresh();
+      // Invalidar cache del dashboard al cerrar modal (posibles cambios)
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-data'] });
     }
-  }, [handleRefresh]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -119,6 +130,7 @@ export default function AdminOrders() {
               </Button>
               <Button 
                 onClick={handleOpenNewOrder}
+                data-refresh-trigger
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 Nuevo Encargo

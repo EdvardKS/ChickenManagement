@@ -155,11 +155,24 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "returnNull" }), // Cambiado para no lanzar errores 401
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 minutos de cache para datos estáticos
+      gcTime: 10 * 60 * 1000, // 10 minutos en memoria
+      retry: 1, // Reintentar una vez si falla
     },
     mutations: {
       retry: false,
     },
   },
 });
+
+// Función de debounce para evitar múltiples llamadas rápidas
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): T {
+  let timeout: NodeJS.Timeout;
+  return ((...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  }) as T;
+}

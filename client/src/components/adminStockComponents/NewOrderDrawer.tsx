@@ -113,27 +113,30 @@ export function NewOrderDrawer({ isOpen, onOpenChange }: NewOrderDrawerProps) {
         </DrawerHeader>
         <form onSubmit={handleSubmit} className="flex-grow overflow-auto p-6 space-y-4">
 
-          <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-            <Label className="text-lg font-semibold text-gray-700">Nombre del cliente</Label>
-            <Input 
-              type="text" 
-              placeholder="Introduce el nombre completo" 
-              value={formData.customerName}
-              onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-              className="w-full h-10 border-2 border-gray-200 focus:border-blue-500 rounded-lg px-3"
-            />
+          <div className="bg-white flex flex-wrap justify-center items-start rounded-xl shadow-sm p-4 gap-4 w-full">
+            <div className="flex-1 min-w-[250px] max-w-md bg-white rounded-xl p-4">
+              <Label className="text-lg font-semibold text-gray-700">Nombre del cliente</Label>
+              <Input 
+                type="text" 
+                placeholder="Introduce el nombre completo" 
+                value={formData.customerName}
+                onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                className="w-full h-10 border-2 border-gray-200 focus:border-blue-500 rounded-lg px-3"
+              />
+            </div>
+            <div className="flex-1 min-w-[250px] max-w-md bg-white rounded-xl p-4">
+              <Label className="text-lg font-semibold text-gray-700">Teléfono (opcional)</Label>
+              <Input 
+                type="tel" 
+                placeholder="Número de teléfono"
+                value={formData.customerPhone}
+                onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                className="w-full h-10 border-2 border-gray-200 focus:border-blue-500 rounded-lg px-3"
+              />
+            </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-            <Label className="text-lg font-semibold text-gray-700">Teléfono (opcional)</Label>
-            <Input 
-              type="tel" 
-              placeholder="Número de teléfono"
-              value={formData.customerPhone}
-              onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-              className="w-full h-10 border-2 border-gray-200 focus:border-blue-500 rounded-lg px-3"
-            />
-          </div>
+
 
           <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
             <Label className="text-lg font-semibold text-gray-700">Cantidad de pollos</Label>

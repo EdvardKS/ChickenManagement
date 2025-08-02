@@ -128,9 +128,9 @@ export function TimeSelector({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Preset Time Buttons */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-1">
         {PRESET_TIMES.map((time) => {
           const isSelected = selectedTime === time && !isManualSelection;
           return (
@@ -140,13 +140,14 @@ export function TimeSelector({
               variant={isSelected ? "default" : "outline"}
               onClick={() => handlePresetTimeClick(time)}
               disabled={disabled}
-              className={`h-12 text-lg font-medium transition-all duration-200 ${
+              size="sm"
+              className={`h-8 text-xs transition-all duration-200 ${
                 isSelected 
                   ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md" 
-                  : "border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50"
+                  : "border border-blue-200 hover:border-blue-400 hover:bg-blue-50"
               }`}
             >
-              <Clock className="mr-2 h-4 w-4" />
+              <Clock className="mr-1 h-3 w-3" />
               {time}
             </Button>
           );
@@ -154,27 +155,22 @@ export function TimeSelector({
       </div>
 
       {/* Time Selector */}
-      <div className="space-y-2">
-        <Label htmlFor="time-select" className="text-sm font-medium text-gray-600">
-          Otras horas
-        </Label>
-        <Select
-          value={selectedTime}
-          onValueChange={handleSelectorChange}
-          disabled={disabled}
-        >
-          <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-blue-400">
-            <SelectValue placeholder="Selecciona hora" />
-          </SelectTrigger>
-          <SelectContent>
-            {allTimes.map((time) => (
-              <SelectItem key={time} value={time} className="text-lg">
-                {time}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select
+        value={selectedTime}
+        onValueChange={handleSelectorChange}
+        disabled={disabled}
+      >
+        <SelectTrigger className="h-8 text-sm border border-gray-200 focus:border-blue-400">
+          <SelectValue placeholder="Otras horas" />
+        </SelectTrigger>
+        <SelectContent>
+          {allTimes.map((time) => (
+            <SelectItem key={time} value={time} className="text-sm">
+              {time}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

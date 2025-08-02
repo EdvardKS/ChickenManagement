@@ -96,9 +96,9 @@ export function QuantitySelector({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Preset Quantity Buttons */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-1">
         {PRESET_QUANTITIES.map((quantity) => {
           const isSelected = selectedQuantity === quantity && !isManualSelection;
           return (
@@ -108,13 +108,14 @@ export function QuantitySelector({
               variant={isSelected ? "default" : "outline"}
               onClick={() => handlePresetQuantityClick(quantity)}
               disabled={disabled}
-              className={`h-12 text-lg font-medium transition-all duration-200 ${
+              size="sm"
+              className={`h-8 text-xs transition-all duration-200 ${
                 isSelected 
                   ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md" 
-                  : "border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50"
+                  : "border border-orange-200 hover:border-orange-400 hover:bg-orange-50"
               }`}
             >
-              <ChefHat className="mr-2 h-4 w-4" />
+              <ChefHat className="mr-1 h-3 w-3" />
               {formatQuantityText(quantity)}
             </Button>
           );
@@ -122,27 +123,22 @@ export function QuantitySelector({
       </div>
 
       {/* Quantity Selector */}
-      <div className="space-y-2">
-        <Label htmlFor="quantity-select" className="text-sm font-medium text-gray-600">
-          Otras cantidades
-        </Label>
-        <Select
-          value={selectedQuantity.toString()}
-          onValueChange={handleSelectorChange}
-          disabled={disabled}
-        >
-          <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-orange-400">
-            <SelectValue placeholder="Selecciona cantidad" />
-          </SelectTrigger>
-          <SelectContent>
-            {allQuantities.map((quantity) => (
-              <SelectItem key={quantity} value={quantity.toString()} className="text-lg">
-                {formatQuantityText(quantity)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select
+        value={selectedQuantity.toString()}
+        onValueChange={handleSelectorChange}
+        disabled={disabled}
+      >
+        <SelectTrigger className="h-8 text-sm border border-gray-200 focus:border-orange-400">
+          <SelectValue placeholder="Otras cantidades" />
+        </SelectTrigger>
+        <SelectContent>
+          {allQuantities.map((quantity) => (
+            <SelectItem key={quantity} value={quantity.toString()} className="text-sm">
+              {formatQuantityText(quantity)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

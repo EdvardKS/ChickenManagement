@@ -25,6 +25,9 @@ A comprehensive restaurant management system built with Next.js, TypeScript, Pos
   4. ✅ **WhatsApp integration**: Existing WhatsApp functionality maintained in order management dropdown
   5. ✅ **Full-screen NewOrderDrawer**: Modal now occupies entire screen with spacious card-based layout
   6. ✅ **Terminology fix**: Changed from "kg" to "pollos" in quantity selector for accurate chicken ordering
+  7. ✅ **Enhanced selectors**: Both TimeSelector and QuantitySelector now have unified design with preset buttons + dropdown
+  8. ✅ **Smart time defaults**: Time selection automatically suggests appropriate times based on current time
+  9. ✅ **Default selections**: QuantitySelector defaults to "1 pollo", TimeSelector uses smart time logic
 
 - **New Components Created**:
   - `TimeSelector` component with preset buttons and manual time input

@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Clock } from "lucide-react";
 
 interface TimeSelectorProps {
@@ -13,98 +19,161 @@ interface TimeSelectorProps {
 
 const PRESET_TIMES = ["13:00", "13:30", "14:00", "14:30"];
 
-// Function to get suggested default time based on current time
-function getSuggestedTime(): string {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  
-  // If it's before 12:45, suggest 13:00
-  if (currentHour < 12 || (currentHour === 12 && currentMinute < 45)) {
-    return "13:00";
-  }
-  // If it's between 12:45 and 13:10, suggest 13:30
-  else if (currentHour === 12 || (currentHour === 13 && currentMinute < 10)) {
-    return "13:30";
-  }
-  // If it's between 13:10 and 13:40, suggest 14:00
-  else if (currentHour === 13 && currentMinute < 40) {
-    return "14:00";
-  }
-  // Otherwise suggest 14:30
-  else {
-    return "14:30";
-  }
-}
-
-export function TimeSelector({ value, onChange, label = "Hora de recogida", disabled = false }: TimeSelectorProps) {
+export function TimeSelector({ 
+  value, 
+  onChange, 
+  label = "Hora de recogida",
+  disabled = false 
+}: TimeSelectorProps) {
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [isManualSelection, setIsManualSelection] = useState<boolean>(false);
 
-  // Initialize with suggested time on component mount
+  // Generate all possible times (13:00 to 17:00 in 30-minute intervals)
+  const allTimes = [];
+  for (let hour = 13; hour <= 17; hour++) {
+    allTimes.push(`${hour.toString().padStart(2, '0')}:00`);
+    if (hour < 17) { // Don't add 17:30
+      allTimes.push(`${hour.toString().padStart(2, '0')}:30`);
+    }
+  }
+
+  // Function to get default time based on current time
+  const getDefaultTime = (): string => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    // Si son antes de las 13:30, por defecto 13:30
+    if (currentHour < 13 || (currentHour === 13 && currentMinute < 30)) {
+      return "13:30";
+    }
+    
+    // Si son las 13:15, por defecto 14:00
+    if (currentHour === 13 && currentMinute >= 15 && currentMinute < 30) {
+      return "14:00";
+    }
+    
+    // Si son las 13:45, por defecto 14:30
+    if (currentHour === 13 && currentMinute >= 45) {
+      return "14:30";
+    }
+    
+    // Si son las 14:15, por defecto 15:00
+    if (currentHour === 14 && currentMinute >= 15 && currentMinute < 45) {
+      return "15:00";
+    }
+    
+    // Si son las 14:45, por defecto 15:30
+    if (currentHour === 14 && currentMinute >= 45) {
+      return "15:30";
+    }
+    
+    // Si son las 15:15, por defecto 16:00
+    if (currentHour === 15 && currentMinute >= 15 && currentMinute < 45) {
+      return "16:00";
+    }
+    
+    // Si son las 15:45, por defecto 16:30
+    if (currentHour === 15 && currentMinute >= 45) {
+      return "16:30";
+    }
+    
+    // Si son las 16:15, por defecto 17:00
+    if (currentHour === 16 && currentMinute >= 15) {
+      return "17:00";
+    }
+    
+    // Si son después de las 17:00, dejarlo sin seleccionar por defecto
+    if (currentHour >= 17) {
+      return "";
+    }
+    
+    // Default to 13:30 for any other time
+    return "13:30";
+  };
+
+  // Initialize with default value
   useEffect(() => {
-    if (!value) {
-      const suggestedTime = getSuggestedTime();
-      setSelectedTime(suggestedTime);
-      onChange(suggestedTime);
-    } else {
+    if (value !== undefined) {
       setSelectedTime(value);
+      // Check if the value is one of the preset buttons
+      setIsManualSelection(!PRESET_TIMES.includes(value));
+    } else {
+      // Default time based on current time
+      const defaultTime = getDefaultTime();
+      setSelectedTime(defaultTime);
+      setIsManualSelection(!PRESET_TIMES.includes(defaultTime));
+      onChange(defaultTime);
     }
   }, []);
 
   // Update internal state when external value changes
   useEffect(() => {
-    if (value && value !== selectedTime) {
+    if (value !== undefined && value !== selectedTime) {
       setSelectedTime(value);
+      setIsManualSelection(!PRESET_TIMES.includes(value));
     }
   }, [value]);
 
   const handlePresetTimeClick = (time: string) => {
     setSelectedTime(time);
+    setIsManualSelection(false);
     onChange(time);
   };
 
-  const handleManualTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const time = event.target.value;
-    setSelectedTime(time);
-    onChange(time);
+  const handleSelectorChange = (timeStr: string) => {
+    setSelectedTime(timeStr);
+    setIsManualSelection(!PRESET_TIMES.includes(timeStr));
+    onChange(timeStr);
   };
 
   return (
-    <div className="space-y-3">
-      <Label className="flex items-center gap-2">
-        <Clock className="h-4 w-4" />
-        {label}
-      </Label>
-      
-      {/* Preset time buttons */}
-      <div className="grid grid-cols-2 gap-2">
-        {PRESET_TIMES.map((time) => (
-          <Button
-            key={time}
-            type="button"
-            variant={selectedTime === time ? "default" : "outline"}
-            onClick={() => handlePresetTimeClick(time)}
-            disabled={disabled}
-            className="h-10"
-          >
-            {time}
-          </Button>
-        ))}
+    <div className="space-y-4">
+      {/* Preset Time Buttons */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {PRESET_TIMES.map((time) => {
+          const isSelected = selectedTime === time && !isManualSelection;
+          return (
+            <Button
+              key={time}
+              type="button"
+              variant={isSelected ? "default" : "outline"}
+              onClick={() => handlePresetTimeClick(time)}
+              disabled={disabled}
+              className={`h-12 text-lg font-medium transition-all duration-200 ${
+                isSelected 
+                  ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md" 
+                  : "border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50"
+              }`}
+            >
+              <Clock className="mr-2 h-4 w-4" />
+              {time}
+            </Button>
+          );
+        })}
       </div>
 
-      {/* Manual time input */}
-      <div className="flex items-center gap-2">
-        <Label htmlFor="manual-time" className="text-sm text-muted-foreground whitespace-nowrap">
-          Otra hora:
+      {/* Time Selector */}
+      <div className="space-y-2">
+        <Label htmlFor="time-select" className="text-sm font-medium text-gray-600">
+          Otras horas
         </Label>
-        <Input
-          id="manual-time"
-          type="time"
+        <Select
           value={selectedTime}
-          onChange={handleManualTimeChange}
+          onValueChange={handleSelectorChange}
           disabled={disabled}
-          className="flex-1"
-        />
+        >
+          <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-blue-400">
+            <SelectValue placeholder="Selecciona hora" />
+          </SelectTrigger>
+          <SelectContent>
+            {allTimes.map((time) => (
+              <SelectItem key={time} value={time} className="text-lg">
+                {time}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

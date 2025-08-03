@@ -140,10 +140,10 @@ export default function AdminOrders() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-20 md:pb-0">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-24 xl:pb-0">
       
-      {/* Header Section - Hidden on mobile to save space */}
-      <div className="bg-white shadow-sm border-b border-gray-100 py-1 hidden md:block">
+      {/* Header Section - Hidden on mobile and tablets to save space */}
+      <div className="bg-white shadow-sm border-b border-gray-100 py-1 hidden xl:block">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">

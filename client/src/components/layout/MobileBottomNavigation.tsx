@@ -24,33 +24,37 @@ export function MobileBottomNavigation({
   return (
     <div className={cn(
       "fixed bottom-0 left-0 right-0 z-50",
-      "bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg",
-      "px-6 py-3 pb-4",
-      "md:hidden", // Solo visible en móvil y tablet
+      // Fondo negro semitransparente como Movistar+
+      "bg-black/80 backdrop-blur-md",
+      "px-8 py-4 pb-6",
+      // Visible en móvil, tablet y pantallas hasta 14 pulgadas (aproximadamente 1366px)
+      "xl:hidden", // Ocultar solo en pantallas extra grandes (>1280px)
       className
     )}>
-      <div className="flex items-center justify-between w-full max-w-sm mx-auto">
+      <div className="flex items-center justify-around w-full max-w-md mx-auto">
         {/* Botón Stock - Izquierda */}
         <Button
           variant="ghost"
           size="lg"
           onClick={onStockClick}
           disabled={disabled}
-          className="flex flex-col items-center justify-center h-16 w-16 p-1 hover:bg-gray-100 transition-all duration-200 disabled:opacity-50 rounded-xl"
+          className="flex flex-col items-center justify-center h-16 w-16 p-2 hover:bg-white/10 transition-all duration-200 disabled:opacity-50"
         >
-          <Package className="h-7 w-7 mb-1 text-gray-700" />
-          <span className="text-xs font-medium text-gray-700">Stock</span>
+          <Package className="h-6 w-6 mb-1 text-white" />
+          <span className="text-xs font-medium text-white">Stock</span>
         </Button>
 
-        {/* Botón Voice Recognition - Centro (destacado) */}
+        {/* Botón Voice Recognition - Centro (destacado como Movistar+) */}
         <div className="relative flex flex-col items-center">
-          <VoiceOrderButton 
-            onVoiceResult={onVoiceResult}
-            onOrderCreated={onVoiceOrderCreated}
-            disabled={disabled}
-            className="h-16 w-16 rounded-full bg-blue-600 hover:bg-blue-700 shadow-xl hover:shadow-2xl transition-all duration-200 border-2 border-white" 
-          />
-          <span className="text-xs font-medium text-gray-700 mt-1">Voz</span>
+          <div className="relative">
+            <VoiceOrderButton 
+              onVoiceResult={onVoiceResult}
+              onOrderCreated={onVoiceOrderCreated}
+              disabled={disabled}
+              className="h-16 w-16 rounded-full bg-cyan-500 hover:bg-cyan-600 shadow-lg transition-all duration-200 border-2 border-white/20" 
+            />
+          </div>
+          <span className="text-xs font-medium text-white mt-1">Voz</span>
         </div>
 
         {/* Botón Nuevo Pedido - Derecha */}
@@ -59,10 +63,10 @@ export function MobileBottomNavigation({
           size="lg"
           onClick={onNewOrderClick}
           disabled={disabled}
-          className="flex flex-col items-center justify-center h-16 w-16 p-1 hover:bg-gray-100 transition-all duration-200 disabled:opacity-50 rounded-xl"
+          className="flex flex-col items-center justify-center h-16 w-16 p-2 hover:bg-white/10 transition-all duration-200 disabled:opacity-50"
         >
-          <Plus className="h-7 w-7 mb-1 text-gray-700" />
-          <span className="text-xs font-medium text-gray-700">Pedido</span>
+          <Plus className="h-6 w-6 mb-1 text-white" />
+          <span className="text-xs font-medium text-white">Pedido</span>
         </Button>
       </div>
     </div>

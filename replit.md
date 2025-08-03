@@ -49,6 +49,8 @@ A comprehensive restaurant management system built with Next.js, TypeScript, Pos
   10. ✅ **Spanish Time Processing**: Handles expressions like "tres y media", "una y media" correctly
   11. ✅ **Date Conversion Fix**: Properly converts HH:MM time format to valid Date objects
   12. ✅ **Non-intrusive UX**: System creates orders automatically without opening new order drawer
+  13. ✅ **Real-time Table Updates**: New orders appear instantly in the table via optimistic cache updates
+  14. ✅ **Full Name Recognition**: Enhanced patterns capture complete names with surnames (e.g., "Pedro Hernández Ortiz")
 
 - **New Components Created**:
   - `TimeSelector` component with preset buttons and manual time input

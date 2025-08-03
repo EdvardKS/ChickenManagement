@@ -68,11 +68,16 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
     const text = transcription.toLowerCase().trim();
     console.log('🔍 Processing voice command:', text);
 
-    // Patterns for extracting information
+    // Patterns for extracting information - Updated to capture full names with surnames
     const namePatterns = [
-      /(?:para|de)\s+([a-záéíóúñ]+)/i,
-      /(?:nombre|cliente)\s+([a-záéíóúñ]+)/i,
-      /([a-záéíóúñ]+)\s+(?:quiere|pide)/i
+      // Patterns for "a nombre de [Nombre Apellido]", capturing full names including compound surnames
+      /(?:a\s+nombre\s+de|para|de)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*)/i,
+      // Pattern for "nombre [Nombre Apellido]", capturing multiple words
+      /(?:nombre|cliente)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*)/i,
+      // Pattern for "[Nombre Apellido] quiere/pide", capturing multiple words before action verbs
+      /([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*)\s+(?:quiere|pide)/i,
+      // Pattern for simple "para [Nombre Apellido]", capturing multiple words
+      /(?:para)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)(?:\s*,|\s+\d|\s+un|\s+dos|\s+tres|\s+cuatro|\s+cinco)/i
     ];
 
     const quantityPatterns = [
@@ -124,12 +129,20 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
       /(\d{9})/i
     ];
 
+    // Helper function to properly capitalize full names
+    const capitalizeName = (name: string): string => {
+      return name.trim()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    };
+
     // Extract customer name
     let customerName = '';
     for (const pattern of namePatterns) {
       const match = text.match(pattern);
       if (match && match[1]) {
-        customerName = match[1].charAt(0).toUpperCase() + match[1].slice(1);
+        customerName = capitalizeName(match[1]);
         break;
       }
     }

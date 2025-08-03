@@ -66,9 +66,9 @@ app.use(session({
 
 // Registrar middleware para depurar sesiones
 app.use((req, res, next) => {
-  console.log(`🍪 Session - Request cookie headers: ${JSON.stringify(req.headers.cookie)}`);
-  console.log(`🍪 Session - Session ID: ${req.session.id}`);
-  console.log(`🍪 Session - User ID: ${req.session.userId || 'no autenticado'}`);
+  // console.log(`🍪 Session - Request cookie headers: ${JSON.stringify(req.headers.cookie)}`);
+  // console.log(`🍪 Session - Session ID: ${req.session.id}`);
+  // console.log(`🍪 Session - User ID: ${req.session.userId || 'no autenticado'}`);
   next();
 });
 

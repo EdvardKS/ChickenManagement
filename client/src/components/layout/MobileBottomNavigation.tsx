@@ -24,45 +24,46 @@ export function MobileBottomNavigation({
   return (
     <div className={cn(
       "fixed bottom-0 left-0 right-0 z-50",
-      // Fondo negro sólido como Movistar+ (sin degradado ni blur)
-      "bg-black",
-      "px-6 py-4 pb-6",
+      // Fondo negro elegante y fino
+      "bg-black/95 border-t border-white/10",
+      "px-4 py-2",
       // Visible en móvil, tablet y pantallas hasta 14 pulgadas
       "xl:hidden",
       className
     )}>
-      <div className="flex items-center justify-around w-full max-w-lg mx-auto">
+      <div className="flex items-center justify-around w-full max-w-xs mx-auto">
         {/* Botón Stock - Izquierda */}
         <Button
           variant="ghost"
-          size="lg"
+          size="sm"
           onClick={onStockClick}
           disabled={disabled}
-          className="flex flex-col items-center justify-center h-20 w-20 p-3 hover:bg-white/5 active:bg-white/10 transition-colors duration-150 disabled:opacity-50"
+          className="flex flex-col items-center justify-center h-12 w-16 p-1 hover:bg-white/5 transition-colors duration-200 disabled:opacity-50"
         >
-          <Package className="h-6 w-6 mb-2 text-white stroke-[1.5]" />
-          <span className="text-xs font-normal text-white tracking-wide">Stock</span>
+          <Package className="h-5 w-5 mb-1 text-white/80 stroke-[1]" />
+          <span className="text-[10px] font-light text-white/70">Stock</span>
         </Button>
 
-        {/* Botón Voice Recognition - Centro (integrado, sin flotante) */}
-        <div className="relative flex flex-col items-center justify-center h-20 w-20">
+        {/* Botón Voice Recognition - Centro */}
+        <div className="relative flex flex-col items-center justify-center h-12 w-16">
           <VoiceOrderButton 
             onVoiceResult={onVoiceResult}
             onOrderCreated={onVoiceOrderCreated}
             disabled={disabled}
+            className="flex flex-col items-center justify-center h-12 w-16 p-1 hover:bg-white/5 transition-colors duration-200 disabled:opacity-50"
           />
         </div>
 
         {/* Botón Nuevo Pedido - Derecha */}
         <Button
           variant="ghost"
-          size="lg"
+          size="sm"
           onClick={onNewOrderClick}
           disabled={disabled}
-          className="flex flex-col items-center justify-center h-20 w-20 p-3 hover:bg-white/5 active:bg-white/10 transition-colors duration-150 disabled:opacity-50"
+          className="flex flex-col items-center justify-center h-12 w-16 p-1 hover:bg-white/5 transition-colors duration-200 disabled:opacity-50"
         >
-          <Plus className="h-6 w-6 mb-2 text-white stroke-[1.5]" />
-          <span className="text-xs font-normal text-white tracking-wide">Pedido</span>
+          <Plus className="h-5 w-5 mb-1 text-white/80 stroke-[1]" />
+          <span className="text-[10px] font-light text-white/70">Pedido</span>
         </Button>
       </div>
     </div>

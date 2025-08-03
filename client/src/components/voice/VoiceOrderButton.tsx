@@ -115,17 +115,18 @@ export function VoiceOrderButton({ onVoiceResult, onOrderCreated, disabled = fal
         onClick={state === 'listening' ? handleStopListening : handleStartListening}
         disabled={disabled || !isSupported}
         variant="ghost"
-        className={`${className || "flex flex-col items-center justify-center h-20 w-20 p-3 hover:bg-white/5 active:bg-white/10 transition-colors duration-150 disabled:opacity-50"}`}
+        size="sm"
+        className={`${className || "flex flex-col items-center justify-center h-12 w-16 p-1 hover:bg-white/5 transition-colors duration-200 disabled:opacity-50"}`}
       >
         {children || (
           <>
             <motion.div
-              animate={state === 'listening' ? { scale: [1, 1.1, 1] } : {}}
-              transition={{ repeat: Infinity, duration: 1.5 }}
+              animate={state === 'listening' ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ repeat: Infinity, duration: 2 }}
             >
-              <Mic className={`h-6 w-6 mb-2 stroke-[1.5] ${state === 'listening' ? 'text-red-500' : 'text-[#00B4FF]'}`} />
+              <Mic className={`h-5 w-5 mb-1 stroke-[1] ${state === 'listening' ? 'text-red-400' : 'text-[#00B4FF]'}`} />
             </motion.div>
-            <span className="text-xs font-normal text-white tracking-wide">Voz</span>
+            <span className="text-[10px] font-light text-white/70">Voz</span>
           </>
         )}
       </Button>

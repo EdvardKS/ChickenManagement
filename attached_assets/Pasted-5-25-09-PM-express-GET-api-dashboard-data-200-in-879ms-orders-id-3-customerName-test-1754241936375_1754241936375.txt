@@ -1,0 +1,89 @@
+5:25:09 PM [express] GET /api/dashboard-data 200 in 879ms :: {"orders":[{"id":3,"customerName":"test…
+🎤 Processing voice audio file: voice_1754241911984.webm
+🔑 Checking OpenAI keys:
+  OPENAI_PLATFORM exists: true
+  OPENAI_PLATFORM value length: 164
+  OPENAI_API_KEY exists: false
+  All env keys that start with OPENAI: [ 'OPENAI_PLATFORM' ]
+  Selected key starts with: sk-proj-hg...
+🗣️ Transcription result: Crea pedido para María, tres pollos a las tres y media.
+
+🔍 Processing voice command: crea pedido para maría, tres pollos a las tres y media.
+✅ Order data extracted: { customerName: 'María', quantity: 3, pickupTime: '18:25', phone: '' }
+📝 Storage - Create Order - Starting creation with data: {
+  "customerName": "María",
+  "phone": "",
+  "quantity": 3,
+  "pickupTime": "18:25",
+  "items": "[{\"id\":1,\"name\":\"Pollo Asado\",\"quantity\":3,\"price\":800}]",
+  "totalAmount": 2400,
+  "status": "pending",
+  "notes": "Pedido creado por voz: \"Crea pedido para María, tres pollos a las tres y media.\n\""
+}
+🔍 Storage - Create Order - Verificando tipos de datos:
+   - customerName: string María
+   - quantity: number 3
+   - pickupTime: string No es instancia de Date 18:25
+   - totalAmount: number 2400
+⚠️ Storage - Create Order - pickupTime no es una instancia de Date, intentando convertir: 18:25
+✅ Storage - Create Order - pickupTime convertido correctamente: Invalid Date
+🔄 Storage - Create Order - Datos finales para inserción: {
+  "customerName": "María",
+  "phone": "",
+  "quantity": "3",
+  "pickupTime": null,
+  "items": "[{\"id\":1,\"name\":\"Pollo Asado\",\"quantity\":3,\"price\":800}]",
+  "totalAmount": 2400,
+  "status": "pending",
+  "notes": "Pedido creado por voz: \"Crea pedido para María, tres pollos a las tres y media.\n\"",
+  "createdAt": "2025-08-03T17:25:14.971Z",
+  "updatedAt": "2025-08-03T17:25:14.971Z"
+}
+🚀 Storage - Create Order - Ejecutando inserción en la base de datos...
+❌ Storage - Create Order - Error de base de datos: RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at PgTimestamp.mapToDriverValue (/home/runner/workspace/node_modules/src/pg-core/columns/timestamp.ts:66:16)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:223:69)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:170:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:174:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:124:23)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at SQL.toQuery (/home/runner/workspace/node_modules/src/sql/sql.ts:123:17)
+    at PgDialect.sqlToQuery (/home/runner/workspace/node_modules/src/pg-core/dialect.ts:591:14)
+    at <anonymous> (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:405:19)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at QueryPromise._prepare (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:400:17)
+    at <anonymous> (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:422:16)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at QueryPromise.execute (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:421:17)
+    at QueryPromise.then (/home/runner/workspace/node_modules/src/query-promise.ts:31:15)
+❌ Error creating order: RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at PgTimestamp.mapToDriverValue (/home/runner/workspace/node_modules/src/pg-core/columns/timestamp.ts:66:16)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:223:69)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:170:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:174:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/runner/workspace/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/home/runner/workspace/node_modules/src/sql/sql.ts:124:23)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at SQL.toQuery (/home/runner/workspace/node_modules/src/sql/sql.ts:123:17)
+    at PgDialect.sqlToQuery (/home/runner/workspace/node_modules/src/pg-core/dialect.ts:591:14)
+    at <anonymous> (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:405:19)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at QueryPromise._prepare (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:400:17)
+    at <anonymous> (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:422:16)
+    at Object.startActiveSpan (/home/runner/workspace/node_modules/src/tracing.ts:27:11)
+    at QueryPromise.execute (/home/runner/workspace/node_modules/src/pg-core/query-builders/insert.ts:421:17)
+    at QueryPromise.then (/home/runner/workspace/node_modules/src/query-promise.ts:31:15)
+5:25:15 PM [express] POST /api/speech-to-text 200 in 3097ms :: {"success":true,"transcription":"Crea…

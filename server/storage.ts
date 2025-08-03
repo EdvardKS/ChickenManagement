@@ -189,8 +189,21 @@ export class DatabaseStorage implements IStorage {
     if (!(order.pickupTime instanceof Date)) {
       console.log('⚠️ Storage - Create Order - pickupTime no es una instancia de Date, intentando convertir:', order.pickupTime);
       try {
-        order.pickupTime = new Date(order.pickupTime);
-        console.log('✅ Storage - Create Order - pickupTime convertido correctamente:', order.pickupTime);
+        // Si pickupTime es una cadena en formato HH:MM, crear fecha para hoy
+        if (typeof order.pickupTime === 'string' && /^\d{1,2}:\d{2}$/.test(order.pickupTime)) {
+          const today = new Date();
+          const [hours, minutes] = order.pickupTime.split(':').map(Number);
+          order.pickupTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes);
+          console.log('✅ Storage - Create Order - pickupTime convertido desde HH:MM:', order.pickupTime);
+        } else {
+          order.pickupTime = new Date(order.pickupTime);
+          console.log('✅ Storage - Create Order - pickupTime convertido correctamente:', order.pickupTime);
+        }
+        
+        // Verificar que la fecha es válida
+        if (isNaN(order.pickupTime.getTime())) {
+          throw new Error('Fecha resultante inválida');
+        }
       } catch (dateError) {
         console.error('❌ Storage - Create Order - Error al convertir pickupTime:', dateError);
         throw new Error(`Fecha inválida: ${order.pickupTime}`);

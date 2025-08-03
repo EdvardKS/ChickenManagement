@@ -87,6 +87,33 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
     ];
 
     const timePatterns = [
+      // Patterns for "tres y media", "dos y media", etc.
+      /(?:para\s+las?\s+|a\s+las?\s+)?(una?\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(dos\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(tres\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(cuatro\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(cinco\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(seis\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(siete\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(ocho\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(nueve\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(diez\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(once\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(doce\s+y\s+media)/i,
+      // Patterns for spelled out hours: "una", "dos", "tres", etc.
+      /(?:para\s+las?\s+|a\s+las?\s+)?(una?)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(dos)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(tres)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(cuatro)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(cinco)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(seis)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(siete)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(ocho)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(nueve)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(diez)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(once)\s*(?:horas?|h)?/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(doce)\s*(?:horas?|h)?/i,
+      // Original numeric patterns
       /(?:para\s+las?\s+|a\s+las?\s+)(\d{1,2}(?::\d{2})?)/i,
       /(\d{1,2}(?::\d{2})?)\s*(?:horas?|h)/i,
       /(?:las?\s+)(\d{1,2}(?::\d{2})?)/i
@@ -134,16 +161,54 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
       }
     }
 
+    // Helper function to convert Spanish time words to numbers
+    const convertSpanishTimeToNumber = (timeStr: string): string => {
+      const timeMap: { [key: string]: string } = {
+        'una y media': '13:30',
+        'dos y media': '14:30', 
+        'tres y media': '15:30',
+        'cuatro y media': '16:30',
+        'cinco y media': '17:30',
+        'seis y media': '18:30',
+        'siete y media': '19:30',
+        'ocho y media': '20:30',
+        'nueve y media': '21:30',
+        'diez y media': '10:30',
+        'once y media': '11:30',
+        'doce y media': '12:30',
+        'una': '13:00',
+        'dos': '14:00',
+        'tres': '15:00',
+        'cuatro': '16:00',
+        'cinco': '17:00',
+        'seis': '18:00',
+        'siete': '19:00',
+        'ocho': '20:00',
+        'nueve': '21:00',
+        'diez': '10:00',
+        'once': '11:00',
+        'doce': '12:00'
+      };
+      
+      const normalizedTime = timeStr.toLowerCase().trim();
+      return timeMap[normalizedTime] || timeStr;
+    };
+
     // Extract pickup time
     let pickupTime = '';
     for (const pattern of timePatterns) {
       const match = text.match(pattern);
       if (match && match[1]) {
         let time = match[1];
-        // Add :00 if no minutes specified
-        if (!time.includes(':')) {
+        
+        // Convert Spanish time expressions to numeric format
+        time = convertSpanishTimeToNumber(time);
+        
+        // Add :00 if no minutes specified and it's numeric
+        if (!time.includes(':') && /^\d+$/.test(time)) {
           time += ':00';
         }
+        
         // Ensure time is in HH:MM format
         const timeParts = time.split(':');
         if (timeParts.length === 2) {

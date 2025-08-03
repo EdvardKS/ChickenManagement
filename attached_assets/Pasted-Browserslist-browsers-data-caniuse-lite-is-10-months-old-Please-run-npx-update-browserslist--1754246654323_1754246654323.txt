@@ -1,0 +1,39 @@
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+6:42:40 PM [express] GET /api/auth/me 401 in 2ms :: {"message":"No autenticado"}
+6:43:26 PM [express] GET /api/auth/me 304 in 576ms :: {"id":1,"username":"edvardks","role":"haykakan…
+6:43:27 PM [express] GET /api/dashboard-data 200 in 591ms :: {"orders":[{"id":3,"customerName":"test…
+🎤 Processing voice audio file: voice_1754246616226.webm
+🔑 Checking OpenAI keys:
+  OPENAI_PLATFORM exists: true
+  OPENAI_PLATFORM value length: 164
+  OPENAI_API_KEY exists: false
+  All env keys that start with OPENAI: [ 'OPENAI_PLATFORM' ]
+  Selected key starts with: sk-proj-hg...
+🗣️ Transcription result: Fernando García Ortiz Dos pollos a la una y cuarto
+
+🔍 Processing voice command: fernando garcía ortiz dos pollos a la una y cuarto
+🔍 Trying name patterns...
+   Pattern: ^([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)\s*, -> Match: No match
+   Pattern: (?:viene|llega)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)(?:\s*,|\s+\d|\s+un|\s+dos|\s+tres|\s+cuatro|\s+cinco|\s+medio) -> Match: No match
+   Pattern: (?:a\s+nombre\s+de|para|de)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*) -> Match: No match
+   Pattern: (?:nombre|cliente)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*) -> Match: No match
+   Pattern: ([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*)\s+(?:quiere|pide) -> Match: No match
+   Pattern: (?:para)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)(?:\s*,|\s+\d|\s+un|\s+dos|\s+tres|\s+cuatro|\s+cinco) -> Match: No match
+🔍 Trying quantity patterns...
+   Pattern: (un\s+pollo\s+y\s+medio|1\.?5)\s*pollos? -> Match: No match
+   Pattern: (?:medio|0\.?5)\s*pollo -> Match: No match
+   Pattern: (\d+)\s*(?:pollos?|pollo) -> Match: No match
+   Pattern: (?:un|uno|1)\s*pollo -> Match: No match
+   Pattern: (?:dos|2)\s*pollos? -> Match: dos pollos
+✅ Quantity extracted: 2
+🔍 Trying time patterns...
+   Pattern: (?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+tarde -> Match: No match
+   Pattern: (?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+mañana -> Match: No match
+   Pattern: (?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+noche -> Match: No match
+   Pattern: (?:para\s+las?\s+|a\s+las?\s+)?(una?\s+y\s+cuarto) -> Match: a la una y cuarto
+✅ Time extracted: "13:15"
+6:43:37 PM [express] POST /api/speech-to-text 200 in 1745ms :: {"success":true,"transcription":"Fern…
+6:43:51 PM [express] GET /api/auth/me 304 in 573ms :: {"id":1,"username":"edvardks","role":"haykakan…
+6:43:52 PM [express] GET /api/dashboard-data 200 in 608ms :: {"orders":[{"id":3,"customerName":"test…

@@ -72,6 +72,8 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
     const namePatterns = [
       // Pattern for "Nombre Apellido," at the beginning - highest priority
       /^([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)\s*,/i,
+      // Pattern for "Nombre Apellido [cantidad]" at the beginning - captures names followed by quantities
+      /^([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)\s+(?:un|uno|dos|tres|cuatro|cinco|\d+|medio|pollo)/i,
       // Pattern for "viene [Nombre Apellido]" - new pattern for this case
       /(?:viene|llega)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)(?:\s*,|\s+\d|\s+un|\s+dos|\s+tres|\s+cuatro|\s+cinco|\s+medio)/i,
       // Patterns for "a nombre de [Nombre Apellido]", capturing full names including compound surnames

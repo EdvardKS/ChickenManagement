@@ -53,6 +53,9 @@ A comprehensive restaurant management system built with Next.js, TypeScript, Pos
   14. ✅ **Full Name Recognition**: Enhanced patterns capture complete names with surnames (e.g., "Pedro Hernández Ortiz")
   15. ✅ **"Viene" Pattern Recognition**: Added specific patterns for "viene/llega [Nombre Apellido]" expressions
   16. ✅ **Time Afternoon/Morning Processing**: Fixed "3 de la tarde" → "15:00", "8 de la mañana" → "08:00" conversions
+  17. ✅ **Name Pattern Without Keywords**: Added pattern ^([nombres]+)\s+(?:cantidad) for "Fernando García Ortiz dos pollos"
+  18. ✅ **Quarter Time Support**: Added "y cuarto" patterns - "una y cuarto" → "13:15"
+  19. ✅ **Debug Logging**: Added comprehensive pattern matching logs for troubleshooting
 
 - **New Components Created**:
   - `TimeSelector` component with preset buttons and manual time input

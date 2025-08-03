@@ -70,6 +70,8 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
 
     // Patterns for extracting information - Updated to capture full names with surnames
     const namePatterns = [
+      // Pattern for "Nombre Apellido," at the beginning - highest priority
+      /^([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)\s*,/i,
       // Pattern for "viene [Nombre Apellido]" - new pattern for this case
       /(?:viene|llega)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)(?:\s*,|\s+\d|\s+un|\s+dos|\s+tres|\s+cuatro|\s+cinco|\s+medio)/i,
       // Patterns for "a nombre de [Nombre Apellido]", capturing full names including compound surnames
@@ -83,14 +85,15 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
     ];
 
     const quantityPatterns = [
+      // First check for compound quantities like "un pollo y medio"
+      /(un\s+pollo\s+y\s+medio|1\.?5)\s*pollos?/i,
+      /(?:medio|0\.?5)\s*pollo/i,
       /(\d+)\s*(?:pollos?|pollo)/i,
       /(?:un|uno|1)\s*pollo/i,
       /(?:dos|2)\s*pollos?/i,
       /(?:tres|3)\s*pollos?/i,
       /(?:cuatro|4)\s*pollos?/i,
-      /(?:cinco|5)\s*pollos?/i,
-      /(?:medio|0\.?5)\s*pollo/i,
-      /(un\s+pollo\s+y\s+medio|1\.?5)\s*pollos?/i
+      /(?:cinco|5)\s*pollos?/i
     ];
 
     const timePatterns = [
@@ -99,8 +102,11 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
       /(?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+mañana/i,
       /(?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+noche/i,
       // Patterns for "tres y media", "dos y media", etc.
+      /(?:para\s+las?\s+|a\s+las?\s+)?(una?\s+y\s+cuarto)/i,
       /(?:para\s+las?\s+|a\s+las?\s+)?(una?\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(dos\s+y\s+cuarto)/i,
       /(?:para\s+las?\s+|a\s+las?\s+)?(dos\s+y\s+media)/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(tres\s+y\s+cuarto)/i,
       /(?:para\s+las?\s+|a\s+las?\s+)?(tres\s+y\s+media)/i,
       /(?:para\s+las?\s+|a\s+las?\s+)?(cuatro\s+y\s+media)/i,
       /(?:para\s+las?\s+|a\s+las?\s+)?(cinco\s+y\s+media)/i,
@@ -145,18 +151,23 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
 
     // Extract customer name
     let customerName = '';
+    console.log('🔍 Trying name patterns...');
     for (const pattern of namePatterns) {
       const match = text.match(pattern);
+      console.log(`   Pattern: ${pattern.source} -> Match:`, match ? match[1] : 'No match');
       if (match && match[1]) {
         customerName = capitalizeName(match[1]);
+        console.log(`✅ Name extracted: "${customerName}"`);
         break;
       }
     }
 
     // Extract quantity
     let quantity = 1; // Default to 1 chicken
+    console.log('🔍 Trying quantity patterns...');
     for (const pattern of quantityPatterns) {
       const match = text.match(pattern);
+      console.log(`   Pattern: ${pattern.source} -> Match:`, match ? match[0] : 'No match');
       if (match) {
         if (pattern.source.includes('medio|0\\.?5')) {
           quantity = 0.5;
@@ -176,6 +187,7 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
         } else if (pattern.source.includes('cinco|5')) {
           quantity = 5;
         }
+        console.log(`✅ Quantity extracted: ${quantity}`);
         break;
       }
     }
@@ -211,6 +223,20 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
       
       // Fallback to word-based time mapping
       const timeMap: { [key: string]: string } = {
+        // Quarter past times
+        'una y cuarto': '13:15',
+        'dos y cuarto': '14:15',
+        'tres y cuarto': '15:15',
+        'cuatro y cuarto': '16:15',
+        'cinco y cuarto': '17:15',
+        'seis y cuarto': '18:15',
+        'siete y cuarto': '19:15',
+        'ocho y cuarto': '20:15',
+        'nueve y cuarto': '21:15',
+        'diez y cuarto': '10:15',
+        'once y cuarto': '11:15',
+        'doce y cuarto': '12:15',
+        // Half past times
         'una y media': '13:30',
         'dos y media': '14:30', 
         'tres y media': '15:30',
@@ -223,6 +249,7 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
         'diez y media': '10:30',
         'once y media': '11:30',
         'doce y media': '12:30',
+        // Exact hours
         'una': '13:00',
         'dos': '14:00',
         'tres': '15:00',
@@ -242,8 +269,10 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
 
     // Extract pickup time
     let pickupTime = '';
+    console.log('🔍 Trying time patterns...');
     for (const pattern of timePatterns) {
       const match = text.match(pattern);
+      console.log(`   Pattern: ${pattern.source} -> Match:`, match ? match[0] : 'No match');
       if (match && match[1]) {
         let time = match[1];
         
@@ -269,6 +298,7 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
             pickupTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
           }
         }
+        console.log(`✅ Time extracted: "${pickupTime}"`);
         break;
       }
     }

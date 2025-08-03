@@ -1,71 +1,90 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Package, Mic, Plus } from "lucide-react";
-import { VoiceOrderButton } from "@/components/voice/VoiceOrderButton";
 import { cn } from "@/lib/utils";
 
 interface MobileBottomNavigationProps {
   onStockClick: () => void;
   onNewOrderClick: () => void;
-  onVoiceResult: (result: string) => void;
-  onVoiceOrderCreated: () => void;
+  onVoiceResult: () => void;
   disabled?: boolean;
   className?: string;
 }
 
-export function MobileBottomNavigation({ 
-  onStockClick, 
-  onNewOrderClick, 
+export function MobileBottomNavigation({
+  onStockClick,
+  onNewOrderClick,
   onVoiceResult,
-  onVoiceOrderCreated,
   disabled,
-  className 
+  className,
 }: MobileBottomNavigationProps) {
   return (
-    <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-50",
-      // Fondo negro elegante y fino
-      "bg-black/95 border-t border-white/10",
-      "px-4 py-2",
-      // Visible en móvil, tablet y pantallas hasta 14 pulgadas
-      "xl:hidden",
-      className
-    )}>
-      <div className="flex items-center justify-around w-full max-w-xs mx-auto">
-        {/* Botón Stock - Izquierda */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onStockClick}
-          disabled={disabled}
-          className="flex flex-col items-center justify-center h-12 w-16 p-1 hover:bg-white/5 transition-colors duration-200 disabled:opacity-50"
-        >
-          <Package className="h-5 w-5 mb-1 text-white/80 stroke-[1]" />
-          <span className="text-[10px] font-light text-white/70">Stock</span>
-        </Button>
-
-        {/* Botón Voice Recognition - Centro */}
-        <div className="relative flex flex-col items-center justify-center h-12 w-16">
-          <VoiceOrderButton 
-            onVoiceResult={onVoiceResult}
-            onOrderCreated={onVoiceOrderCreated}
+    <nav
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 w-full bg-black",
+        "border-t border-white/10 px-6  xl:hidden",
+        className
+      )}
+    >
+      <div className="relative flex items-center justify-center h-16">
+        {/* Barra inferior - botones laterales */}
+        <div className="absolute inset-0 flex items-end justify-between px-6 pb-2">
+          <RoundedSideButton
+            icon={<Package className="w-4 h-4 me-2" />}
+            label="Stock"
+            onClick={onStockClick}
             disabled={disabled}
-            className="flex flex-col items-center justify-center h-12 w-16 p-1 hover:bg-white/5 transition-colors duration-200 disabled:opacity-50"
+          />
+          <RoundedSideButton
+            icon={<Plus className="w-4 h-4 me-2" />}
+            label="Pedido"
+            onClick={onNewOrderClick}
+            disabled={disabled}
           />
         </div>
 
-        {/* Botón Nuevo Pedido - Derecha */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onNewOrderClick}
+        {/* Botón central - más elevado */}
+        <button
+          onClick={onVoiceResult}
           disabled={disabled}
-          className="flex flex-col items-center justify-center h-12 w-16 p-1 hover:bg-white/5 transition-colors duration-200 disabled:opacity-50"
+          className={cn(
+            "z-10 rounded-full w-14 h-14 -translate-y-4 ",
+            "bg-blue-600 hover:bg-blue-500 transition-colors duration-200",
+            "shadow-md border-4 border-black flex items-center justify-center",
+            disabled && "opacity-40"
+          )}
         >
-          <Plus className="h-5 w-5 mb-1 text-white/80 stroke-[1]" />
-          <span className="text-[10px] font-light text-white/70">Pedido</span>
-        </Button>
+          <Mic className="w-5 h-5 text-white" />
+        </button>
       </div>
-    </div>
+    </nav>
+  );
+}
+
+interface SideButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+function RoundedSideButton({
+  icon,
+  label,
+  onClick,
+  disabled,
+}: SideButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex flex-row items-center justify-center px-4 py-2",
+        "rounded-full bg-white/5 hover:bg-blue-500/30 transition-colors",
+        "text-white text-xs font-light w-24 h-12",
+        disabled && "opacity-40"
+      )}
+    >
+      {icon}
+      <span className="mt-1">{label}</span>
+    </button>
   );
 }

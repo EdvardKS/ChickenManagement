@@ -1,0 +1,36 @@
+4:51:13 PM [express] GET /api/auth/me 304 in 191ms :: {"id":1,"username":"edvardks","role":"haykakan…
+🎤 Processing voice audio file: voice_1754239887685.webm
+🔑 Checking OpenAI keys:
+  OPENAI_PLATFORM exists: true
+  OPENAI_PLATFORM value length: 164
+  OPENAI_API_KEY exists: false
+  All env keys that start with OPENAI: [ 'OPENAI_PLATFORM' ]
+  Selected key starts with: sk-proj-hg...
+🗣️ Transcription result: Crea pedido para María, dos pollos para los dos.
+
+🔍 Processing voice command: crea pedido para maría, dos pollos para los dos.
+✅ Order data extracted: { customerName: 'María', quantity: 2, pickupTime: '17:51', phone: '' }
+📝 Storage - Create Order - Starting creation with data: {
+  "customerName": "María",
+  "phone": "",
+  "pickupTime": "17:51",
+  "items": "[{\"id\":1,\"name\":\"Pollo Asado\",\"quantity\":2,\"price\":800}]",
+  "totalAmount": 1600,
+  "status": "pending",
+  "notes": "Pedido creado por voz: \"Crea pedido para María, dos pollos para los dos.\n\""
+}
+🔍 Storage - Create Order - Verificando tipos de datos:
+   - customerName: string María
+   - quantity: undefined undefined
+   - pickupTime: string No es instancia de Date 17:51
+   - totalAmount: number 1600
+⚠️ Storage - Create Order - pickupTime no es una instancia de Date, intentando convertir: 17:51
+✅ Storage - Create Order - pickupTime convertido correctamente: Invalid Date
+⚠️ Storage - Create Order - quantity no es un número, intentando convertir: undefined
+❌ Storage - Create Order - Error al convertir quantity: Error: Valor no numérico: undefined
+    at DatabaseStorage.createOrder (/home/runner/workspace/server/storage.ts:206:39)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:1286:42)
+❌ Error creating order: Error: Cantidad inválida: undefined
+    at DatabaseStorage.createOrder (/home/runner/workspace/server/storage.ts:210:15)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:1286:42)
+4:51:31 PM [express] POST /api/speech-to-text 200 in 3652ms :: {"success":true,"transcription":"Crea…

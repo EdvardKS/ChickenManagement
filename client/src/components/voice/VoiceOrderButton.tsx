@@ -18,7 +18,7 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
   const [transcriptionData, setTranscriptionData] = useState<any>(null);
 
   // Hook de reconocimiento de voz
-  const { state, audioData, startListening, stopListening, isSupported } = useVoiceRecognition({
+  const { state, audioData, interimTranscript, startListening, stopListening, isSupported } = useVoiceRecognition({
     onResult: useCallback((result: VoiceRecognitionResult) => {
       console.log('Voice recognition result:', result);
       
@@ -191,6 +191,13 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
                         audioData={audioData}
                         className="mt-4"
                       />
+                      {interimTranscript && (
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-800">
+                            <span className="font-medium">Escuchando:</span> "{interimTranscript}"
+                          </p>
+                        </div>
+                      )}
                     </>
                   )}
 

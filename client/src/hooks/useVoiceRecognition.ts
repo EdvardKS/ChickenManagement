@@ -14,6 +14,7 @@ export function useVoiceRecognition({
 }: UseVoiceRecognitionProps) {
   const [state, setState] = useState<VoiceState>('idle');
   const [audioData, setAudioData] = useState<Uint8Array>();
+  const [interimTranscript, setInterimTranscript] = useState<string>('');
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -21,6 +22,7 @@ export function useVoiceRecognition({
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number>();
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const speechRecognitionRef = useRef<any>(null);
 
   // Función para obtener datos de audio en tiempo real
   const updateAudioData = useCallback(() => {
@@ -37,6 +39,7 @@ export function useVoiceRecognition({
   const startListening = useCallback(async () => {
     try {
       setState('listening');
+      setInterimTranscript('');
 
       // Solicitar permisos del micrófono
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -48,6 +51,38 @@ export function useVoiceRecognition({
       });
       
       streamRef.current = stream;
+
+      // Iniciar Web Speech API para transcripción en tiempo real si está disponible
+      try {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'es-ES';
+          
+          recognition.onresult = (event: any) => {
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                // Final result - no need to update interim
+              } else {
+                interim += transcript;
+              }
+            }
+            setInterimTranscript(interim);
+          };
+          
+          speechRecognitionRef.current = recognition;
+          recognition.start();
+          console.log('🎙️ Web Speech API iniciado para transcripción en tiempo real');
+        } else {
+          console.warn('⚠️ Web Speech API no disponible, solo grabación');
+        }
+      } catch (speechError) {
+        console.warn('⚠️ Error iniciando Web Speech API:', speechError);
+      }
 
       // Configurar Web Audio API para visualización
       audioContextRef.current = new AudioContext();
@@ -116,6 +151,12 @@ export function useVoiceRecognition({
       mediaRecorderRef.current.stop();
     }
 
+    // Detener Web Speech API
+    if (speechRecognitionRef.current) {
+      speechRecognitionRef.current.stop();
+      speechRecognitionRef.current = null;
+    }
+
     // Limpiar recursos
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -137,6 +178,7 @@ export function useVoiceRecognition({
 
     analyserRef.current = null;
     setAudioData(undefined);
+    setInterimTranscript('');
   }, []);
 
   // Procesar con Web Speech API (navegador)
@@ -245,6 +287,7 @@ export function useVoiceRecognition({
   return {
     state,
     audioData,
+    interimTranscript,
     startListening,
     stopListening,
     isSupported: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,

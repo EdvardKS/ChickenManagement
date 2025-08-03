@@ -1286,6 +1286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const newOrder = await storage.createOrder({
             customerName: orderData.customerName,
             phone: orderData.phone || '',
+            quantity: orderData.quantity,
             pickupTime: orderData.pickupTime,
             items: JSON.stringify([{
               id: 1, // Default product ID for chicken

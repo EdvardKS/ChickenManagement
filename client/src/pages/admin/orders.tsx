@@ -81,15 +81,15 @@ export default function AdminOrders() {
   const handleVoiceResult = useCallback((result: string) => {
     console.log('Voice result:', result);
     
-    // TODO: En Sprint 3 implementaremos el procesamiento real con reglas
-    // Por ahora mostramos el resultado y abrimos el drawer de nuevo pedido
+    // El sistema ya procesa automáticamente los comandos de voz y crea pedidos
+    // Solo mostramos una confirmación sin abrir el drawer
     toast({
-      title: "Comando de voz recibido",
+      title: "Comando de voz procesado",
       description: `"${result}"`,
     });
 
-    // Abrir el drawer de nuevo pedido para que el usuario pueda revisar/editar
-    setIsNewOrderOpen(true);
+    // No abrimos el drawer - el reconocimiento de voz ya maneja la creación automática
+    // setIsNewOrderOpen(true); // Comentado para evitar apertura automática
   }, [toast]);
 
   const handleNewOrderClose = useCallback((open: boolean) => {

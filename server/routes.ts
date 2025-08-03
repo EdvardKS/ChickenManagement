@@ -70,6 +70,8 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
 
     // Patterns for extracting information - Updated to capture full names with surnames
     const namePatterns = [
+      // Pattern for "viene [Nombre Apellido]" - new pattern for this case
+      /(?:viene|llega)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*?)(?:\s*,|\s+\d|\s+un|\s+dos|\s+tres|\s+cuatro|\s+cinco|\s+medio)/i,
       // Patterns for "a nombre de [Nombre Apellido]", capturing full names including compound surnames
       /(?:a\s+nombre\s+de|para|de)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)*)/i,
       // Pattern for "nombre [Nombre Apellido]", capturing multiple words
@@ -92,6 +94,10 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
     ];
 
     const timePatterns = [
+      // Patterns for "X de la tarde/mañana/noche" - high priority patterns
+      /(?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+tarde/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+mañana/i,
+      /(?:para\s+las?\s+|a\s+las?\s+)?(\d{1,2})\s+de\s+la\s+noche/i,
       // Patterns for "tres y media", "dos y media", etc.
       /(?:para\s+las?\s+|a\s+las?\s+)?(una?\s+y\s+media)/i,
       /(?:para\s+las?\s+|a\s+las?\s+)?(dos\s+y\s+media)/i,
@@ -176,6 +182,34 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
 
     // Helper function to convert Spanish time words to numbers
     const convertSpanishTimeToNumber = (timeStr: string): string => {
+      const normalizedTime = timeStr.toLowerCase().trim();
+      
+      // Check for "X de la tarde/mañana/noche" patterns first
+      const tardeMatch = normalizedTime.match(/(\d{1,2})\s+de\s+la\s+tarde/);
+      if (tardeMatch) {
+        const hour = parseInt(tardeMatch[1]);
+        // Convert to 24-hour format for afternoon (12-11 PM becomes 12-23)
+        const convertedHour = hour === 12 ? 12 : hour + 12;
+        return `${convertedHour.toString().padStart(2, '0')}:00`;
+      }
+      
+      const mananaMatch = normalizedTime.match(/(\d{1,2})\s+de\s+la\s+mañana/);
+      if (mananaMatch) {
+        const hour = parseInt(mananaMatch[1]);
+        // Morning hours stay the same (but 12 AM becomes 00)
+        const convertedHour = hour === 12 ? 0 : hour;
+        return `${convertedHour.toString().padStart(2, '0')}:00`;
+      }
+      
+      const nocheMatch = normalizedTime.match(/(\d{1,2})\s+de\s+la\s+noche/);
+      if (nocheMatch) {
+        const hour = parseInt(nocheMatch[1]);
+        // Night hours (6 PM - 11 PM becomes 18-23)
+        const convertedHour = hour + 12;
+        return `${convertedHour.toString().padStart(2, '0')}:00`;
+      }
+      
+      // Fallback to word-based time mapping
       const timeMap: { [key: string]: string } = {
         'una y media': '13:30',
         'dos y media': '14:30', 
@@ -203,7 +237,6 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
         'doce': '12:00'
       };
       
-      const normalizedTime = timeStr.toLowerCase().trim();
       return timeMap[normalizedTime] || timeStr;
     };
 
@@ -214,8 +247,13 @@ function processVoiceCommand(transcription: string): { customerName: string; qua
       if (match && match[1]) {
         let time = match[1];
         
-        // Convert Spanish time expressions to numeric format
-        time = convertSpanishTimeToNumber(time);
+        // For "X de la tarde/mañana/noche" patterns, pass the full match to converter
+        if (pattern.source.includes('de\\s+la\\s+')) {
+          time = convertSpanishTimeToNumber(match[0]);
+        } else {
+          // Convert Spanish time expressions to numeric format
+          time = convertSpanishTimeToNumber(time);
+        }
         
         // Add :00 if no minutes specified and it's numeric
         if (!time.includes(':') && /^\d+$/.test(time)) {

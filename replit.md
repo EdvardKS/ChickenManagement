@@ -51,6 +51,8 @@ A comprehensive restaurant management system built with Next.js, TypeScript, Pos
   12. ✅ **Non-intrusive UX**: System creates orders automatically without opening new order drawer
   13. ✅ **Real-time Table Updates**: New orders appear instantly in the table via optimistic cache updates
   14. ✅ **Full Name Recognition**: Enhanced patterns capture complete names with surnames (e.g., "Pedro Hernández Ortiz")
+  15. ✅ **"Viene" Pattern Recognition**: Added specific patterns for "viene/llega [Nombre Apellido]" expressions
+  16. ✅ **Time Afternoon/Morning Processing**: Fixed "3 de la tarde" → "15:00", "8 de la mañana" → "08:00" conversions
 
 - **New Components Created**:
   - `TimeSelector` component with preset buttons and manual time input

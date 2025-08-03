@@ -5,6 +5,8 @@ import { OrdersTable } from "@/components/adminStockComponents/OrdersTable";
 import type { Order, Stock } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { queryClient, debounce } from "@/lib/queryClient";
+import { VoiceOrderButton } from "@/components/voice/VoiceOrderButton";
+import { useToast } from "@/hooks/use-toast";
 
 // Lazy load components to improve initial page load time
 const StockDrawer = lazy(() => import("@/components/adminStockComponents/StockDrawer").then(mod => ({ default: mod.StockDrawer })));
@@ -31,6 +33,7 @@ export default function AdminOrders() {
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
   const [isStockDrawerOpen, setIsStockDrawerOpen] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState(Date.now());
+  const { toast } = useToast();
 
   // Query optimizada con polling para sincronización automática
   const { data: dashboardData, isLoading, error } = useQuery<DashboardData>({ 
@@ -73,6 +76,21 @@ export default function AdminOrders() {
   const handleOpenStockDrawer = useCallback(() => {
     setIsStockDrawerOpen(true);
   }, []);
+
+  // Handler para resultados de reconocimiento de voz
+  const handleVoiceResult = useCallback((result: string) => {
+    console.log('Voice result:', result);
+    
+    // TODO: En Sprint 3 implementaremos el procesamiento real con reglas
+    // Por ahora mostramos el resultado y abrimos el drawer de nuevo pedido
+    toast({
+      title: "Comando de voz recibido",
+      description: `"${result}"`,
+    });
+
+    // Abrir el drawer de nuevo pedido para que el usuario pueda revisar/editar
+    setIsNewOrderOpen(true);
+  }, [toast]);
 
   const handleNewOrderClose = useCallback((open: boolean) => {
     setIsNewOrderOpen(open);
@@ -161,6 +179,12 @@ export default function AdminOrders() {
           />
         </Suspense>
       )}
+
+      {/* Voice Order Button - Fixed position at bottom center */}
+      <VoiceOrderButton 
+        onVoiceResult={handleVoiceResult}
+        disabled={isNewOrderOpen || isStockDrawerOpen}
+      />
     </div>
   );
 }

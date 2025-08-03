@@ -1230,11 +1230,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🎤 Processing voice audio file:', req.file.filename);
 
       // Extract OpenAI API key from environment
-      const openaiKey = "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";
+      const openaiKey = process.env.OPENAI_PLATFORM || process.env.OPENAI_API_KEY;
       
       console.log('🔑 Checking OpenAI keys:');
       console.log('  OPENAI_PLATFORM exists:', !!process.env.OPENAI_PLATFORM);
+      console.log('  OPENAI_PLATFORM value length:', process.env.OPENAI_PLATFORM?.length || 0);
       console.log('  OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+      console.log('  All env keys that start with OPENAI:', Object.keys(process.env).filter(k => k.startsWith('OPENAI')));
       console.log('  Selected key starts with:', openaiKey ? openaiKey.substring(0, 10) + '...' : 'null');
       
       if (!openaiKey) {
@@ -1242,9 +1244,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: 'Clave API de OpenAI no configurada' });
       }
 
-      // Import OpenAI and FormData
-      const OpenAI = require('openai');
-      const FormData = require('form-data');
+      // Import OpenAI and FormData (ES modules)
+      const { default: OpenAI } = await import('openai');
+      const { default: FormData } = await import('form-data');
       
       const openai = new OpenAI({
         apiKey: openaiKey

@@ -1,0 +1,112 @@
+🧩 DIFERENCIAS Y FALLOS DE DISEÑO
+1. Estilo visual y coherencia cromática
+Fallos:
+
+En tu interfaz, el botón central flotante tiene un degradado azul/morado que no está alineado con la identidad visual de Movistar.
+
+El fondo negro con iconos blancos se siente más estilo Material Design que el estilo más flat y limpio de Movistar.
+
+✅ Movistar:
+
+Usa colores planos, con predominancia de negro y azul celeste.
+
+Evita degradados brillantes.
+
+La interfaz tiene un estilo sobrio, minimalista y coherente con su identidad de marca.
+
+🔧 Cambios sugeridos:
+
+Sustituye el botón flotante morado por un botón fijo o contextual con color plano (#00B4FF o similar).
+
+Quita el degradado. Usa colores planos y una interfaz más minimalista.
+
+Usa una tipografía más cercana a la usada por Movistar (tipo TeleNeo o similar, con backup en sans-serif).
+
+2. Distribución y jerarquía visual
+Fallos:
+
+La barra inferior contiene iconos con texto, pero el botón central flota por encima y rompe la alineación visual.
+
+El botón de voz está centrado pero no alineado ni integrado con los demás iconos.
+
+✅ Movistar:
+
+Usa barras inferiores fijas con buena alineación de íconos.
+
+Todos los botones tienen el mismo peso visual y están correctamente espaciados.
+
+🔧 Cambios sugeridos:
+
+Elimina el botón flotante.
+
+Usa una barra inferior con distribución equidistante de los íconos y texto debajo de ellos.
+
+Asegúrate de que haya el mismo padding y tamaño para cada elemento.
+
+3. Uso del espacio y márgenes
+Fallos:
+
+Hay muy poco margen entre el contenido y los bordes.
+
+Los íconos en la parte inferior están muy pegados y sin separación suficiente.
+
+✅ Movistar:
+
+Tiene espaciado generoso, tanto vertical como horizontal.
+
+Usa márgenes amplios y coherentes para mejorar la legibilidad y navegación.
+
+🔧 Cambios sugeridos:
+
+Aumenta el padding interno de la barra inferior.
+
+Asegura un margin-bottom suficiente entre el borde de pantalla y los elementos interactivos.
+
+4. Iconografía y estilo de los íconos
+Fallos:
+
+Los íconos no están alineados con el estilo de Movistar. Son más genéricos.
+
+El ícono de micrófono tiene un estilo “Material” brillante y no acorde con el branding.
+
+✅ Movistar:
+
+Usa íconos propios o personalizados, planos, sin brillos ni sombras.
+
+Iconografía consistente en todo el sistema.
+
+🔧 Cambios sugeridos:
+
+Usa un set de íconos flat y customizado con líneas finas y proporción homogénea.
+
+Evita íconos con volumen o brillos.
+
+Usa Feather, Heroicons o un set personalizado basado en SVG plano.
+
+5. Interacciones y retroalimentación
+Fallos:
+
+No se visualiza claramente qué acciones están disponibles con el botón de voz o el botón de "Pedido".
+
+Falta animación o feedback al tocar.
+
+✅ Movistar:
+
+Las acciones son intuitivas, y hay feedback visual al tocar (sombra, cambio de color, animación suave).
+
+🔧 Cambios sugeridos:
+
+Añade animaciones sutiles o cambios de color al pulsar botones.
+
+Incluye texto o tooltips que expliquen cada botón si no es 100% autoexplicativo.
+
+✅ RESUMEN DE CAMBIOS A MODIFICAR
+Elemento	Cambios recomendados
+Botón central flotante	Eliminarlo o integrarlo en la barra inferior, sin degradado
+Colores	Usar colores planos alineados a la marca (#00B4FF, blanco, negro)
+Iconografía	Sustituir por iconos flat personalizados
+Tipografía	Usar una sans-serif moderna, o similar a la usada por Movistar
+Espaciado y márgenes	Aumentar separación entre elementos, usar padding consistente
+Retroalimentación de acción	Añadir efectos visuales al tocar botones
+Distribución general	Reorganizar los botones en una barra fija inferior, sin elementos flotantes
+

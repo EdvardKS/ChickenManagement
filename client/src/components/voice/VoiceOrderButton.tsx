@@ -10,9 +10,11 @@ interface VoiceOrderButtonProps {
   onVoiceResult?: (result: string) => void;
   onOrderCreated?: (order: any) => void;
   disabled?: boolean;
+  className?: string;
+  children?: React.ReactNode;
 }
 
-export function VoiceOrderButton({ onVoiceResult, onOrderCreated, disabled = false }: VoiceOrderButtonProps) {
+export function VoiceOrderButton({ onVoiceResult, onOrderCreated, disabled = false, className, children }: VoiceOrderButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successData, setSuccessData] = useState<any>(null);
@@ -108,30 +110,25 @@ export function VoiceOrderButton({ onVoiceResult, onOrderCreated, disabled = fal
 
   return (
     <>
-      <AnimatePresence>
-        {!isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50"
-          >
-            <Button
-              onClick={handleStartListening}
-              disabled={disabled || !isSupported || state !== 'idle'}
-              className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
-              size="lg"
+      {/* Botón principal integrado en barra inferior */}
+      <Button
+        onClick={state === 'listening' ? handleStopListening : handleStartListening}
+        disabled={disabled || !isSupported}
+        variant="ghost"
+        className={`${className || "flex flex-col items-center justify-center h-20 w-20 p-3 hover:bg-white/5 active:bg-white/10 transition-colors duration-150 disabled:opacity-50"}`}
+      >
+        {children || (
+          <>
+            <motion.div
+              animate={state === 'listening' ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ repeat: Infinity, duration: 1.5 }}
             >
-              <motion.div
-                animate={state === 'listening' ? { scale: [1, 1.2, 1] } : {}}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              >
-                {getButtonIcon()}
-              </motion.div>
-            </Button>
-          </motion.div>
+              <Mic className={`h-6 w-6 mb-2 stroke-[1.5] ${state === 'listening' ? 'text-red-500' : 'text-[#00B4FF]'}`} />
+            </motion.div>
+            <span className="text-xs font-normal text-white tracking-wide">Voz</span>
+          </>
         )}
-      </AnimatePresence>
+      </Button>
 
       <AnimatePresence>
         {isExpanded && (
@@ -139,34 +136,25 @@ export function VoiceOrderButton({ onVoiceResult, onOrderCreated, disabled = fal
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
           >
             <motion.div
               initial={{ y: 50 }}
               animate={{ y: 0 }}
-              className="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4"
+              className="bg-white rounded-lg p-6 shadow-xl max-w-md w-full mx-4"
             >
               <div className="text-center space-y-6">
                 <div className="relative">
                   <motion.div
                     animate={
                       state === 'listening'
-                        ? { scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }
+                        ? { scale: [1, 1.1, 1] }
                         : {}
                     }
                     transition={{ repeat: Infinity, duration: 1.5 }}
-                    className="w-24 h-24 mx-auto bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center"
+                    className="w-16 h-16 mx-auto bg-[#00B4FF] rounded-full flex items-center justify-center"
                   >
-                    <motion.div
-                      animate={
-                        state === 'listening'
-                          ? { rotate: [0, 180, 360] }
-                          : {}
-                      }
-                      transition={{ repeat: Infinity, duration: 2 }}
-                    >
-                      {getButtonIcon()}
-                    </motion.div>
+                    <Mic className="w-8 h-8 text-white" />
                   </motion.div>
                   
                   {state === 'listening' && (

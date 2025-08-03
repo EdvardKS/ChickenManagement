@@ -8,10 +8,11 @@ import { VoiceRecognitionResult } from "./types";
 
 interface VoiceOrderButtonProps {
   onVoiceResult?: (result: string) => void;
+  onOrderCreated?: (order: any) => void;
   disabled?: boolean;
 }
 
-export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrderButtonProps) {
+export function VoiceOrderButton({ onVoiceResult, onOrderCreated, disabled = false }: VoiceOrderButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successData, setSuccessData] = useState<any>(null);
@@ -29,6 +30,10 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
           order: result.order,
           extractedData: result.extractedData
         });
+        
+        // Notify parent component about the new order for optimistic updates
+        onOrderCreated?.(result.order);
+        
         setTimeout(() => {
           setIsExpanded(false);
           setSuccessData(null);
@@ -48,7 +53,7 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
       
       onVoiceResult?.(result.transcript);
       setErrorMessage('');
-    }, [onVoiceResult]),
+    }, [onVoiceResult, onOrderCreated]),
     
     onError: useCallback((error: string) => {
       console.error('Voice recognition error:', error);

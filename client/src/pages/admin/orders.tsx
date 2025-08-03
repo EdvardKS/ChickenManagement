@@ -92,6 +92,30 @@ export default function AdminOrders() {
     // setIsNewOrderOpen(true); // Comentado para evitar apertura automática
   }, [toast]);
 
+  // Handler para cuando se crea un pedido por voz - actualización optimista
+  const handleVoiceOrderCreated = useCallback((newOrder: Order) => {
+    console.log('New order created via voice:', newOrder);
+    
+    // Actualización optimista: agregar el nuevo pedido inmediatamente a la cache
+    queryClient.setQueryData(['/api/dashboard-data'], (oldData: DashboardData | undefined) => {
+      if (!oldData) return oldData;
+      
+      // Agregar el nuevo pedido al inicio de la lista
+      const updatedOrders = [newOrder, ...oldData.orders];
+      
+      return {
+        ...oldData,
+        orders: updatedOrders,
+        lastUpdated: new Date().toISOString()
+      };
+    });
+    
+    toast({
+      title: "¡Pedido creado exitosamente!",
+      description: `Pedido para ${newOrder.customerName} agregado a la tabla`,
+    });
+  }, [toast]);
+
   const handleNewOrderClose = useCallback((open: boolean) => {
     setIsNewOrderOpen(open);
     if (!open) {
@@ -183,6 +207,7 @@ export default function AdminOrders() {
       {/* Voice Order Button - Fixed position at bottom center */}
       <VoiceOrderButton 
         onVoiceResult={handleVoiceResult}
+        onOrderCreated={handleVoiceOrderCreated}
         disabled={isNewOrderOpen || isStockDrawerOpen}
       />
     </div>

@@ -6,6 +6,7 @@ import type { Order, Stock } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { queryClient, debounce } from "@/lib/queryClient";
 import { VoiceOrderButton } from "@/components/voice/VoiceOrderButton";
+import { MobileBottomNavigation } from "@/components/layout/MobileBottomNavigation";
 import { useToast } from "@/hooks/use-toast";
 
 // Lazy load components to improve initial page load time
@@ -139,10 +140,10 @@ export default function AdminOrders() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-20 md:pb-0">
       
-      {/* Header Section */}
-      <div className="bg-white shadow-sm border-b border-gray-100 py-1">
+      {/* Header Section - Hidden on mobile to save space */}
+      <div className="bg-white shadow-sm border-b border-gray-100 py-1 hidden md:block">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -177,6 +178,20 @@ export default function AdminOrders() {
         </div>
       </div>
 
+      {/* Mobile Header - Compact version for mobile */}
+      <div className="bg-white shadow-sm border-b border-gray-100 py-2 md:hidden">
+        <div className="px-4">
+          <div className="flex items-center justify-center">
+            <img 
+              src="/img/corporativa/logo-negro.png" 
+              alt="Logo" 
+              className="h-8 w-8 object-contain mr-2"
+            />
+            <h1 className="text-lg font-bold text-gray-800">Pedidos</h1>
+          </div>
+        </div>
+      </div>
+
       {/* Orders Table Section - Full Width without margins */}
       <div className="bg-white w-full">
         <OrdersTable 
@@ -204,10 +219,21 @@ export default function AdminOrders() {
         </Suspense>
       )}
 
-      {/* Voice Order Button - Fixed position at bottom center */}
-      <VoiceOrderButton 
+      {/* Desktop Voice Order Button - Fixed position at bottom center */}
+      <div className="hidden md:block">
+        <VoiceOrderButton 
+          onVoiceResult={handleVoiceResult}
+          onOrderCreated={handleVoiceOrderCreated}
+          disabled={isNewOrderOpen || isStockDrawerOpen}
+        />
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNavigation
+        onStockClick={handleOpenStockDrawer}
+        onNewOrderClick={handleOpenNewOrder}
         onVoiceResult={handleVoiceResult}
-        onOrderCreated={handleVoiceOrderCreated}
+        onVoiceOrderCreated={handleVoiceOrderCreated}
         disabled={isNewOrderOpen || isStockDrawerOpen}
       />
     </div>

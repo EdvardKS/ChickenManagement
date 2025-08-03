@@ -14,13 +14,39 @@ interface VoiceOrderButtonProps {
 export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrderButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [successData, setSuccessData] = useState<any>(null);
+  const [transcriptionData, setTranscriptionData] = useState<any>(null);
 
   // Hook de reconocimiento de voz
   const { state, audioData, startListening, stopListening, isSupported } = useVoiceRecognition({
     onResult: useCallback((result: VoiceRecognitionResult) => {
       console.log('Voice recognition result:', result);
+      
+      if (result.orderCreated && result.order) {
+        // Show success message with order details
+        setSuccessData({
+          transcript: result.transcript,
+          order: result.order,
+          extractedData: result.extractedData
+        });
+        setTimeout(() => {
+          setIsExpanded(false);
+          setSuccessData(null);
+        }, 5000);
+      } else if (result.transcript) {
+        // Show transcription even if no order was created
+        setTranscriptionData({
+          transcript: result.transcript,
+          extractedData: result.extractedData,
+          message: result.message
+        });
+        setTimeout(() => {
+          setTranscriptionData(null);
+          setIsExpanded(false);
+        }, 3000);
+      }
+      
       onVoiceResult?.(result.transcript);
-      setIsExpanded(false);
       setErrorMessage('');
     }, [onVoiceResult]),
     
@@ -176,6 +202,48 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
                         className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full"
                       />
                     </div>
+                  )}
+
+                  {successData && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-green-50 border border-green-200 rounded-lg p-4 text-left"
+                    >
+                      <div className="text-green-800">
+                        <h4 className="font-semibold mb-2">¡Pedido creado exitosamente!</h4>
+                        <div className="space-y-1 text-sm">
+                          <p><strong>Cliente:</strong> {successData.extractedData?.customerName}</p>
+                          <p><strong>Cantidad:</strong> {successData.extractedData?.quantity} pollos</p>
+                          <p><strong>Hora recogida:</strong> {successData.extractedData?.pickupTime}</p>
+                          <p><strong>ID Pedido:</strong> #{successData.order?.id}</p>
+                        </div>
+                        <p className="text-xs mt-2 text-green-600">
+                          "{successData.transcript}"
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {transcriptionData && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left"
+                    >
+                      <div className="text-blue-800">
+                        <h4 className="font-semibold mb-2">Texto transcrito:</h4>
+                        <p className="text-sm mb-2">"{transcriptionData.transcript}"</p>
+                        {transcriptionData.extractedData && (
+                          <div className="text-xs text-blue-600">
+                            <p>Datos extraídos: {JSON.stringify(transcriptionData.extractedData)}</p>
+                          </div>
+                        )}
+                        {transcriptionData.message && (
+                          <p className="text-xs text-blue-600 mt-1">{transcriptionData.message}</p>
+                        )}
+                      </div>
+                    </motion.div>
                   )}
                 </div>
 

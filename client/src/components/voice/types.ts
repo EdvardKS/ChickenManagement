@@ -3,12 +3,17 @@ export type VoiceState = 'idle' | 'listening' | 'processing' | 'error';
 export interface VoiceRecognitionResult {
   transcript: string;
   confidence: number;
+  orderCreated?: boolean;
+  order?: any;
   extractedData?: {
     customerName?: string;
     quantity?: number;
+    pickupTime?: string;
+    phone?: string;
     time?: string;
     date?: string;
   };
+  message?: string;
 }
 
 export interface VoiceRule {

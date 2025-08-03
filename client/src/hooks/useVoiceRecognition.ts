@@ -178,6 +178,8 @@ export function useVoiceRecognition({
   // Procesar con servidor (OpenAI Whisper)
   const processSpeechWithServer = async (audioBlob: Blob) => {
     try {
+      setState('processing');
+      
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
 
@@ -190,10 +192,45 @@ export function useVoiceRecognition({
         throw new Error(`Server error: ${response.status}`);
       }
 
-      const result: VoiceRecognitionResult = await response.json();
-      onResult?.(result);
+      const result = await response.json();
+      console.log('🎤 Server response:', result);
+
+      if (result.success) {
+        if (result.orderCreated) {
+          setState('success');
+          console.log('🎉 Order created successfully:', result.order);
+          
+          // Create a success result for the voice recognition
+          const voiceResult: VoiceRecognitionResult = {
+            transcript: result.transcription,
+            confidence: 0.95, // High confidence for server processing
+            orderCreated: true,
+            order: result.order,
+            extractedData: result.extractedData
+          };
+          
+          onResult?.(voiceResult);
+        } else {
+          setState('idle');
+          console.log('📝 Transcription completed but no order created:', result.transcription);
+          
+          const voiceResult: VoiceRecognitionResult = {
+            transcript: result.transcription,
+            confidence: 0.95,
+            orderCreated: false,
+            extractedData: result.extractedData,
+            message: result.message
+          };
+          
+          onResult?.(voiceResult);
+        }
+      } else {
+        setState('error');
+        onError?.(result.error || 'Error procesando el audio');
+      }
     } catch (error) {
       console.error('Error procesando audio en servidor:', error);
+      setState('error');
       onError?.('Error procesando el audio. Inténtalo de nuevo.');
     }
   };

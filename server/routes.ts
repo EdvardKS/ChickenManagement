@@ -31,7 +31,165 @@ const multerStorage = multer.diskStorage({
   }
 });
 
+// Configuración de multer para archivos de audio
+const audioStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(process.cwd(), 'temp', 'audio');
+    // Ensure directory exists
+    fs.ensureDirSync(dir);
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const filename = `voice_${timestamp}.webm`;
+    cb(null, filename);
+  }
+});
+
 const upload = multer({ storage: multerStorage });
+const uploadAudio = multer({ 
+  storage: audioStorage,
+  fileFilter: (req, file, cb) => {
+    // Accept audio files
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos de audio'), false);
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
+
+// Voice command processing function
+function processVoiceCommand(transcription: string): { customerName: string; quantity: number; pickupTime: string; phone?: string } | null {
+  try {
+    const text = transcription.toLowerCase().trim();
+    console.log('🔍 Processing voice command:', text);
+
+    // Patterns for extracting information
+    const namePatterns = [
+      /(?:para|de)\s+([a-záéíóúñ]+)/i,
+      /(?:nombre|cliente)\s+([a-záéíóúñ]+)/i,
+      /([a-záéíóúñ]+)\s+(?:quiere|pide)/i
+    ];
+
+    const quantityPatterns = [
+      /(\d+)\s*(?:pollos?|pollo)/i,
+      /(?:un|uno|1)\s*pollo/i,
+      /(?:dos|2)\s*pollos?/i,
+      /(?:tres|3)\s*pollos?/i,
+      /(?:cuatro|4)\s*pollos?/i,
+      /(?:cinco|5)\s*pollos?/i,
+      /(?:medio|0\.?5)\s*pollo/i,
+      /(un\s+pollo\s+y\s+medio|1\.?5)\s*pollos?/i
+    ];
+
+    const timePatterns = [
+      /(?:para\s+las?\s+|a\s+las?\s+)(\d{1,2}(?::\d{2})?)/i,
+      /(\d{1,2}(?::\d{2})?)\s*(?:horas?|h)/i,
+      /(?:las?\s+)(\d{1,2}(?::\d{2})?)/i
+    ];
+
+    const phonePatterns = [
+      /(?:teléfono|móvil|número)\s*(?:es\s*)?(\d{9})/i,
+      /(\d{9})/i
+    ];
+
+    // Extract customer name
+    let customerName = '';
+    for (const pattern of namePatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        customerName = match[1].charAt(0).toUpperCase() + match[1].slice(1);
+        break;
+      }
+    }
+
+    // Extract quantity
+    let quantity = 1; // Default to 1 chicken
+    for (const pattern of quantityPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (pattern.source.includes('medio|0\\.?5')) {
+          quantity = 0.5;
+        } else if (pattern.source.includes('un\\s+pollo\\s+y\\s+medio|1\\.?5')) {
+          quantity = 1.5;
+        } else if (match[1]) {
+          const num = parseFloat(match[1]);
+          if (!isNaN(num)) quantity = num;
+        } else if (pattern.source.includes('un|uno|1')) {
+          quantity = 1;
+        } else if (pattern.source.includes('dos|2')) {
+          quantity = 2;
+        } else if (pattern.source.includes('tres|3')) {
+          quantity = 3;
+        } else if (pattern.source.includes('cuatro|4')) {
+          quantity = 4;
+        } else if (pattern.source.includes('cinco|5')) {
+          quantity = 5;
+        }
+        break;
+      }
+    }
+
+    // Extract pickup time
+    let pickupTime = '';
+    for (const pattern of timePatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        let time = match[1];
+        // Add :00 if no minutes specified
+        if (!time.includes(':')) {
+          time += ':00';
+        }
+        // Ensure time is in HH:MM format
+        const timeParts = time.split(':');
+        if (timeParts.length === 2) {
+          const hours = parseInt(timeParts[0]);
+          const minutes = parseInt(timeParts[1]);
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+            pickupTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+          }
+        }
+        break;
+      }
+    }
+
+    // Extract phone number
+    let phone = '';
+    for (const pattern of phonePatterns) {
+      const match = text.match(pattern);
+      if (match && match[1] && match[1].length === 9) {
+        phone = match[1];
+        break;
+      }
+    }
+
+    // Default pickup time if not specified (1 hour from now)
+    if (!pickupTime) {
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+      pickupTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    }
+
+    // Return data only if we have at least a name and a reasonable quantity
+    if (customerName && quantity > 0) {
+      return {
+        customerName,
+        quantity,
+        pickupTime,
+        phone
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('❌ Error processing voice command:', error);
+    return null;
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -1059,6 +1217,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error(`Error al verificar archivo: ${error.message}`);
       res.status(500).json({ exists: false, error: `Error al verificar archivo: ${error.message}` });
+    }
+  });
+
+  // Speech-to-Text endpoint for voice recognition
+  app.post('/api/speech-to-text', uploadAudio.single('audio'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No se proporcionó archivo de audio' });
+      }
+
+      console.log('🎤 Processing voice audio file:', req.file.filename);
+
+      // Extract OpenAI API key from environment
+      const openaiKey = process.env.OPENAI_PLATFORM?.replace('PLATFORM=', '') || process.env.OPENAI_API_KEY;
+      
+      if (!openaiKey) {
+        console.error('❌ OpenAI API key not found');
+        return res.status(500).json({ error: 'Clave API de OpenAI no configurada' });
+      }
+
+      // Import OpenAI and FormData
+      const OpenAI = require('openai');
+      const FormData = require('form-data');
+      
+      const openai = new OpenAI({
+        apiKey: openaiKey
+      });
+
+      // Create FormData and append the audio file
+      const form = new FormData();
+      form.append('file', fs.createReadStream(req.file.path), {
+        filename: req.file.filename,
+        contentType: req.file.mimetype
+      });
+      form.append('model', 'whisper-1');
+      form.append('language', 'es'); // Spanish language
+      form.append('response_format', 'text');
+
+      // Call OpenAI Whisper API
+      const transcription = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(req.file.path),
+        model: 'whisper-1',
+        language: 'es',
+        response_format: 'text'
+      });
+
+      console.log('🗣️ Transcription result:', transcription);
+
+      // Clean up uploaded file
+      await fs.remove(req.file.path);
+
+      // Process the transcribed text for order creation
+      const orderData = processVoiceCommand(transcription);
+
+      if (orderData) {
+        console.log('✅ Order data extracted:', orderData);
+        
+        // Create the order if we have valid data
+        try {
+          const newOrder = await storage.createOrder({
+            customerName: orderData.customerName,
+            phone: orderData.phone || '',
+            pickupTime: orderData.pickupTime,
+            items: JSON.stringify([{
+              id: 1, // Default product ID for chicken
+              name: 'Pollo Asado',
+              quantity: orderData.quantity,
+              price: 800 // Default price per chicken
+            }]),
+            totalAmount: orderData.quantity * 800,
+            status: 'pending',
+            notes: `Pedido creado por voz: "${transcription}"`
+          });
+
+          res.json({
+            success: true,
+            transcription,
+            orderCreated: true,
+            order: newOrder,
+            extractedData: orderData
+          });
+        } catch (orderError) {
+          console.error('❌ Error creating order:', orderError);
+          res.json({
+            success: true,
+            transcription,
+            orderCreated: false,
+            error: 'Error al crear el pedido',
+            extractedData: orderData
+          });
+        }
+      } else {
+        res.json({
+          success: true,
+          transcription,
+          orderCreated: false,
+          message: 'No se pudo extraer información del pedido del texto'
+        });
+      }
+
+    } catch (error) {
+      console.error('❌ Speech-to-text error:', error);
+      
+      // Clean up file if it exists
+      if (req.file?.path) {
+        try {
+          await fs.remove(req.file.path);
+        } catch (cleanupError) {
+          console.error('Error cleaning up file:', cleanupError);
+        }
+      }
+      
+      res.status(500).json({ 
+        error: 'Error procesando el audio. Inténtalo de nuevo.',
+        details: error.message 
+      });
     }
   });
 

@@ -361,7 +361,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint optimizado que combina orders y stock para mejor rendimiento
   app.get("/api/dashboard-data", async (req, res) => {
     try {
-      console.log('🔄 Obteniendo datos combinados del dashboard...');
+      // console.log('🔄 Obteniendo datos combinados del dashboard...');
       
       // Obtener ambos conjuntos de datos en paralelo
       const [ordersData, stockData] = await Promise.all([
@@ -369,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getCurrentStock()
       ]);
 
-      console.log(`📊 Dashboard data - Orders: ${ordersData?.length || 0}, Stock disponible: ${stockData ? 'Sí' : 'No'}`);
+      // console.log(`📊 Dashboard data - Orders: ${ordersData?.length || 0}, Stock disponible: ${stockData ? 'Sí' : 'No'}`);
 
       res.json({
         orders: ordersData || [],

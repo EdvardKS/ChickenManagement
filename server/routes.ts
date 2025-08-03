@@ -1230,7 +1230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🎤 Processing voice audio file:', req.file.filename);
 
       // Extract OpenAI API key from environment
-      const openaiKey = process.env.OPENAI_PLATFORM || process.env.OPENAI_API_KEY;
+      const openaiKey = "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";
       
       console.log('🔑 Checking OpenAI keys:');
       console.log('  OPENAI_PLATFORM exists:', !!process.env.OPENAI_PLATFORM);

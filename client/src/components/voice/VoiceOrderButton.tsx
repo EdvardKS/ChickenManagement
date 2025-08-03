@@ -1,63 +1,75 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Square, AudioWaveform } from "lucide-react";
+import { Mic, Square, AudioWaveform, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AudioVisualizer } from "./AudioVisualizer";
+import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
+import { VoiceRecognitionResult } from "./types";
 
 interface VoiceOrderButtonProps {
   onVoiceResult?: (result: string) => void;
   disabled?: boolean;
 }
 
-type VoiceState = 'idle' | 'listening' | 'processing' | 'error';
-
 export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrderButtonProps) {
-  const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const handleStartListening = useCallback(() => {
-    if (disabled) return;
+  // Hook de reconocimiento de voz
+  const { state, audioData, startListening, stopListening, isSupported } = useVoiceRecognition({
+    onResult: useCallback((result: VoiceRecognitionResult) => {
+      console.log('Voice recognition result:', result);
+      onVoiceResult?.(result.transcript);
+      setIsExpanded(false);
+      setErrorMessage('');
+    }, [onVoiceResult]),
+    
+    onError: useCallback((error: string) => {
+      console.error('Voice recognition error:', error);
+      setErrorMessage(error);
+      setIsExpanded(false);
+    }, []),
+    
+    maxDuration: 30000, // 30 segundos máximo
+  });
+
+  const handleStartListening = useCallback(async () => {
+    if (disabled || !isSupported) return;
     
     setIsExpanded(true);
-    setVoiceState('listening');
-    
-    // TODO: Implementar captura de audio real en Sprint 2
-    // Por ahora simulamos el proceso
-    setTimeout(() => {
-      setVoiceState('processing');
-      setTimeout(() => {
-        // Simular resultado
-        onVoiceResult?.("crear pedido para María dos pollos para las dos");
-        setVoiceState('idle');
-        setIsExpanded(false);
-      }, 2000);
-    }, 3000);
-  }, [disabled, onVoiceResult]);
+    setErrorMessage('');
+    await startListening();
+  }, [disabled, isSupported, startListening]);
 
   const handleStopListening = useCallback(() => {
-    setVoiceState('processing');
-    // El procesamiento continuará automáticamente
-  }, []);
+    stopListening();
+  }, [stopListening]);
 
   const getButtonIcon = () => {
-    switch (voiceState) {
+    if (!isSupported) return <AlertCircle className="w-6 h-6" />;
+    
+    switch (state) {
       case 'listening':
         return <AudioWaveform className="w-6 h-6" />;
       case 'processing':
         return <Square className="w-6 h-6" />;
+      case 'error':
+        return <AlertCircle className="w-6 h-6" />;
       default:
         return <Mic className="w-6 h-6" />;
     }
   };
 
   const getButtonText = () => {
-    switch (voiceState) {
+    if (!isSupported) return 'Micrófono no disponible';
+    
+    switch (state) {
       case 'listening':
         return 'Escuchando... (toca para parar)';
       case 'processing':
         return 'Procesando...';
       case 'error':
-        return 'Error - Reintentar';
+        return errorMessage || 'Error - Reintentar';
       default:
         return 'Crear pedido por voz';
     }
@@ -75,12 +87,12 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
           >
             <Button
               onClick={handleStartListening}
-              disabled={disabled || voiceState !== 'idle'}
+              disabled={disabled || !isSupported || state !== 'idle'}
               className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
               size="lg"
             >
               <motion.div
-                animate={voiceState === 'listening' ? { scale: [1, 1.2, 1] } : {}}
+                animate={state === 'listening' ? { scale: [1, 1.2, 1] } : {}}
                 transition={{ repeat: Infinity, duration: 1.5 }}
               >
                 {getButtonIcon()}
@@ -107,7 +119,7 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
                 <div className="relative">
                   <motion.div
                     animate={
-                      voiceState === 'listening'
+                      state === 'listening'
                         ? { scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }
                         : {}
                     }
@@ -116,7 +128,7 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
                   >
                     <motion.div
                       animate={
-                        voiceState === 'listening'
+                        state === 'listening'
                           ? { rotate: [0, 180, 360] }
                           : {}
                       }
@@ -126,7 +138,7 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
                     </motion.div>
                   </motion.div>
                   
-                  {voiceState === 'listening' && (
+                  {state === 'listening' && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -143,19 +155,20 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
                     {getButtonText()}
                   </h3>
                   
-                  {voiceState === 'listening' && (
+                  {state === 'listening' && (
                     <>
                       <p className="text-sm text-gray-500">
                         Di algo como: "Crear pedido para María dos pollos para las dos"
                       </p>
                       <AudioVisualizer 
-                        isActive={voiceState === 'listening'} 
+                        isActive={state === 'listening'} 
+                        audioData={audioData}
                         className="mt-4"
                       />
                     </>
                   )}
 
-                  {voiceState === 'processing' && (
+                  {state === 'processing' && (
                     <div className="flex justify-center">
                       <motion.div
                         animate={{ rotate: 360 }}
@@ -166,7 +179,7 @@ export function VoiceOrderButton({ onVoiceResult, disabled = false }: VoiceOrder
                   )}
                 </div>
 
-                {voiceState === 'listening' && (
+                {state === 'listening' && (
                   <Button
                     onClick={handleStopListening}
                     variant="outline"

@@ -1,10 +1,12 @@
-import { Package, Mic, Plus } from "lucide-react";
+import { Mic, Package, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { VoiceOrderButton } from "@/components/voice/VoiceOrderButton";
 
 interface MobileBottomNavigationProps {
   onStockClick: () => void;
   onNewOrderClick: () => void;
-  onVoiceResult: () => void;
+  onVoiceResult: (result: string) => void;
+  onVoiceOrderCreated: () => void;
   disabled?: boolean;
   className?: string;
 }
@@ -13,6 +15,7 @@ export function MobileBottomNavigation({
   onStockClick,
   onNewOrderClick,
   onVoiceResult,
+  onVoiceOrderCreated,
   disabled,
   className,
 }: MobileBottomNavigationProps) {
@@ -20,12 +23,12 @@ export function MobileBottomNavigation({
     <nav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 w-full bg-black",
-        "border-t border-white/10 px-6  xl:hidden",
+        "border-t border-white/10 px-6 xl:hidden",
         className
       )}
     >
       <div className="relative flex items-center justify-center h-16">
-        {/* Barra inferior - botones laterales */}
+        {/* Botones laterales */}
         <div className="absolute inset-0 flex items-end justify-between px-6 pb-2">
           <RoundedSideButton
             icon={<Package className="w-4 h-4 me-2" />}
@@ -41,19 +44,19 @@ export function MobileBottomNavigation({
           />
         </div>
 
-        {/* Botón central - más elevado */}
-        <button
-          onClick={onVoiceResult}
+        {/* Botón de voz al centro */}
+        <VoiceOrderButton
+          onVoiceResult={onVoiceResult}
+          onOrderCreated={onVoiceOrderCreated}
           disabled={disabled}
           className={cn(
-            "z-10 rounded-full w-14 h-14 -translate-y-4 ",
+            "z-10 rounded-full w-14 h-14 -translate-y-4",
             "bg-blue-600 hover:bg-blue-500 transition-colors duration-200",
             "shadow-md border-4 border-black flex items-center justify-center",
             disabled && "opacity-40"
           )}
-        >
-          <Mic className="w-5 h-5 text-white" />
-        </button>
+        />
+        
       </div>
     </nav>
   );

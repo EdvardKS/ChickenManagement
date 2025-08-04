@@ -124,9 +124,9 @@ export function VoiceOrderButton({ onVoiceResult, onOrderCreated, disabled = fal
               animate={state === 'listening' ? { scale: [1, 1.05, 1] } : {}}
               transition={{ repeat: Infinity, duration: 2 }}
             >
-              <Mic className={`h-5 w-5 mb-1 stroke-[1] ${state === 'listening' ? 'text-red-400' : 'text-[#00B4FF]'}`} />
+              <Mic className={`  ${state === 'listening' ? 'text-red-400' : 'text-[#FFFFFF]'}`} />
+              
             </motion.div>
-            <span className="text-[10px] font-light text-white/70">Voz</span>
           </>
         )}
       </Button>

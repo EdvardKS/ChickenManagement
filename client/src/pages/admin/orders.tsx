@@ -64,12 +64,6 @@ export default function AdminOrders() {
     debouncedRefresh();
   }, [debouncedRefresh]);
 
-  // Event handler optimizado - removido para evitar refetch innecesarios
-  // Las actualizaciones optimistas manejan los cambios de estado individual
-
-  // Listener removido - usando actualizaciones optimistas en lugar de refetch global
-
-  // Callbacks wrapped in useCallback to prevent recreating functions on each render
   const handleOpenNewOrder = useCallback(() => {
     setIsNewOrderOpen(true);
   }, []);
@@ -82,15 +76,10 @@ export default function AdminOrders() {
   const handleVoiceResult = useCallback((result: string) => {
     console.log('Voice result:', result);
     
-    // El sistema ya procesa automáticamente los comandos de voz y crea pedidos
-    // Solo mostramos una confirmación sin abrir el drawer
     toast({
       title: "Comando de voz procesado",
       description: `"${result}"`,
     });
-
-    // No abrimos el drawer - el reconocimiento de voz ya maneja la creación automática
-    // setIsNewOrderOpen(true); // Comentado para evitar apertura automática
   }, [toast]);
 
   // Handler para cuando se crea un pedido por voz - actualización optimista
@@ -140,40 +129,11 @@ export default function AdminOrders() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-16 xl:pb-0">
+    <div className="">
       
-      {/* Header Section - Hidden on mobile and tablets to save space */}
-      <div className="bg-white shadow-sm border-b border-gray-100 py-1 hidden xl:block">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between">
-        
-            
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                onClick={handleOpenStockDrawer}
-                className="flex items-center space-x-2 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 px-4 py-2 font-medium rounded-lg"
-              >
-                <span className="text-lg">📦</span>
-                <span>Stock</span>
-              </Button>
-              <Button 
-                onClick={handleOpenNewOrder}
-                data-refresh-trigger
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                Nuevo Encargo
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Header - Compact version for mobile */}
-     
 
       {/* Orders Table Section - Full Width without margins */}
-      <div className="bg-white w-full">
+      <div className="bg-white ">
         <OrdersTable 
           orders={orders || []} 
           onDataChanged={handleRefresh}  

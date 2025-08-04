@@ -309,13 +309,13 @@ const handleError = async (orderId: number) => {
     }, {} as Record<string, Order[]>);
 
   return (
-    <div className="w-full">
+    <div className="">
 
       {ordersByDate && Object.entries(ordersByDate).map(([date, dateOrders]) => (
-        <div key={date} className="w-full">
+        <div key={date} className="">
           
-          <div className="w-full overflow-x-auto">
-            <Table className="w-full">
+          <div className="">
+            <Table className="">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[30%] md:w-[25%] text-base md:text-lg">Cliente</TableHead>

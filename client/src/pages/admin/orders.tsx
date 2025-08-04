@@ -146,16 +146,7 @@ export default function AdminOrders() {
       <div className="bg-white shadow-sm border-b border-gray-100 py-1 hidden xl:block">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <img 
-                src="/img/corporativa/logo-negro.png" 
-                alt="Logo" 
-                className="h-12 w-12 object-contain"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">Gestión de Pedidos</h1>
-              </div>
-            </div>
+        
             
             <div className="flex items-center space-x-4">
               <Button 
@@ -179,18 +170,7 @@ export default function AdminOrders() {
       </div>
 
       {/* Mobile Header - Compact version for mobile */}
-      <div className="bg-white shadow-sm border-b border-gray-100 py-2 md:hidden">
-        <div className="px-4">
-          <div className="flex items-center justify-center">
-            <img 
-              src="/img/corporativa/logo-negro.png" 
-              alt="Logo" 
-              className="h-8 w-8 object-contain mr-2"
-            />
-            <h1 className="text-lg font-bold text-gray-800">Pedidos</h1>
-          </div>
-        </div>
-      </div>
+     
 
       {/* Orders Table Section - Full Width without margins */}
       <div className="bg-white w-full">

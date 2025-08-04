@@ -23,7 +23,7 @@ export function MobileBottomNavigation({
     <nav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 w-full bg-black",
-        "border-t border-white/10 px-6 xl:hidden",
+        "border-t border-white/10 px-6",
         className
       )}
     >

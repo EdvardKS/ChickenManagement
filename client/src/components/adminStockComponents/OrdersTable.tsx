@@ -333,9 +333,11 @@ const handleError = async (orderId: number) => {
                         {order.customerName}
                       </div>
                       {/* Mostrar detalles en móvil debajo del nombre */}
-                      <div className="md:hidden text-xs text-gray-600 mt-1 truncate max-w-[120px]">
-                        {order.details ? order.details.substring(0, 25) + (order.details.length > 25 ? '...' : '') : '-'}
-                      </div>
+                      {order.details && (
+                        <div className="md:hidden text-xs text-gray-600 mt-1 truncate max-w-[120px]">
+                          {order.details.substring(0, 25) + (order.details.length > 25 ? '...' : '')}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-base md:text-lg text-center px-2 md:px-4">
                       {formatQuantity(order.quantity)}

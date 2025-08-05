@@ -27,7 +27,7 @@ export function MobileBottomNavigation({
         className
       )}
     >
-      <div className="relative flex items-center justify-center h-16">
+      <div className="relative flex items-center justify-center h-14">
         {/* Botones laterales */}
         <div className="absolute inset-0 flex items-end justify-between px-6 pb-2">
           <RoundedSideButton
@@ -80,9 +80,9 @@ function RoundedSideButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex flex-row items-center justify-center px-4 py-2",
+        "flex flex-row items-center justify-center px-4 py-1",
         "rounded-full bg-white/5 hover:bg-blue-500/30 transition-colors",
-        "text-white text-xs font-light w-24 h-12",
+        "text-white text-xs font-light w-24 h-10",
         disabled && "opacity-40"
       )}
     >

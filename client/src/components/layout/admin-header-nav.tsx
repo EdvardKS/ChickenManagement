@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -58,9 +58,26 @@ export function AdminHeaderNav() {
   // Get current page title
   const currentPage = navItems.find(item => item.href === location)?.title || "Administración";
 
+  useEffect(() => {
+    // Script al montarse el componente
+    console.log("AdminHeaderNav cargado. Ruta actual:", location);
+
+    // Ejemplo: ocultar menú si estamos en un dashboard avanzado
+    if (location.startsWith("/admin/dashboards/stock")) {
+      setIsVisible(false);
+    } else {
+      setIsVisible(true);
+    }
+
+    // También podrías hacer scroll o cargar data si necesitas
+    // window.scrollTo(0, 0);
+  }, [location]);
+
+  if (!isVisible) return null;
+
   return (
     <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-     
+      {/* Aquí puedes meter tu UI del nav */}
     </div>
   );
 }

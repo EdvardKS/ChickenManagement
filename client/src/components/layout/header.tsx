@@ -75,9 +75,14 @@ export default function Header() {
 
   return (
     <header
-      className={`${isHome ? 'fixed' : 'relative'} top-0 py-5 left-0 w-full z-50 transition-colors duration-300 ${
-        isScrolled ? "bg-slate-50 shadow-md" : "bg-transparent"
-      }`}
+      className={
+        isHome
+          ? `fixed top-0 py-5 left-0 w-full z-50 transition-colors duration-300 ${
+              isScrolled ? 'bg-slate-50 shadow-md' : 'bg-transparent'
+            }`
+          : 'relative top-0 py-1 pb-2 left-0 w-full z-50 '
+      }
+
     >
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         {/* Menú de administración o iconos de redes sociales */}

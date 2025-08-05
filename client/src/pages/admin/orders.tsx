@@ -129,11 +129,11 @@ export default function AdminOrders() {
   }, []);
 
   return (
-    <div className="">
+    <div className="w-full">
       
 
       {/* Orders Table Section - Full Width without margins */}
-      <div className="bg-white ">
+      <div className="bg-white w-full overflow-hidden">
         <OrdersTable 
           orders={orders || []} 
           onDataChanged={handleRefresh}  

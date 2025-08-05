@@ -62,7 +62,158 @@ const uploadAudio = multer({
   }
 });
 
-// Voice command processing function
+// GPT-based voice command processing with few-shot examples
+async function processWithGPT(transcription: string, openaiClient: any): Promise<{ customerName: string; quantity: number; pickupTime: string; phone?: string } | null> {
+  try {
+    console.log('🤖 Processing with GPT:', transcription);
+
+    const prompt = `Eres un sistema experto en extraer información de pedidos de pollo asado por voz. Tu tarea es identificar exactamente:
+1. NOMBRE del cliente (nombre completo)
+2. CANTIDAD de pollos (puede ser decimal: 0.5, 1.5, etc.)
+3. HORA de recogida (DEBE estar entre 11:00-17:00, formato HH:MM)
+
+REGLAS IMPORTANTES PARA LA HORA:
+- Si escuchas "ocho", "nueve", "diez" sin especificar AM/PM, conviértelo a horario de tarde (20:00, 21:00, 22:00)
+- Si la hora está fuera del rango 11:00-17:00, ajústala al horario más cercano dentro del rango
+- Si no se especifica hora, usa 13:00 por defecto
+- Formato siempre HH:MM (ej: 13:00, 15:30)
+
+EJEMPLOS:
+
+Entrada: "Ana García, dos pollos para las tres de la tarde"
+Salida: {"customerName": "Ana García", "quantity": 2, "pickupTime": "15:00", "phone": ""}
+
+Entrada: "Viene Carlos Ruiz un pollo y medio a las dos y media"
+Salida: {"customerName": "Carlos Ruiz", "quantity": 1.5, "pickupTime": "14:30", "phone": ""}
+
+Entrada: "Para José López medio pollo para las ocho"
+Salida: {"customerName": "José López", "quantity": 0.5, "pickupTime": "17:00", "phone": ""}
+
+Entrada: "María del Carmen Rodríguez tres pollos a las cinco y cuarto"
+Salida: {"customerName": "María del Carmen Rodríguez", "quantity": 3, "pickupTime": "17:00", "phone": ""}
+
+Entrada: "Un pollo para Antonio a las siete de la mañana"
+Salida: {"customerName": "Antonio", "quantity": 1, "pickupTime": "11:00", "phone": ""}
+
+Entrada: "Pedro Sánchez dos pollos para las diez y media de la noche"
+Salida: {"customerName": "Pedro Sánchez", "quantity": 2, "pickupTime": "17:00", "phone": ""}
+
+AHORA PROCESA ESTA TRANSCRIPCIÓN:
+"${transcription}"
+
+Responde SOLO con el JSON, sin explicaciones:`;
+
+    const completion = await openaiClient.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 200
+    });
+
+    const gptResponse = completion.choices[0]?.message?.content?.trim();
+    console.log('🤖 GPT Response:', gptResponse);
+
+    if (!gptResponse) {
+      console.error('❌ No response from GPT');
+      return null;
+    }
+
+    // Parse JSON response
+    let parsedData;
+    try {
+      parsedData = JSON.parse(gptResponse);
+    } catch (parseError) {
+      console.error('❌ Error parsing GPT JSON:', parseError);
+      // Try to extract JSON from response if wrapped in text
+      const jsonMatch = gptResponse.match(/\{.*\}/s);
+      if (jsonMatch) {
+        parsedData = JSON.parse(jsonMatch[0]);
+      } else {
+        return null;
+      }
+    }
+
+    // Validate required fields
+    if (!parsedData.customerName || !parsedData.quantity || !parsedData.pickupTime) {
+      console.error('❌ Missing required fields in GPT response');
+      return null;
+    }
+
+    // Additional validation and normalization
+    const result = {
+      customerName: parsedData.customerName.trim(),
+      quantity: parseFloat(parsedData.quantity),
+      pickupTime: validateAndNormalizeTime(parsedData.pickupTime),
+      phone: parsedData.phone || ''
+    };
+
+    // Final validation
+    if (result.quantity <= 0 || result.quantity > 10) {
+      console.error('❌ Invalid quantity:', result.quantity);
+      return null;
+    }
+
+    console.log('✅ GPT processing successful:', result);
+    return result;
+
+  } catch (error) {
+    console.error('❌ Error in GPT processing:', error);
+    return null;
+  }
+}
+
+// Time validation and normalization function
+function validateAndNormalizeTime(timeStr: string): string {
+  try {
+    // Remove any extra spaces and normalize
+    const cleaned = timeStr.trim();
+    
+    // Parse time
+    const timeMatch = cleaned.match(/^(\d{1,2}):(\d{2})$/);
+    if (!timeMatch) {
+      console.warn('⚠️ Invalid time format, using default 13:00');
+      return '13:00';
+    }
+
+    const hours = parseInt(timeMatch[1]);
+    const minutes = parseInt(timeMatch[2]);
+
+    // Validate hours and minutes
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      console.warn('⚠️ Invalid time values, using default 13:00');
+      return '13:00';
+    }
+
+    // Check if time is within business hours (11:00-17:00)
+    const timeInMinutes = hours * 60 + minutes;
+    const openTime = 11 * 60; // 11:00
+    const closeTime = 17 * 60; // 17:00
+
+    if (timeInMinutes < openTime) {
+      console.warn(`⚠️ Time ${cleaned} is before opening, adjusting to 11:00`);
+      return '11:00';
+    }
+
+    if (timeInMinutes > closeTime) {
+      console.warn(`⚠️ Time ${cleaned} is after closing, adjusting to 17:00`);
+      return '17:00';
+    }
+
+    // Time is valid, return normalized format
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    
+  } catch (error) {
+    console.error('❌ Error validating time:', error);
+    return '13:00';
+  }
+}
+
+// Fallback: Original regex-based voice command processing function (kept as backup)
 function processVoiceCommand(transcription: string): { customerName: string; quantity: number; pickupTime: string; phone?: string } | null {
   try {
     const text = transcription.toLowerCase().trim();
@@ -1423,8 +1574,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clean up uploaded file
       await fs.remove(req.file.path);
 
-      // Process the transcribed text for order creation
-      const orderData = processVoiceCommand(transcription);
+      // SEGUNDA COMPROBACIÓN CON GPT: Procesar con GPT primero, fallback a regex
+      console.log('🔄 Starting second verification with GPT...');
+      let orderData = null;
+      
+      try {
+        // Try GPT processing first (primary method)
+        orderData = await processWithGPT(transcription, openai);
+        console.log('✅ GPT processing result:', orderData);
+      } catch (gptError) {
+        console.warn('⚠️ GPT processing failed, falling back to regex:', gptError);
+        // Fallback to original regex-based processing
+        orderData = processVoiceCommand(transcription);
+        console.log('📝 Regex fallback result:', orderData);
+      }
 
       if (orderData) {
         console.log('✅ Order data extracted:', orderData);
@@ -1452,7 +1615,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             transcription,
             orderCreated: true,
             order: newOrder,
-            extractedData: orderData
+            extractedData: orderData,
+            message: `Pedido creado exitosamente - Cliente: ${orderData.customerName}, Cantidad: ${orderData.quantity} pollo(s), Hora: ${orderData.pickupTime}`
           });
         } catch (orderError) {
           console.error('❌ Error creating order:', orderError);
@@ -1465,11 +1629,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       } else {
+        // Proporcionar información detallada sobre qué faltó
+        const missingInfo = [];
+        if (!transcription || transcription.trim().length === 0) {
+          missingInfo.push('texto transcrito válido');
+        } else {
+          missingInfo.push('información del cliente (nombre, cantidad de pollos y/o hora de recogida)');
+        }
+
         res.json({
           success: true,
           transcription,
           orderCreated: false,
-          message: 'No se pudo extraer información del pedido del texto'
+          message: `No se pudo extraer ${missingInfo.join(', ')} del audio. Por favor, intenta de nuevo especificando claramente el nombre del cliente, la cantidad de pollos y la hora de recogida (entre 11:00 y 17:00).`,
+          extractedData: null
         });
       }
 

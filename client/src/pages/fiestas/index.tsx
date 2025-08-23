@@ -117,7 +117,7 @@ export default function FesteroPage() {
                           <p className="text-sm mt-2">{order.details}</p>
                         )}
                         <p className="text-xs text-muted-foreground mt-2">
-                          Hora de recogida: {new Date(order.pickupTime).toLocaleTimeString('es-ES')}
+                          Hora de recogida: {new Date(order.pickupTime).toISOString().substring(11, 16)}
                         </p>
                       </div>
                     ))}

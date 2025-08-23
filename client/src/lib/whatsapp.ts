@@ -27,10 +27,7 @@ export function generateWhatsAppMessage(
     month: 'long',
     day: 'numeric'
   });
-  const formattedTime = pickupDate.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  const formattedTime = pickupDate.toISOString().substring(11, 16);
 
   // Format quantity
   const quantity = parseFloat(order.quantity.toString());

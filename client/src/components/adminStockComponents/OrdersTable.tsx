@@ -343,7 +343,7 @@ const handleError = async (orderId: number) => {
                       {formatQuantity(order.quantity)}
                     </TableCell>
                     <TableCell className="text-base md:text-lg text-center px-2 md:px-4">
-                      {format(new Date(order.pickupTime), 'HH:mm')}
+                      {new Date(order.pickupTime).toISOString().substring(11, 16)}
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-base md:text-lg px-2 md:px-4">
                       <div className="truncate max-w-[200px] lg:max-w-[300px]">

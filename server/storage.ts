@@ -193,7 +193,12 @@ export class DatabaseStorage implements IStorage {
         if (typeof order.pickupTime === 'string' && /^\d{1,2}:\d{2}$/.test(order.pickupTime)) {
           const today = new Date();
           const [hours, minutes] = order.pickupTime.split(':').map(Number);
-          order.pickupTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes);
+          // Crear fecha usando la hora exacta especificada por el usuario (sin conversión automática de zona horaria)
+          order.pickupTime = new Date();
+          order.pickupTime.setFullYear(today.getFullYear());
+          order.pickupTime.setMonth(today.getMonth());
+          order.pickupTime.setDate(today.getDate());
+          order.pickupTime.setHours(hours, minutes, 0, 0);
           console.log('✅ Storage - Create Order - pickupTime convertido desde HH:MM:', order.pickupTime);
         } else {
           order.pickupTime = new Date(order.pickupTime);
